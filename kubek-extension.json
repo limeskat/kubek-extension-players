@@ -1,0 +1,99 @@
+{
+  "manifestVersion": 1,
+  "id": "com.kubek.players",
+  "name": "Players Management",
+  "version": "1.0.0",
+  "description": "Comprehensive Aternos-style player management: Access lists, live telemetry, vitals, inventory inspector, teleportation, stats, and NBT data purge.",
+  "author": {
+    "name": "Kubek Community",
+    "url": "https://github.com/KubekPanel"
+  },
+  "license": "MIT",
+  "icon": "icon.png",
+  "keywords": ["minecraft", "players", "whitelist", "operators", "bans", "inventory", "nbt", "teleport"],
+  "engines": {
+    "kubek": ">=4.0.0"
+  },
+  "permissions": {
+    "declares": [
+      {
+        "key": "ext.players.view",
+        "label": "View players, access lists, and statistics",
+        "group": "Players Management"
+      },
+      {
+        "key": "ext.players.control",
+        "label": "Execute player actions (kick, heal, feed, kill, starve, gamemode, teleport)",
+        "group": "Players Management"
+      },
+      {
+        "key": "ext.players.manage_access",
+        "label": "Modify access lists (Whitelist, OPs, Banned Players, Banned IPs)",
+        "group": "Players Management"
+      },
+      {
+        "key": "ext.players.purge",
+        "label": "Purge and reset player data files (NBT, stats, advancements)",
+        "group": "Players Management"
+      }
+    ],
+    "requires": [
+      "servers:read",
+      "servers:control",
+      "http:routes",
+      "storage",
+      "settings",
+      "events:server",
+      "events:players",
+      "events:logs"
+    ]
+  },
+  "backend": {
+    "entry": "backend/index.ts",
+    "isolation": "in-process",
+    "events": [
+      "server.started",
+      "server.stopped",
+      "player.joined",
+      "player.left",
+      "server.log"
+    ]
+  },
+  "frontend": {
+    "entry": "frontend/index.ts",
+    "contributes": {
+      "sidebar": [
+        {
+          "id": "players-tab",
+          "label": "Players",
+          "icon": "Users",
+          "route": "com.kubek.players/PlayersDashboard",
+          "permission": "ext.players.view",
+          "section": "server"
+        }
+      ]
+    }
+  },
+  "settingsSchema": [
+    {
+      "key": "avatarProvider",
+      "type": "select",
+      "label": "Player Avatar Provider",
+      "options": ["crafatar", "minotar", "mc-heads", "visage"],
+      "default": "crafatar"
+    },
+    {
+      "key": "refreshIntervalSec",
+      "type": "number",
+      "label": "Live Telemetry Refresh Interval (seconds)",
+      "default": 5,
+      "rules": "required|min:1|max:60"
+    },
+    {
+      "key": "enableOfflineDirectory",
+      "type": "boolean",
+      "label": "Enable Offline Player Directory (usercache & disk scanning)",
+      "default": true
+    }
+  ]
+}
