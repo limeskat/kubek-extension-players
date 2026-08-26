@@ -1,0 +1,232 @@
+/* Scoped styles for Kubek Players Management Extension */
+
+.players-pulse-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #10b981;
+  border-radius: 9999px;
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  animation: playersPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes playersPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+/* 60 / 40 Split Layout */
+.mc-split-container {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 24px !important;
+  width: 100% !important;
+}
+
+.mc-split-left {
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 24px !important;
+}
+
+.mc-split-right {
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 24px !important;
+}
+
+@media (min-width: 1024px) {
+  .mc-split-container {
+    flex-direction: row !important;
+    align-items: flex-start !important;
+  }
+
+  .mc-split-left {
+    flex: 0 0 70% !important;
+    width: 70% !important;
+    max-width: 70% !important;
+  }
+
+  .mc-split-right {
+    flex: 0 0 calc(30% - 24px) !important;
+    width: calc(30% - 24px) !important;
+    max-width: calc(30% - 24px) !important;
+  }
+}
+
+/* Vitals & HUD Styles */
+.mc-hud-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 10px !important;
+  background: rgba(24, 24, 27, 0.5) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 16px !important;
+  padding: 10px 12px !important;
+  transition: all 0.2s ease !important;
+}
+
+.mc-hud-row:hover {
+  background: rgba(24, 24, 27, 0.75) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+.mc-icons-grid {
+  display: grid !important;
+  grid-template-columns: repeat(10, 20px) !important;
+  gap: 3px !important;
+  align-items: center !important;
+  justify-items: center !important;
+}
+
+/* Authentic Minecraft Inventory Container & Slots - High Fidelity Unified Grid */
+.mc-inv-container {
+  display: inline-flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  background: #c6c6c6 !important;
+  padding: 14px 16px !important;
+  border-top: 4px solid #ffffff !important;
+  border-left: 4px solid #ffffff !important;
+  border-bottom: 4px solid #555555 !important;
+  border-right: 4px solid #555555 !important;
+  border-radius: 0px !important;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4) !important;
+  box-sizing: border-box !important;
+}
+
+.mc-slot {
+  width: 54px !important;
+  height: 54px !important;
+  min-width: 54px !important;
+  min-height: 54px !important;
+  background: #8b8b8b !important;
+  border-top: 3px solid #373737 !important;
+  border-left: 3px solid #373737 !important;
+  border-bottom: 3px solid #ffffff !important;
+  border-right: 3px solid #ffffff !important;
+  border-radius: 0px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  position: relative !important;
+  box-sizing: border-box !important;
+  image-rendering: pixelated !important;
+  transition: background 0.1s ease !important;
+}
+
+.mc-slot:hover {
+  background: #a0a0a0 !important;
+  outline: 2px solid #ffffff !important;
+  z-index: 10 !important;
+}
+
+.mc-slot-filled {
+  background: #8b8b8b !important;
+}
+
+.mc-slot-item-img {
+  width: 40px !important;
+  height: 40px !important;
+  object-fit: contain !important;
+  image-rendering: pixelated !important;
+}
+
+.image-pixelated {
+  image-rendering: pixelated !important;
+  image-rendering: -moz-crisp-edges !important;
+  image-rendering: crisp-edges !important;
+}
+
+.mc-slot-item-text {
+  font-size: 9px !important;
+  font-weight: 800 !important;
+  text-align: center !important;
+  line-height: 1 !important;
+  color: #ffffff !important;
+  text-shadow: 1px 1px 0 #000 !important;
+  word-break: break-all !important;
+  padding: 1px !important;
+}
+
+.mc-slot-count {
+  position: absolute !important;
+  bottom: 2px !important;
+  right: 3px !important;
+  font-family: monospace !important;
+  font-size: 13px !important;
+  font-weight: 900 !important;
+  color: #ffffff !important;
+  text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000 !important;
+  pointer-events: none !important;
+}
+
+.mc-ender-grid {
+  display: grid !important;
+  grid-template-columns: repeat(9, 54px) !important;
+  grid-template-rows: repeat(3, 54px) !important;
+  gap: 4px !important;
+}
+
+/* XP Bar */
+.mc-bar-bg {
+  width: 100% !important;
+  height: 8px !important;
+  background: #18181b !important;
+  border: 1px solid #27272a !important;
+  border-radius: 9999px !important;
+  overflow: hidden !important;
+  position: relative !important;
+}
+
+.mc-bar-xp {
+  height: 100% !important;
+  background: linear-gradient(90deg, #10b981, #34d399, #6ee7b7) !important;
+  border-radius: 9999px !important;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.6) !important;
+  transition: width 0.4s ease !important;
+}
+
+/* Position Axis Boxes */
+.coord-box {
+  background: rgba(24, 24, 27, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 14px !important;
+  padding: 10px 8px !important;
+  text-align: center !important;
+  transition: border-color 0.2s ease !important;
+}
+
+.coord-box:hover {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Stats Grids */
+.mc-stats-grid-4 {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)) !important;
+  gap: 12px !important;
+}
+
+.mc-stats-grid-3 {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) !important;
+  gap: 12px !important;
+}
+
+.mc-purge-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)) !important;
+  gap: 10px !important;
+}
