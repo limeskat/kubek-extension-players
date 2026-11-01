@@ -4,6 +4,22 @@ All notable changes to the Kubek Players Management extension are documented her
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project uses [Semantic Versioning](https://semver.org/).
 
+## [1.4.0] - 2026-11-02
+
+### Added
+
+- Isometric icon renderer for models with geometry: blocks, logs, stairs, slabs, fences,
+  crafting tables and other element models keep their 3D inventory look instead of a flat face.
+  Faces are projected orthographically, texture-mapped per face, shaded like the vanilla GUI and
+  depth-sorted; grass and leaves get their biome tint.
+- Shields render from the wood texture clipped to the shield silhouette, so the slot no longer
+  falls back to a generic glyph.
+
+### Changed
+
+- Icon resolution now picks rendered geometry, then the flat model texture, then the generic
+  glyph. Rendered icons are cached per game version and item id.
+
 ## [1.3.0] - 2026-11-02
 
 ### Changed
