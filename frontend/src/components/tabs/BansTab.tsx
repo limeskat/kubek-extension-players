@@ -46,7 +46,8 @@ export const BansTab: React.FC<{ serverId: string; onChanged: () => void }> = ({
         />
       }
       meta={`${list.entries.length} entries`}
-      total={rows.length}
+      total={list.entries.length}
+      shown={rows.length}
       query={query}
       onQuery={setQuery}
       loading={list.isLoading}
@@ -54,6 +55,10 @@ export const BansTab: React.FC<{ serverId: string; onChanged: () => void }> = ({
         icon: <Ban />,
         title: kind === "players" ? "No banned players" : "No banned addresses",
         description: "Bans made here are written to the server's ban lists.",
+      }}
+      noMatches={{
+        title: list.t("ext.players.no_matches") || "No matches",
+        hint: list.t("ext.players.no_matches_hint") || "Try a different name or UUID.",
       }}
       addForm={
         <ListAddForm

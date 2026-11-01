@@ -196,6 +196,27 @@ try {
       });
       await page.screenshot({ path: path.join(outDir, "dialog.png"), fullPage: false });
 
+      // Focus trap: tabbing all the way round must never leave the dialog.
+      const focusEscape = [];
+      for (let step = 0; step < 30; step += 1) {
+        await page.keyboard.press("Tab");
+        const inside = await page.evaluate(() => {
+          const dialog = document.querySelector(".k-dialog");
+          return dialog ? dialog.contains(document.activeElement) : false;
+        });
+        if (!inside) focusEscape.push(step);
+      }
+      for (let step = 0; step < 10; step += 1) {
+        await page.keyboard.press("Shift+Tab");
+        const inside = await page.evaluate(() => {
+          const dialog = document.querySelector(".k-dialog");
+          return dialog ? dialog.contains(document.activeElement) : false;
+        });
+        if (!inside) focusEscape.push(`shift-${step}`);
+      }
+      result.focusTrap = { escapedAt: focusEscape };
+      await page.evaluate(() => document.querySelector(".k-dialog")?.scrollTo?.(0, 0));
+
       if (teleport) {
         const button = page.getByRole("button", { name: /Teleport|Save position/i }).first();
         if (await button.count()) {
@@ -209,6 +230,10 @@ try {
               return { width: Math.round(box.width), height: Math.round(box.height) };
             });
             await page.screenshot({ path: path.join(outDir, "teleport.png"), fullPage: false });
+            // Escape must close only the topmost dialog.
+            await page.keyboard.press("Escape");
+            await page.waitForTimeout(300);
+            result.escapeClosesTopOnly = (await page.locator(".k-dialog").count()) === 1;
           }
         }
       }
