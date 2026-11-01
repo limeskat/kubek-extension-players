@@ -32,6 +32,48 @@ export const DialogSurface: React.FC<DialogCommon> = ({
     };
   }, []);
 
+  const onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === "Escape") {
+      // Keep the outer dialog open when a nested one closes itself.
+      event.stopPropagation();
+      onClose();
+      return;
+    }
+
+    if (event.key !== "Tab") return;
+
+    const root = ref.current;
+    if (!root) return;
+
+    const nodes = Array.from(
+      root.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      ),
+    ).filter((element) => element.offsetParent !== null || element === document.activeElement);
+
+    if (nodes.length === 0) {
+      event.preventDefault();
+      return;
+    }
+
+    const first = nodes[0];
+    const last = nodes[nodes.length - 1];
+    const active = document.activeElement as HTMLElement | null;
+
+    if (!event.shiftKey) {
+      if (!active || !root.contains(active) || active === last) {
+        event.preventDefault();
+        first.focus();
+      }
+      return;
+    }
+
+    if (!active || active === root || active === first || !root.contains(active)) {
+      event.preventDefault();
+      last.focus();
+    }
+  };
+
   return (
     <div
       className="k-dialog-overlay"
@@ -47,6 +89,7 @@ export const DialogSurface: React.FC<DialogCommon> = ({
         tabIndex={-1}
         className={cx("k-dialog", className)}
         style={{ ["--k-dialog-width" as string]: `${width}px` }}
+        onKeyDown={onKeyDown}
       >
         {children}
       </div>
@@ -64,17 +107,12 @@ export const Dialog: React.FC<DialogCommon & { open: boolean }> = ({
 }) => {
   React.useEffect(() => {
     if (!open) return;
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
-    };
-    document.addEventListener("keydown", onKey);
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
-      document.removeEventListener("keydown", onKey);
       document.body.style.overflow = previousOverflow;
     };
-  }, [open, onClose]);
+  }, [open]);
 
   if (!open) return null;
 

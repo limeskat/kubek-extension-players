@@ -29,7 +29,8 @@ export const NameListTab: React.FC<{
   return (
     <ListTab
       meta={`${list.entries.length} entries`}
-      total={rows.length}
+      total={list.entries.length}
+      shown={rows.length}
       query={query}
       onQuery={setQuery}
       loading={list.isLoading}
@@ -40,6 +41,10 @@ export const NameListTab: React.FC<{
           type === "ops"
             ? "Grant operator to a player by username."
             : "Add a player by username to allow them in.",
+      }}
+      noMatches={{
+        title: list.t("ext.players.no_matches") || "No matches",
+        hint: list.t("ext.players.no_matches_hint") || "Try a different name or UUID.",
       }}
       addForm={
         <ListAddForm

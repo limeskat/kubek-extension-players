@@ -7,14 +7,18 @@ import { useKubek } from "../../ui/kubek";
 export const ListTab: React.FC<{
   meta: React.ReactNode;
   head?: React.ReactNode;
+  /** Entries before filtering. */
   total: number;
+  /** Entries after filtering. */
+  shown: number;
   query: string;
   onQuery: (value: string) => void;
   addForm?: React.ReactNode;
   loading?: boolean;
   empty: { icon?: React.ReactNode; title: string; description?: string };
+  noMatches: { title: string; hint?: string };
   children?: React.ReactNode;
-}> = ({ meta, head, total, query, onQuery, addForm, loading, empty, children }) => (
+}> = ({ meta, head, total, shown, query, onQuery, addForm, loading, empty, noMatches, children }) => (
   <Panel>
     <PanelHead>
       {head}
@@ -44,6 +48,13 @@ export const ListTab: React.FC<{
           <EmptyMedia icon={empty.icon} />
           <EmptyTitle>{empty.title}</EmptyTitle>
           {empty.description ? <EmptyDescription>{empty.description}</EmptyDescription> : null}
+        </EmptyHeader>
+      </Empty>
+    ) : shown === 0 ? (
+      <Empty>
+        <EmptyHeader>
+          <EmptyTitle>{noMatches.title}</EmptyTitle>
+          {noMatches.hint ? <EmptyDescription>{noMatches.hint}</EmptyDescription> : null}
         </EmptyHeader>
       </Empty>
     ) : (
