@@ -4,6 +4,7 @@ import { useKubek } from "../../../ui/kubek";
 import { Panel, PanelBody, PanelHead } from "../../../ui/panel";
 import { Plate } from "../../../ui/plate";
 import { Switch } from "../../../ui/switch";
+import { GamemodeSelect } from "../../GamemodeSelect";
 import { useToast } from "../../../ui/toast";
 import type { SectionProps } from "../types";
 
@@ -17,6 +18,20 @@ export const Access: React.FC<SectionProps> = ({ serverId, uuid, player, onChang
   const permissionMutation = query.useMutation({
     mutationFn: (body: { perm: string; value: boolean }) =>
       http.post(`ext/com.kubek.players/servers/${serverId}/players/${uuid}/permissions`, body),
+    onSuccess: () => {
+      onRefetch();
+      onChanged();
+    },
+    onError: (error: unknown) => {
+      void getMutationErrorMessage(error).then((message) =>
+        notify({ type: "error", title: message }),
+      );
+    },
+  });
+
+  const gamemodeMutation = query.useMutation({
+    mutationFn: (gamemode: string) =>
+      http.post(`ext/com.kubek.players/servers/${serverId}/players/${uuid}/gamemode`, { gamemode }),
     onSuccess: () => {
       onRefetch();
       onChanged();
@@ -62,6 +77,17 @@ export const Access: React.FC<SectionProps> = ({ serverId, uuid, player, onChang
       </PanelHead>
       <PanelBody>
         <div className="k-access">
+          <div className="k-access-row">
+            <div className="k-access-text">
+              <div className="k-access-label">Game mode</div>
+              <div className="k-access-hint">Applied immediately while the player is online.</div>
+            </div>
+            <GamemodeSelect
+              value={player.gamemode || "Survival"}
+              disabled={!player.summary.isOnline || gamemodeMutation.isPending}
+              onChange={(mode) => gamemodeMutation.mutate(mode)}
+            />
+          </div>
           {rows.map((row) => (
             <div key={row.perm} className="k-access-row">
               <div className="k-access-text">

@@ -2,7 +2,7 @@
   "manifestVersion": 1,
   "id": "com.kubek.players",
   "name": "Players Management",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "Comprehensive Aternos-style player management: Access lists, live telemetry, vitals, inventory inspector, teleportation, stats, and NBT data purge.",
   "author": {
     "name": "Kubek Community",

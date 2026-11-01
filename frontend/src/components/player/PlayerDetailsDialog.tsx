@@ -1,6 +1,7 @@
 import React from "react";
 import type { PlayerDetails } from "../../types/player";
 import { Dialog, DialogBody, DialogFooter, DialogHeader } from "../../ui/dialog";
+import { TeleportModal } from "../modals/TeleportModal";
 import { useKubek } from "../../ui/kubek";
 import { PlayerHead } from "../../ui/player-head";
 import { useToast } from "../../ui/toast";
@@ -22,6 +23,8 @@ export const PlayerDetailsDialog: React.FC<{
   const { http, query, hooks, icons = {}, ui } = kubek;
   const { t } = hooks.useTranslation();
   const { notify } = useToast();
+
+  const [teleportOpen, setTeleportOpen] = React.useState(false);
 
   const detailsQuery = query.useQuery({
     queryKey: ["ext", "players", serverId, "player", uuid],
@@ -139,6 +142,7 @@ export const PlayerDetailsDialog: React.FC<{
                 player={player}
                 onChanged={onChanged}
                 onRefetch={() => detailsQuery.refetch()}
+                onTeleport={() => setTeleportOpen(true)}
               />
               <LastDeath
                 serverId={serverId}
@@ -176,6 +180,21 @@ export const PlayerDetailsDialog: React.FC<{
           {t("ext.players.close") || "Close"}
         </ui.Button>
       </DialogFooter>
+
+      {teleportOpen ? (
+        <TeleportModal
+          serverId={serverId}
+          uuid={uuid}
+          username={name}
+          isOnline={online}
+          currentLocation={details?.location}
+          onClose={() => setTeleportOpen(false)}
+          onSuccess={() => {
+            void detailsQuery.refetch();
+            onChanged();
+          }}
+        />
+      ) : null}
     </Dialog>
   );
 };
