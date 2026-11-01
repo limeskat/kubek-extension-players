@@ -46,3 +46,13 @@ test("toast item reports its variant and role", () => {
   expect(error).toContain('role="alert"');
   expect(error).toContain("Reason");
 });
+
+test("open dialog renders its surface in the tree", () => {
+  const html = renderToStaticMarkup(
+    <Dialog open onClose={() => {}} label="Player details">
+      <span>inside</span>
+    </Dialog>,
+  );
+  expect(html).toContain('role="dialog"');
+  expect(html).toContain("inside");
+});

@@ -90,17 +90,13 @@
 
 .k-strip {
   display: grid;
-  grid-template-columns: repeat(1, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1px;
   overflow: hidden;
   border: 1px solid var(--border);
   border-radius: 12px;
   background: var(--border);
   box-shadow: var(--elevation-card, 0 1px 2px rgb(0 0 0 / 0.06));
-}
-
-@media (min-width: 640px) {
-  .k-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (min-width: 1024px) {
@@ -1195,3 +1191,14 @@
 .k-select-full { width: 100%; }
 
 .k-coord-input { width: 100%; text-align: center; font-variant-numeric: tabular-nums; }
+
+/* Phones: wrap the tab strip instead of hiding tabs behind a scroll */
+@media (max-width: 640px) {
+  .k-tabs {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  .k-tab {
+    flex: 1 1 auto;
+  }
+}
