@@ -1390,19 +1390,7 @@ var Inventory = ({ player }) => {
   };
   const inventory = player.inventory;
   const armor = inventory?.armor;
-  return /* @__PURE__ */ react_default.createElement(Panel, { className: cx(view === "classic" && "k-inv--classic") }, /* @__PURE__ */ react_default.createElement(PanelHead, null, /* @__PURE__ */ react_default.createElement(Plate, { tone: "blue", size: "sm" }, /* @__PURE__ */ react_default.createElement(Box, null)), /* @__PURE__ */ react_default.createElement("span", { className: "k-section-title" }, t("ext.players.inventory") || "Inventory"), /* @__PURE__ */ react_default.createElement("div", { className: "k-section-switches" }, /* @__PURE__ */ react_default.createElement(
-    TabBar,
-    {
-      compact: true,
-      items: [
-        { id: "native", label: t("ext.players.inventory_native") || "Native" },
-        { id: "classic", label: t("ext.players.inventory_classic") || "Classic" }
-      ],
-      value: view,
-      onChange: changeView,
-      label: "Inventory style"
-    }
-  ))), /* @__PURE__ */ react_default.createElement(PanelBody, null, !inventory ? /* @__PURE__ */ react_default.createElement(Empty, null, /* @__PURE__ */ react_default.createElement(EmptyHeader, null, /* @__PURE__ */ react_default.createElement(EmptyTitle, null, "No inventory data"), /* @__PURE__ */ react_default.createElement(EmptyDescription, null, "Inventory appears once the player has a data file on disk."))) : /* @__PURE__ */ react_default.createElement("div", { className: "k-inv" }, inventory.enderChest ? /* @__PURE__ */ react_default.createElement(
+  return /* @__PURE__ */ react_default.createElement(Panel, { className: cx(view === "classic" && "k-inv--classic") }, /* @__PURE__ */ react_default.createElement(PanelHead, null, /* @__PURE__ */ react_default.createElement(Plate, { tone: "blue", size: "sm" }, /* @__PURE__ */ react_default.createElement(Box, null)), /* @__PURE__ */ react_default.createElement("span", { className: "k-section-title" }, t("ext.players.inventory") || "Inventory"), /* @__PURE__ */ react_default.createElement("div", { className: "k-section-switches" }, inventory?.enderChest ? /* @__PURE__ */ react_default.createElement(
     TabBar,
     {
       compact: true,
@@ -1414,7 +1402,19 @@ var Inventory = ({ player }) => {
       onChange: (id) => setTab(id),
       label: "Inventory page"
     }
-  ) : null, /* @__PURE__ */ react_default.createElement("div", { className: "k-inv-canvas" }, /* @__PURE__ */ react_default.createElement("div", { className: "k-inv-scroll" }, tab === "main" ? /* @__PURE__ */ react_default.createElement(react_default.Fragment, null, /* @__PURE__ */ react_default.createElement("div", { className: "k-inv-layout" }, /* @__PURE__ */ react_default.createElement("div", { className: "k-inv-armor-col" }, /* @__PURE__ */ react_default.createElement(ItemSlot, { item: armor?.helmet, placeholder: /* @__PURE__ */ react_default.createElement(SlotHelmetIcon, { className: "k-slot-icon" }) }), /* @__PURE__ */ react_default.createElement(ItemSlot, { item: armor?.chestplate, placeholder: /* @__PURE__ */ react_default.createElement(SlotChestplateIcon, { className: "k-slot-icon" }) }), /* @__PURE__ */ react_default.createElement(ItemSlot, { item: armor?.leggings, placeholder: /* @__PURE__ */ react_default.createElement(SlotLeggingsIcon, { className: "k-slot-icon" }) }), /* @__PURE__ */ react_default.createElement(ItemSlot, { item: armor?.boots, placeholder: /* @__PURE__ */ react_default.createElement(SlotBootsIcon, { className: "k-slot-icon" }) })), /* @__PURE__ */ react_default.createElement("div", { className: "k-inv-grid" }, slots(inventory.main).map((item, index) => /* @__PURE__ */ react_default.createElement(ItemSlot, { key: itemKey(inventory.main, index), item })))), /* @__PURE__ */ react_default.createElement("div", { className: "k-inv-bar" }, /* @__PURE__ */ react_default.createElement(ItemSlot, { item: inventory.offhand, placeholder: /* @__PURE__ */ react_default.createElement(SlotShieldIcon, { className: "k-slot-icon" }) }), /* @__PURE__ */ react_default.createElement("div", { className: "k-inv-grid" }, Array.from({ length: 9 }, (_, index) => /* @__PURE__ */ react_default.createElement(ItemSlot, { key: itemKey(inventory.hotbar, index), item: inventory.hotbar?.[index] ?? null }))))) : /* @__PURE__ */ react_default.createElement("div", { className: "k-inv-grid" }, slots(inventory.enderChest).map((item, index) => /* @__PURE__ */ react_default.createElement(ItemSlot, { key: itemKey(inventory.enderChest, index), item }))))))));
+  ) : null, /* @__PURE__ */ react_default.createElement(
+    TabBar,
+    {
+      compact: true,
+      items: [
+        { id: "native", label: t("ext.players.inventory_native") || "Native" },
+        { id: "classic", label: t("ext.players.inventory_classic") || "Classic" }
+      ],
+      value: view,
+      onChange: changeView,
+      label: "Inventory style"
+    }
+  ))), /* @__PURE__ */ react_default.createElement(PanelBody, null, !inventory ? /* @__PURE__ */ react_default.createElement(Empty, null, /* @__PURE__ */ react_default.createElement(EmptyHeader, null, /* @__PURE__ */ react_default.createElement(EmptyTitle, null, "No inventory data"), /* @__PURE__ */ react_default.createElement(EmptyDescription, null, "Inventory appears once the player has a data file on disk."))) : /* @__PURE__ */ react_default.createElement("div", { className: "k-inv" }, /* @__PURE__ */ react_default.createElement("div", { className: "k-inv-canvas" }, /* @__PURE__ */ react_default.createElement("div", { className: "k-inv-scroll" }, tab === "main" ? /* @__PURE__ */ react_default.createElement(react_default.Fragment, null, /* @__PURE__ */ react_default.createElement("div", { className: "k-inv-layout" }, /* @__PURE__ */ react_default.createElement("div", { className: "k-inv-armor-col" }, /* @__PURE__ */ react_default.createElement(ItemSlot, { item: armor?.helmet, placeholder: /* @__PURE__ */ react_default.createElement(SlotHelmetIcon, { className: "k-slot-icon" }) }), /* @__PURE__ */ react_default.createElement(ItemSlot, { item: armor?.chestplate, placeholder: /* @__PURE__ */ react_default.createElement(SlotChestplateIcon, { className: "k-slot-icon" }) }), /* @__PURE__ */ react_default.createElement(ItemSlot, { item: armor?.leggings, placeholder: /* @__PURE__ */ react_default.createElement(SlotLeggingsIcon, { className: "k-slot-icon" }) }), /* @__PURE__ */ react_default.createElement(ItemSlot, { item: armor?.boots, placeholder: /* @__PURE__ */ react_default.createElement(SlotBootsIcon, { className: "k-slot-icon" }) })), /* @__PURE__ */ react_default.createElement("div", { className: "k-inv-grid" }, slots(inventory.main).map((item, index) => /* @__PURE__ */ react_default.createElement(ItemSlot, { key: itemKey(inventory.main, index), item })))), /* @__PURE__ */ react_default.createElement("div", { className: "k-inv-bar" }, /* @__PURE__ */ react_default.createElement(ItemSlot, { item: inventory.offhand, placeholder: /* @__PURE__ */ react_default.createElement(SlotShieldIcon, { className: "k-slot-icon" }) }), /* @__PURE__ */ react_default.createElement("div", { className: "k-inv-grid" }, Array.from({ length: 9 }, (_, index) => /* @__PURE__ */ react_default.createElement(ItemSlot, { key: itemKey(inventory.hotbar, index), item: inventory.hotbar?.[index] ?? null }))))) : /* @__PURE__ */ react_default.createElement("div", { className: "k-inv-grid" }, slots(inventory.enderChest).map((item, index) => /* @__PURE__ */ react_default.createElement(ItemSlot, { key: itemKey(inventory.enderChest, index), item }))))))));
 };
 
 // frontend/src/components/player/sections/LastDeath.tsx
@@ -3138,14 +3138,23 @@ if (typeof document !== "undefined") {
 
 /* Inventory ---------------------------------------------------------- */
 
-.k-section-switches { margin-left: auto; }
+.k-section-switches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-left: auto;
+}
 
 .k-inv { display: grid; gap: 12px; min-width: 0; }
 
 .k-inv-canvas { min-width: 0; }
 
 .k-inv-scroll {
-  --k-slot-size: 52px;
+  /* Width sets the ceiling; height decides how much of it fits without scrolling. */
+  --k-slot-width: 52px;
+  /* Fits the whole inventory in the dialog body: ~39px at 768, 52px at 900. */
+  --k-slot-height: clamp(24px, calc(100vh * 0.113 - 50px), 52px);
+  --k-slot-size: min(var(--k-slot-width), var(--k-slot-height));
   display: flex;
   width: fit-content;
   max-width: 100%;
@@ -3234,15 +3243,15 @@ if (typeof document !== "undefined") {
 }
 
 @media (max-width: 1200px) {
-  .k-inv-scroll { --k-slot-size: 50px; }
+  .k-inv-scroll { --k-slot-width: 50px; }
 }
 
 @media (max-width: 900px) {
-  .k-inv-scroll { --k-slot-size: 40px; }
+  .k-inv-scroll { --k-slot-width: 40px; }
 }
 
 @media (max-width: 520px) {
-  .k-inv-scroll { --k-slot-size: 24px; }
+  .k-inv-scroll { --k-slot-width: 24px; }
 
   /* The classic frame adds padding and a bevel, so it needs one step down to fit */
   .k-inv--classic .k-inv-scroll {
@@ -3454,7 +3463,7 @@ if (typeof document !== "undefined") {
 /* Phones: the classic frame needs smaller slots and tighter gaps to fit without scrolling */
 @media (max-width: 520px) {
   .k-inv--classic .k-inv-scroll {
-    --k-slot-size: 24px;
+    --k-slot-width: 24px;
     padding: 3px;
     border-width: 2px;
   }
