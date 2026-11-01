@@ -184,6 +184,14 @@ try {
             const slot = document.querySelector(".k-slot");
             return slot ? Math.round(slot.getBoundingClientRect().width) : null;
           })(),
+          inventoryVisible: (() => {
+            const body = document.querySelector(".k-dialog-body");
+            const inventory = document.querySelector(".k-inv-scroll");
+            if (!body || !inventory) return null;
+            const bodyBox = body.getBoundingClientRect();
+            const invBox = inventory.getBoundingClientRect();
+            return invBox.bottom <= bodyBox.top + body.clientHeight + 1;
+          })(),
           slotVar: (() => {
             const scroll = document.querySelector(".k-inv-scroll");
             return scroll ? getComputedStyle(scroll).getPropertyValue("--k-slot-size").trim() : null;

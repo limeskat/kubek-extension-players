@@ -60,6 +60,18 @@ export const Inventory: React.FC<SectionProps> = ({ player }) => {
         </Plate>
         <span className="k-section-title">{t("ext.players.inventory") || "Inventory"}</span>
         <div className="k-section-switches">
+          {inventory?.enderChest ? (
+            <TabBar
+              compact
+              items={[
+                { id: "main", label: t("ext.players.inventory") || "Inventory" },
+                { id: "ender", label: t("ext.players.ender_chest") || "Ender chest" },
+              ]}
+              value={tab}
+              onChange={(id) => setTab(id as InventoryTab)}
+              label="Inventory page"
+            />
+          ) : null}
           <TabBar
             compact
             items={[
@@ -85,19 +97,6 @@ export const Inventory: React.FC<SectionProps> = ({ player }) => {
           </Empty>
         ) : (
           <div className="k-inv">
-            {inventory.enderChest ? (
-              <TabBar
-                compact
-                items={[
-                  { id: "main", label: t("ext.players.inventory") || "Inventory" },
-                  { id: "ender", label: t("ext.players.ender_chest") || "Ender chest" },
-                ]}
-                value={tab}
-                onChange={(id) => setTab(id as InventoryTab)}
-                label="Inventory page"
-              />
-            ) : null}
-
             <div className="k-inv-canvas">
               <div className="k-inv-scroll">
                 {tab === "main" ? (

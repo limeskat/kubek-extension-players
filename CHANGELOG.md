@@ -4,6 +4,17 @@ All notable changes to the Kubek Players Management extension are documented her
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project uses [Semantic Versioning](https://semver.org/).
 
+## [1.5.2] - 2026-11-02
+
+### Changed
+
+- The Inventory / Ender chest switch moved into the inventory panel header, next to the
+  Native / Classic switch, freeing the extra row above the slots.
+- Slot size now also respects viewport height:
+  `min(width cap, clamp(24px, 100vh * 0.113 - 50px, 52px))`. At 1440x900 slots are 52px and the
+  whole inventory including the hotbar fits without scrolling; at 1024x768 they shrink to 37px
+  instead of 52px so the hotbar stays above the fold; phones keep the 24px floor.
+
 ## [1.5.1] - 2026-11-02
 
 ### Changed
