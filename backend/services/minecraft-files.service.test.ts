@@ -163,15 +163,15 @@ describe("MinecraftFilesService removeUserCacheEntry", () => {
     expect(files.getUserCache("server-1")).toEqual([{ uuid: UUID2, name: "bob" }]);
   });
 
-  test("removes by name, case-insensitively, when the uuid differs", () => {
+  test("keeps an entry that shares the name but has another uuid", () => {
     write("usercache.json", JSON.stringify(cache));
-    expect(files.removeUserCacheEntry("server-1", "00000000-0000-0000-0000-000000000000", "ALICE")).toBe(1);
-    expect(files.getUserCache("server-1").map((entry) => entry.name)).toEqual(["bob"]);
+    expect(files.removeUserCacheEntry("server-1", "00000000-0000-0000-0000-000000000000")).toBe(0);
+    expect(files.getUserCache("server-1").map((entry) => entry.name)).toEqual(["alice", "bob"]);
   });
 
   test("leaves the file untouched when nothing matches", () => {
     write("usercache.json", JSON.stringify(cache));
-    expect(files.removeUserCacheEntry("server-1", "missing-uuid", "nobody")).toBe(0);
+    expect(files.removeUserCacheEntry("server-1", "missing-uuid")).toBe(0);
     expect(files.getUserCache("server-1")).toHaveLength(2);
   });
 
@@ -179,5 +179,40 @@ describe("MinecraftFilesService removeUserCacheEntry", () => {
     expect(files.removeUserCacheEntry("server-1", UUID)).toBe(0);
     write("usercache.json", "{not json");
     expect(files.removeUserCacheEntry("server-1", UUID)).toBe(0);
+  });
+});
+
+describe("MinecraftFilesService findAllPlayerFiles", () => {
+  test("collects every layout in every world, including .dat_old", () => {
+    write("world_2/level.dat");
+    write(`world_2/players/data/${UUID}.dat`);
+    write(`world_2/players/data/${UUID}.dat_old`);
+    write(`world_2/players/stats/${UUID}.json`);
+    write(`world_2/players/advancements/${UUID}.json`);
+
+    write("world_old/level.dat");
+    write(`world_old/playerdata/${UUID}.dat`);
+    write(`world_old/stats/${UUID}.json`);
+
+    const found = files
+      .findAllPlayerFiles("server-1", UUID)
+      .map((file) => path.relative(serverDir, file).replace(/\\/g, "/"))
+      .sort();
+
+    expect(found).toEqual(
+      [
+        `world_old/playerdata/${UUID}.dat`,
+        `world_old/stats/${UUID}.json`,
+        `world_2/players/advancements/${UUID}.json`,
+        `world_2/players/data/${UUID}.dat`,
+        `world_2/players/data/${UUID}.dat_old`,
+        `world_2/players/stats/${UUID}.json`,
+      ].sort(),
+    );
+  });
+
+  test("returns an empty list for an unknown player", () => {
+    write("world_2/level.dat");
+    expect(files.findAllPlayerFiles("server-1", "00000000-0000-0000-0000-000000000000")).toEqual([]);
   });
 });

@@ -4,6 +4,16 @@ All notable changes to the Kubek Players Management extension are documented her
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project uses [Semantic Versioning](https://semver.org/).
 
+## [1.2.1] - 2026-11-01
+
+### Fixed
+
+- Deleting a player no longer removes `usercache.json` entries of other accounts that share
+  the same name with a different UUID. Cache entries are matched by UUID only.
+- Deleting a player now removes their files from **every** world and both layouts
+  (`players/data` and `playerdata`, stats, advancements, `.dat_old`), instead of only the most
+  recently written world. A leftover copy no longer survives in another world.
+
 ## [1.2.0] - 2026-11-01
 
 ### Added

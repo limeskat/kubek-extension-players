@@ -10,6 +10,7 @@ import { createPlayersRoutes } from "./players.controller";
 
 const UUID = "2f58b851-dfbe-32e5-8047-eefa5a83e07a";
 const USERNAME = "pibaspam";
+const UUID2 = "2dc734f0-9def-3f60-a162-490dcf2b115d";
 
 let root: string;
 let serverDir: string;
@@ -196,11 +197,17 @@ describe("DELETE /servers/:serverId/players/:uuid", () => {
       fs.writeFileSync(file, "x");
     }
     fs.writeFileSync(`${dat}_old`, "old");
-    return { dat, stats, adv };
+
+    const otherDat = path.join(serverDir, "world_other", "players", "data", `${UUID}.dat`);
+    fs.mkdirSync(path.dirname(otherDat), { recursive: true });
+    fs.writeFileSync(otherDat, "x");
+    fs.writeFileSync(path.join(serverDir, "world_other", "level.dat"), "");
+
+    return { dat, stats, adv, otherDat };
   }
 
   test("removes data, backup, stats, advancements and the usercache entry", async () => {
-    const { dat, stats, adv } = seedFiles();
+    const { dat, stats, adv, otherDat } = seedFiles();
 
     const result = await callDelete();
 
@@ -211,6 +218,7 @@ describe("DELETE /servers/:serverId/players/:uuid", () => {
     expect(fs.existsSync(`${dat}_old`)).toBe(false);
     expect(fs.existsSync(stats)).toBe(false);
     expect(fs.existsSync(adv)).toBe(false);
+    expect(fs.existsSync(otherDat)).toBe(false);
     expect(files.getUserCache("srv")).toEqual([]);
   });
 
@@ -223,6 +231,22 @@ describe("DELETE /servers/:serverId/players/:uuid", () => {
     expect(result.status).toBe(409);
     expect(fs.existsSync(dat)).toBe(true);
     expect(files.getUserCache("srv")).toHaveLength(1);
+  });
+
+  test("keeps a cache entry that shares the name but has another uuid", async () => {
+    fs.writeFileSync(
+      path.join(serverDir, "usercache.json"),
+      JSON.stringify([
+        { uuid: UUID, name: USERNAME },
+        { uuid: UUID2, name: USERNAME },
+      ]),
+    );
+
+    const result = await callDelete();
+
+    expect(result.status).toBe(200);
+    expect(result.body.removedFromCache).toBe(1);
+    expect(files.getUserCache("srv").map((entry) => entry.uuid)).toEqual([UUID2]);
   });
 
   test("returns 404 when the player has no files and no cache entry", async () => {
