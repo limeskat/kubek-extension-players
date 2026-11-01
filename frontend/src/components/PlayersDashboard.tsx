@@ -7,6 +7,7 @@ import { Stat, StatStrip } from "../ui/stat-strip";
 import { TabBar, type TabItem } from "../ui/tabs";
 import { ToastProvider } from "../ui/toast";
 import { AllPlayersTab } from "./tabs/AllPlayersTab";
+import { PlayerDetailsDialog } from "./player/PlayerDetailsDialog";
 import { BansTab } from "./tabs/BansTab";
 import { OnlineTab } from "./tabs/OnlineTab";
 import { OpsTab } from "./tabs/OpsTab";
@@ -20,6 +21,7 @@ const PlayersPageInner: React.FC<{ kubek: any }> = ({ kubek }) => {
 
   const [selectedServerId, setSelectedServerId] = React.useState<string>("");
   const [activeTab, setActiveTab] = React.useState<TabId>("online");
+  const [selectedPlayerUuid, setSelectedPlayerUuid] = React.useState<string | null>(null);
 
   // Fetch servers list
   const serversQuery = query.useQuery({
@@ -203,12 +205,14 @@ const PlayersPageInner: React.FC<{ kubek: any }> = ({ kubek }) => {
               players={onlinePlayers}
               isLoading={onlineQuery.isLoading}
               emptyIcon={<UsersIcon />}
+              onSelectPlayer={setSelectedPlayerUuid}
             />
           ) : activeTab === "all" ? (
             <AllPlayersTab
               players={allPlayers}
               isLoading={directoryQuery.isLoading}
               emptyIcon={<UsersIcon />}
+              onSelectPlayer={setSelectedPlayerUuid}
             />
           ) : activeTab === "whitelist" ? (
             <WhitelistTab serverId={selectedServerId} onChanged={refreshLists} />
@@ -219,6 +223,18 @@ const PlayersPageInner: React.FC<{ kubek: any }> = ({ kubek }) => {
           )}
         </>
       )}
+
+      {selectedPlayerUuid && selectedServerId ? (
+        <PlayerDetailsDialog
+          serverId={selectedServerId}
+          uuid={selectedPlayerUuid}
+          onClose={() => setSelectedPlayerUuid(null)}
+          onChanged={() => {
+            refreshLists();
+            void onlineQuery.refetch();
+          }}
+        />
+      ) : null}
     </div>
   );
 };
