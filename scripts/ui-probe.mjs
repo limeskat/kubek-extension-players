@@ -234,6 +234,19 @@ try {
       result.focusTrap = { escapedAt: focusEscape };
       await page.evaluate(() => document.querySelector(".k-dialog")?.scrollTo?.(0, 0));
 
+      if (args.includes("--danger")) {
+        await page.evaluate(() => {
+          const body = document.querySelector(".k-dialog-body");
+          if (body) body.scrollTop = body.scrollHeight;
+        });
+        await page.waitForTimeout(400);
+        result.danger = await page.evaluate(() => {
+          const buttons = Array.from(document.querySelectorAll(".k-danger button"));
+          return buttons.map((button) => ({ text: button.textContent.trim(), disabled: button.disabled }));
+        });
+        await page.screenshot({ path: path.join(outDir, "danger.png"), fullPage: false });
+      }
+
       if (teleport) {
         const button = page.getByRole("button", { name: /Teleport|Save position/i }).first();
         if (await button.count()) {
