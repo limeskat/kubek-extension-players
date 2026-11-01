@@ -78,7 +78,15 @@ export const Dialog: React.FC<DialogCommon & { open: boolean }> = ({
 
   if (!open) return null;
 
-  return React.createPortal(
+  // The bundle shim exposes the panel's React object as the default export, where
+  // createPortal lives at runtime even though the named type is not exported.
+  const createPortal = (
+    React as unknown as {
+      createPortal: (children: React.ReactNode, container: Element) => React.ReactPortal;
+    }
+  ).createPortal;
+
+  return createPortal(
     <DialogSurface onClose={onClose} label={label} width={width} className={className}>
       {children}
     </DialogSurface>,
