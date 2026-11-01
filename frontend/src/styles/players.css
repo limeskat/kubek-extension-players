@@ -251,3 +251,272 @@
     font-size: 9px !important;
   }
 }
+
+/* =====================================================================
+   Native Kubek surface layer.
+   Everything below reads the panel's design tokens from :root / .dark.
+   Legacy .mc-* rules above are removed once the old modal is replaced.
+   ===================================================================== */
+
+.k-page {
+  display: grid;
+  gap: 24px;
+  min-width: 0;
+}
+
+/* Panel ------------------------------------------------------------- */
+
+.k-panel {
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--card);
+  color: var(--card-foreground);
+  box-shadow: var(--elevation-card, 0 1px 2px rgb(0 0 0 / 0.06));
+}
+
+.k-panel-head {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.k-panel-meta {
+  font-size: 12px;
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+
+.k-panel-body {
+  padding: 16px;
+}
+
+.k-panel-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+
+/* Tones ------------------------------------------------------------- */
+
+.k-tone-green { --k-tone: var(--c-green); }
+.k-tone-blue { --k-tone: var(--c-blue); }
+.k-tone-purple { --k-tone: var(--c-purple); }
+.k-tone-amber { --k-tone: var(--c-amber); }
+.k-tone-pink { --k-tone: var(--c-pink); }
+.k-tone-cyan { --k-tone: var(--c-cyan); }
+.k-tone-red { --k-tone: var(--c-red); }
+.k-tone-orange { --k-tone: var(--c-orange); }
+.k-tone-gray { --k-tone: var(--c-gray); }
+.k-tone-primary { --k-tone: var(--primary); }
+
+/* Plate ------------------------------------------------------------- */
+
+.k-plate {
+  display: inline-grid;
+  flex-shrink: 0;
+  place-items: center;
+  background: color-mix(in oklch, var(--k-tone) 14%, transparent);
+  color: var(--k-tone);
+}
+
+.k-plate svg {
+  width: 16px;
+  height: 16px;
+}
+
+.k-plate-sm { width: 26px; height: 26px; border-radius: 7px; }
+.k-plate-sm svg { width: 14px; height: 14px; }
+.k-plate-md { width: 30px; height: 30px; border-radius: 8px; }
+.k-plate-lg { width: 36px; height: 36px; border-radius: 10px; }
+.k-plate-lg svg { width: 18px; height: 18px; }
+.k-plate-xl { width: 44px; height: 44px; border-radius: 10px; }
+.k-plate-xl svg { width: 20px; height: 20px; }
+
+/* Stat strip -------------------------------------------------------- */
+
+.k-strip {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--border);
+  box-shadow: var(--elevation-card, 0 1px 2px rgb(0 0 0 / 0.06));
+}
+
+@media (min-width: 640px) {
+  .k-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (min-width: 1024px) {
+  .k-strip { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+.k-stat {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 16px;
+  border: 0;
+  background: var(--card);
+  color: var(--card-foreground);
+  font: inherit;
+  text-align: left;
+}
+
+.k-stat-clickable {
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+
+.k-stat-clickable:hover { background: var(--hover); }
+
+.k-stat-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--muted-foreground);
+}
+
+.k-stat-value {
+  display: block;
+  margin-top: 4px;
+  font-size: 26px;
+  line-height: 1.15;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.k-stat-unit {
+  margin-left: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: normal;
+  color: var(--muted-foreground);
+}
+
+/* Page header ------------------------------------------------------- */
+
+.k-page-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.k-page-header-text { min-width: 0; }
+
+.k-page-header h1 {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.25;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--foreground);
+}
+
+.k-page-header p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--muted-foreground);
+}
+
+.k-page-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Empty ------------------------------------------------------------- */
+
+.k-empty {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 48px 16px;
+  text-align: center;
+}
+
+.k-empty-header {
+  display: flex;
+  max-width: 384px;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.k-empty-media {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  background: var(--secondary);
+  color: var(--muted-foreground);
+}
+
+.k-empty-media svg { width: 20px; height: 20px; }
+
+.k-empty-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.k-empty-description {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--muted-foreground);
+}
+
+.k-empty-content {
+  display: flex;
+  max-width: 384px;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Key / value ------------------------------------------------------- */
+
+.k-kv {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px 16px;
+  margin: 0;
+  font-size: 13px;
+}
+
+.k-kv dt { color: var(--muted-foreground); }
+
+.k-kv dd {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  text-align: right;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--foreground);
+}
