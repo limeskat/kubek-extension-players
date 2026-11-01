@@ -150,3 +150,34 @@ describe("MinecraftFilesService online players from log", () => {
     expect([...files.getOnlinePlayersFromLog("server-1")]).toEqual([]);
   });
 });
+
+describe("MinecraftFilesService removeUserCacheEntry", () => {
+  const cache = [
+    { uuid: UUID, name: "alice", expiresOn: "2026-01-01" },
+    { uuid: UUID2, name: "bob" },
+  ];
+
+  test("removes the entry by uuid and keeps the others", () => {
+    write("usercache.json", JSON.stringify(cache));
+    expect(files.removeUserCacheEntry("server-1", UUID)).toBe(1);
+    expect(files.getUserCache("server-1")).toEqual([{ uuid: UUID2, name: "bob" }]);
+  });
+
+  test("removes by name, case-insensitively, when the uuid differs", () => {
+    write("usercache.json", JSON.stringify(cache));
+    expect(files.removeUserCacheEntry("server-1", "00000000-0000-0000-0000-000000000000", "ALICE")).toBe(1);
+    expect(files.getUserCache("server-1").map((entry) => entry.name)).toEqual(["bob"]);
+  });
+
+  test("leaves the file untouched when nothing matches", () => {
+    write("usercache.json", JSON.stringify(cache));
+    expect(files.removeUserCacheEntry("server-1", "missing-uuid", "nobody")).toBe(0);
+    expect(files.getUserCache("server-1")).toHaveLength(2);
+  });
+
+  test("tolerates a missing or malformed cache", () => {
+    expect(files.removeUserCacheEntry("server-1", UUID)).toBe(0);
+    write("usercache.json", "{not json");
+    expect(files.removeUserCacheEntry("server-1", UUID)).toBe(0);
+  });
+});

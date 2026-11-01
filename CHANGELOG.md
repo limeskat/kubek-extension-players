@@ -4,6 +4,16 @@ All notable changes to the Kubek Players Management extension are documented her
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project uses [Semantic Versioning](https://semver.org/).
 
+## [1.2.0] - 2026-11-01
+
+### Added
+
+- **Delete player**: removes the player's `.dat` and its `.dat_old` backup, statistics and
+  advancements files, and their `usercache.json` entry, so the player disappears from the panel
+  and rejoins as a brand-new player. Whitelist, OP and ban entries are left alone. Refused while
+  the player is online, and confirmed in its own dialog.
+- `DELETE /servers/:serverId/players/:uuid` (permission `ext.players.purge`).
+
 ## [1.1.0] - 2026-11-01
 
 ### Changed

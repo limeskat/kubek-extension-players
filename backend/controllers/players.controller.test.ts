@@ -147,3 +147,91 @@ describe("POST /teleport", () => {
     expect(result.status).toBe(404);
   });
 });
+
+describe("DELETE /servers/:serverId/players/:uuid", () => {
+  function deleteHandler() {
+    const routes = createPlayersRoutes(
+      files,
+      nbt,
+      new StatsParserService(),
+      executor,
+      new SkinAvatarService(() => "mc-heads"),
+      tracker,
+    );
+    return routes.find(
+      (r) => r.method === "DELETE" && r.path === "/servers/:serverId/players/:uuid",
+    )!;
+  }
+
+  async function callDelete(uuid = UUID): Promise<{ status: number; body: any }> {
+    let status = 200;
+    let payload: any;
+    const res: any = {
+      json: (data: any) => {
+        payload = data;
+      },
+      status: (code: number) => {
+        status = code;
+        return res;
+      },
+    };
+    await deleteHandler().handler(
+      {
+        params: { serverId: "srv", uuid },
+        body: {},
+        query: {},
+        user: { id: "u", username: "admin", isAdmin: true, permissions: [] },
+      } as any,
+      res,
+    );
+    return { status, body: payload };
+  }
+
+  function seedFiles() {
+    const dat = path.join(serverDir, "world_2", "players", "data", `${UUID}.dat`);
+    const stats = path.join(serverDir, "world_2", "players", "stats", `${UUID}.json`);
+    const adv = path.join(serverDir, "world_2", "players", "advancements", `${UUID}.json`);
+    for (const file of [dat, stats, adv]) {
+      fs.mkdirSync(path.dirname(file), { recursive: true });
+      fs.writeFileSync(file, "x");
+    }
+    fs.writeFileSync(`${dat}_old`, "old");
+    return { dat, stats, adv };
+  }
+
+  test("removes data, backup, stats, advancements and the usercache entry", async () => {
+    const { dat, stats, adv } = seedFiles();
+
+    const result = await callDelete();
+
+    expect(result.status).toBe(200);
+    expect(result.body.success).toBe(true);
+    expect(result.body.removedFromCache).toBe(1);
+    expect(fs.existsSync(dat)).toBe(false);
+    expect(fs.existsSync(`${dat}_old`)).toBe(false);
+    expect(fs.existsSync(stats)).toBe(false);
+    expect(fs.existsSync(adv)).toBe(false);
+    expect(files.getUserCache("srv")).toEqual([]);
+  });
+
+  test("refuses while the player is online and keeps every file", async () => {
+    const { dat } = seedFiles();
+    tracker.set("srv", new Set([USERNAME]));
+
+    const result = await callDelete();
+
+    expect(result.status).toBe(409);
+    expect(fs.existsSync(dat)).toBe(true);
+    expect(files.getUserCache("srv")).toHaveLength(1);
+  });
+
+  test("returns 404 when the player has no files and no cache entry", async () => {
+    // beforeEach seeds a data file for the teleport tests
+    fs.rmSync(files.findPlayerDataPath("srv", UUID)!, { force: true });
+    fs.writeFileSync(path.join(serverDir, "usercache.json"), "[]");
+
+    const result = await callDelete();
+
+    expect(result.status).toBe(404);
+  });
+});

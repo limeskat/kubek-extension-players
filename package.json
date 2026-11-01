@@ -1,6 +1,6 @@
 {
   "name": "com.kubek.players",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Player management extension for Kubek with a native panel UI",
   "private": true,
   "type": "module",

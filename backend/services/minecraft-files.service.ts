@@ -110,6 +110,30 @@ export class MinecraftFilesService {
     return this.readJsonFile<UserCacheEntry[]>(p, []);
   }
 
+  /**
+   * Drop every usercache entry for one player, matching the uuid or the name.
+   * Returns how many entries were removed.
+   */
+  removeUserCacheEntry(serverId: string, uuid: string, name?: string): number {
+    const entries = this.getUserCache(serverId);
+    const targetUuid = uuid.toLowerCase();
+    const targetName = name?.trim().toLowerCase();
+
+    const kept = entries.filter((entry) => {
+      const entryUuid = String(entry.uuid || "").toLowerCase();
+      const entryName = String(entry.name || "").toLowerCase();
+      if (entryUuid === targetUuid) return false;
+      if (targetName && entryName === targetName) return false;
+      return true;
+    });
+
+    const removed = entries.length - kept.length;
+    if (removed > 0) {
+      this.writeJsonFile(this.getSafePath(serverId, "usercache.json"), kept);
+    }
+    return removed;
+  }
+
   // --- Server / world resolution ---
 
   /** Parse server.properties into a plain key/value map (values unescaped). */

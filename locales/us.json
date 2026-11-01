@@ -77,5 +77,8 @@
   "ext.players.tab_lists": "Player lists",
   "ext.players.tab_online": "Online",
   "ext.players.teleported": "Player teleported",
-  "ext.players.change_position": "Change position"
+  "ext.players.change_position": "Change position",
+  "ext.players.delete_player": "Delete player",
+  "ext.players.delete_player_hint": "Removes every data file and the usercache entry. They rejoin as a new player.",
+  "ext.players.delete_player_done": "Player deleted"
 }
