@@ -27,6 +27,8 @@
     "frontend/dist",
     "frontend/index.ts",
     "backend/**/*.test.ts",
+    "frontend/src/**/*.test.ts",
+    "frontend/src/**/*.test.tsx",
     "backend/entry.js"
   ]
 }
