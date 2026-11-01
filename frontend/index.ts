@@ -22,6 +22,125 @@ var {
   isValidElement
 } = React;
 
+// frontend/src/utils/item-textures.ts
+var ASSET_CDN = "https://cdn.jsdelivr.net/gh/InventivetalentDev/minecraft-assets";
+var FALLBACK_VERSION = "1.21.9";
+var memoryCache = /* @__PURE__ */ new Map();
+function splitRef(ref) {
+  const index = ref.indexOf(":");
+  const namespace = index === -1 ? "minecraft" : ref.slice(0, index);
+  const path = index === -1 ? ref : ref.slice(index + 1);
+  if (!namespace || !path) return null;
+  return { namespace, path };
+}
+function textureUrl(ref, version) {
+  const parts = splitRef(ref);
+  if (!parts) return null;
+  return `${ASSET_CDN}@${version}/assets/${parts.namespace}/textures/${parts.path}.png`;
+}
+function pickTexture(textures) {
+  if (!textures) return null;
+  for (const key of ["layer0", "all", "side"]) {
+    const value = textures[key];
+    if (typeof value === "string" && value) return value;
+  }
+  return Object.entries(textures).find(
+    ([key, value]) => key !== "particle" && typeof value === "string" && value
+  )?.[1] ?? null;
+}
+function firstModelName(node, depth = 0) {
+  if (!node || depth > 5) return null;
+  if (typeof node === "string") return node;
+  if (typeof node.model === "string") return node.model;
+  if (node.model) {
+    const nested = firstModelName(node.model, depth + 1);
+    if (nested) return nested;
+  }
+  if (node.fallback) {
+    const fromFallback = firstModelName(node.fallback, depth + 1);
+    if (fromFallback) return fromFallback;
+  }
+  if (Array.isArray(node.cases)) {
+    for (const entry of node.cases) {
+      const fromCase = firstModelName(entry?.model, depth + 1);
+      if (fromCase) return fromCase;
+    }
+  }
+  if (Array.isArray(node.models)) {
+    for (const entry of node.models) {
+      const fromModel = firstModelName(entry, depth + 1);
+      if (fromModel) return fromModel;
+    }
+  }
+  return null;
+}
+async function fetchJsonDefault(url) {
+  try {
+    const response = await fetch(url, { cache: "force-cache" });
+    if (!response.ok) return null;
+    return await response.json();
+  } catch {
+    return null;
+  }
+}
+async function resolveItemTexture(id, version, options = {}) {
+  const cleanVersion = (version || FALLBACK_VERSION).trim() || FALLBACK_VERSION;
+  const cache2 = options.cache ?? memoryCache;
+  const key = `${cleanVersion}:${id}`;
+  if (cache2.has(key)) return cache2.get(key) ?? null;
+  const parts = splitRef(id);
+  if (!parts || parts.namespace !== "minecraft") {
+    cache2.set(key, null);
+    return null;
+  }
+  const fetchJson = options.fetchJson ?? fetchJsonDefault;
+  const assets = `${ASSET_CDN}@${cleanVersion}/assets/minecraft`;
+  let model = null;
+  const definition = await fetchJson(`${assets}/items/${parts.path}.json`);
+  if (definition) model = firstModelName(definition.model);
+  if (!model) {
+    const legacy = await fetchJson(`${assets}/models/item/${parts.path}.json`);
+    if (legacy) model = `minecraft:item/${parts.path}`;
+  }
+  if (!model) {
+    cache2.set(key, null);
+    return null;
+  }
+  let current = model;
+  let sawModelFile = false;
+  for (let depth = 0; depth < 4 && current; depth += 1) {
+    const ref = splitRef(current);
+    if (!ref) break;
+    const modelJson = await fetchJson(
+      `${ASSET_CDN}@${cleanVersion}/assets/${ref.namespace}/models/${ref.path}.json`
+    );
+    if (!modelJson) break;
+    sawModelFile = true;
+    const texture = pickTexture(modelJson.textures);
+    if (texture) {
+      const url = textureUrl(texture, cleanVersion);
+      cache2.set(key, url);
+      return url;
+    }
+    current = typeof modelJson.parent === "string" ? modelJson.parent : null;
+  }
+  if (sawModelFile) {
+    cache2.set(key, null);
+    return null;
+  }
+  const fallback = textureUrl(model, cleanVersion);
+  cache2.set(key, fallback);
+  return fallback;
+}
+
+// frontend/src/ui/assets.tsx
+var AssetVersionContext = react_default.createContext(FALLBACK_VERSION);
+var AssetVersionProvider = ({
+  version,
+  children
+}) => /* @__PURE__ */ react_default.createElement(AssetVersionContext.Provider, { value: (version || "").trim() || FALLBACK_VERSION }, children);
+var useAssetVersion = () => react_default.useContext(AssetVersionContext);
+
 // frontend/src/ui/cx.ts
 function cx(...parts) {
   return parts.filter(Boolean).join(" ");
@@ -145,18 +264,10 @@ var ToastProvider = ({ children }) => {
 };
 
 // frontend/src/utils/format.ts
-var TEXTURE_BASE = "https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/1.21.9/assets/minecraft/textures";
 function matchesQuery(query, ...fields) {
   const q = query.trim().toLowerCase();
   if (!q) return true;
   return fields.some((field) => field?.toLowerCase().includes(q));
-}
-function itemTextureUrls(id) {
-  const clean = id.replace(/^[a-z0-9_]+:/i, "");
-  return {
-    item: `${TEXTURE_BASE}/item/${clean}.png`,
-    block: `${TEXTURE_BASE}/block/${clean}.png`
-  };
 }
 function formatCoordinate(value) {
   return Number.isFinite(value) ? value.toFixed(1) : "\u2014";
@@ -882,37 +993,52 @@ var MinecraftFood = ({
 };
 
 // frontend/src/components/player/ItemSlot.tsx
+var MissingGlyph = ({ className }) => /* @__PURE__ */ react_default.createElement(
+  "svg",
+  {
+    className,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: "1.6",
+    strokeLinejoin: "round",
+    "aria-hidden": "true"
+  },
+  /* @__PURE__ */ react_default.createElement("path", { d: "M12 3 21 7.5v9L12 21 3 16.5v-9L12 3Z" }),
+  /* @__PURE__ */ react_default.createElement("path", { d: "M3 7.5 12 12l9-4.5" }),
+  /* @__PURE__ */ react_default.createElement("path", { d: "M12 12v9" })
+);
 var ItemSlot = ({ item, placeholder }) => {
-  const [stage, setStage] = react_default.useState(0);
+  const version = useAssetVersion();
+  const [texture, setTexture] = react_default.useState(void 0);
   react_default.useEffect(() => {
-    setStage(0);
-  }, [item?.id]);
+    if (!item) return;
+    let alive = true;
+    setTexture(void 0);
+    void resolveItemTexture(item.id || "", version).then((url) => {
+      if (alive) setTexture(url);
+    });
+    return () => {
+      alive = false;
+    };
+  }, [item?.id, version]);
   if (!item) {
     return /* @__PURE__ */ react_default.createElement("div", { className: "k-slot", "aria-label": "Empty", title: "Empty" }, placeholder ? /* @__PURE__ */ react_default.createElement("span", { className: "k-slot-placeholder" }, placeholder) : null);
   }
   const cleanId = (item.id || "").replace(/^[a-z0-9_]+:/i, "");
-  const urls = itemTextureUrls(item.id || "");
   const label = item.displayName || cleanId;
   const count = item.count || 1;
-  return /* @__PURE__ */ react_default.createElement(
-    "div",
+  return /* @__PURE__ */ react_default.createElement("div", { className: cx("k-slot", "k-slot-filled"), title: `${label} (${item.id}) x${count}` }, texture === void 0 ? /* @__PURE__ */ react_default.createElement("span", { className: "k-slot-loading", "aria-hidden": "true" }) : texture ? /* @__PURE__ */ react_default.createElement(
+    "img",
     {
-      className: cx("k-slot", "k-slot-filled"),
-      title: `${label} (${item.id}) x${count}`
-    },
-    stage < 2 ? /* @__PURE__ */ react_default.createElement(
-      "img",
-      {
-        className: "k-slot-img",
-        src: stage === 0 ? urls.item : urls.block,
-        alt: label,
-        loading: "lazy",
-        decoding: "async",
-        onError: () => setStage((current) => current === 0 ? 1 : 2)
-      }
-    ) : /* @__PURE__ */ react_default.createElement("span", { className: "k-slot-text" }, label.slice(0, 3)),
-    count > 1 ? /* @__PURE__ */ react_default.createElement("span", { className: "k-slot-count" }, count) : null
-  );
+      className: "k-slot-img",
+      src: texture,
+      alt: label,
+      loading: "lazy",
+      decoding: "async",
+      onError: () => setTexture(null)
+    }
+  ) : /* @__PURE__ */ react_default.createElement(MissingGlyph, { className: "k-slot-missing" }), count > 1 ? /* @__PURE__ */ react_default.createElement("span", { className: "k-slot-count" }, count) : null);
 };
 
 // frontend/src/components/player/sections/Inventory.tsx
@@ -1583,6 +1709,8 @@ var PlayersPageInner = ({ kubek }) => {
     bannedPlayersCount: 0,
     bannedIpsCount: 0
   };
+  const selectedServer = servers.find((server) => server.id === selectedServerId);
+  const gameVersion = String(selectedServer?.variables?.GAME_VERSION ?? "").replace(/^v/, "");
   const onlinePlayers = onlineQuery.data?.online || [];
   const allPlayers = directoryQuery.data?.players || [];
   const refreshLists = react_default.useCallback(() => {
@@ -1614,7 +1742,7 @@ var PlayersPageInner = ({ kubek }) => {
     setSelectedServerId(id);
     if (typeof window !== "undefined") localStorage.setItem("selected_server_id", id);
   };
-  return /* @__PURE__ */ react_default.createElement("div", { className: "k-page" }, /* @__PURE__ */ react_default.createElement(
+  return /* @__PURE__ */ react_default.createElement(AssetVersionProvider, { version: gameVersion }, /* @__PURE__ */ react_default.createElement("div", { className: "k-page" }, /* @__PURE__ */ react_default.createElement(
     PageHeader,
     {
       title: t("ext.players.title") || "Players",
@@ -1712,7 +1840,7 @@ var PlayersPageInner = ({ kubek }) => {
         void onlineQuery.refetch();
       }
     }
-  ) : null);
+  ) : null));
 };
 var PlayersPage = () => {
   const kubek = useKubek();
@@ -3017,6 +3145,27 @@ if (typeof document !== "undefined") {
   padding: 12px 16px;
   border-top: 1px solid color-mix(in oklch, var(--destructive) 22%, var(--border));
   background: color-mix(in oklch, var(--destructive) 4%, transparent);
+}
+
+.k-slot-loading {
+  width: 58%;
+  height: 58%;
+  border-radius: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--secondary) 0%,
+    color-mix(in oklch, var(--secondary), var(--foreground) 8%) 50%,
+    var(--secondary) 100%
+  );
+  background-size: 200% 100%;
+  animation: k-shimmer 1.4s linear infinite;
+}
+
+.k-slot-missing {
+  width: 56%;
+  height: 56%;
+  color: var(--muted-foreground);
+  opacity: 0.7;
 }
 `;
     document.head.appendChild(style);

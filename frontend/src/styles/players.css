@@ -1286,3 +1286,24 @@
   border-top: 1px solid color-mix(in oklch, var(--destructive) 22%, var(--border));
   background: color-mix(in oklch, var(--destructive) 4%, transparent);
 }
+
+.k-slot-loading {
+  width: 58%;
+  height: 58%;
+  border-radius: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--secondary) 0%,
+    color-mix(in oklch, var(--secondary), var(--foreground) 8%) 50%,
+    var(--secondary) 100%
+  );
+  background-size: 200% 100%;
+  animation: k-shimmer 1.4s linear infinite;
+}
+
+.k-slot-missing {
+  width: 56%;
+  height: 56%;
+  color: var(--muted-foreground);
+  opacity: 0.7;
+}
