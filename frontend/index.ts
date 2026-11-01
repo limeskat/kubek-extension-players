@@ -350,6 +350,39 @@ var DialogSurface = ({
       previous?.focus?.();
     };
   }, []);
+  const onKeyDown = (event) => {
+    if (event.key === "Escape") {
+      event.stopPropagation();
+      onClose();
+      return;
+    }
+    if (event.key !== "Tab") return;
+    const root = ref.current;
+    if (!root) return;
+    const nodes = Array.from(
+      root.querySelectorAll(
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      )
+    ).filter((element) => element.offsetParent !== null || element === document.activeElement);
+    if (nodes.length === 0) {
+      event.preventDefault();
+      return;
+    }
+    const first = nodes[0];
+    const last = nodes[nodes.length - 1];
+    const active = document.activeElement;
+    if (!event.shiftKey) {
+      if (!active || !root.contains(active) || active === last) {
+        event.preventDefault();
+        first.focus();
+      }
+      return;
+    }
+    if (!active || active === root || active === first || !root.contains(active)) {
+      event.preventDefault();
+      last.focus();
+    }
+  };
   return /* @__PURE__ */ react_default.createElement(
     "div",
     {
@@ -367,7 +400,8 @@ var DialogSurface = ({
         "aria-label": label,
         tabIndex: -1,
         className: cx("k-dialog", className),
-        style: { ["--k-dialog-width"]: `${width}px` }
+        style: { ["--k-dialog-width"]: `${width}px` },
+        onKeyDown
       },
       children
     )
@@ -383,23 +417,14 @@ var Dialog = ({
 }) => {
   react_default.useEffect(() => {
     if (!open) return;
-    const onKey = (event) => {
-      if (event.key === "Escape") onClose();
-    };
-    document.addEventListener("keydown", onKey);
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
-      document.removeEventListener("keydown", onKey);
       document.body.style.overflow = previousOverflow;
     };
-  }, [open, onClose]);
+  }, [open]);
   if (!open) return null;
-  const createPortal = react_default.createPortal;
-  return createPortal(
-    /* @__PURE__ */ react_default.createElement(DialogSurface, { onClose, label, width, className }, children),
-    document.body
-  );
+  return /* @__PURE__ */ react_default.createElement(DialogSurface, { onClose, label, width, className }, children);
 };
 var DialogHeader = ({ title, description, leading, actions }) => /* @__PURE__ */ react_default.createElement("header", { className: "k-dialog-header" }, leading, /* @__PURE__ */ react_default.createElement("div", { className: "k-dialog-heading" }, /* @__PURE__ */ react_default.createElement("h2", null, title), description ? /* @__PURE__ */ react_default.createElement("p", null, description) : null), actions ? /* @__PURE__ */ react_default.createElement("div", { className: "k-dialog-actions" }, actions) : null);
 var DialogBody = ({
@@ -1131,7 +1156,7 @@ var PlayerDetailsDialog = ({ serverId, uuid, onClose, onChanged }) => {
 };
 
 // frontend/src/components/tabs/ListTab.tsx
-var ListTab = ({ meta, head, total, query, onQuery, addForm, loading, empty, children }) => /* @__PURE__ */ react_default.createElement(Panel, null, /* @__PURE__ */ react_default.createElement(PanelHead, null, head, /* @__PURE__ */ react_default.createElement(PanelMeta, null, meta), total > 0 ? /* @__PURE__ */ react_default.createElement("div", { className: "k-panel-search" }, /* @__PURE__ */ react_default.createElement(
+var ListTab = ({ meta, head, total, shown, query, onQuery, addForm, loading, empty, noMatches, children }) => /* @__PURE__ */ react_default.createElement(Panel, null, /* @__PURE__ */ react_default.createElement(PanelHead, null, head, /* @__PURE__ */ react_default.createElement(PanelMeta, null, meta), total > 0 ? /* @__PURE__ */ react_default.createElement("div", { className: "k-panel-search" }, /* @__PURE__ */ react_default.createElement(
   SearchInput,
   {
     value: query,
@@ -1139,7 +1164,7 @@ var ListTab = ({ meta, head, total, query, onQuery, addForm, loading, empty, chi
     placeholder: "Search",
     label: "Search"
   }
-)) : null), addForm, loading ? /* @__PURE__ */ react_default.createElement("div", { className: "k-skeleton", "aria-busy": "true" }, /* @__PURE__ */ react_default.createElement("div", { className: "k-skeleton-row" }), /* @__PURE__ */ react_default.createElement("div", { className: "k-skeleton-row" })) : total === 0 ? /* @__PURE__ */ react_default.createElement(Empty, null, /* @__PURE__ */ react_default.createElement(EmptyHeader, null, /* @__PURE__ */ react_default.createElement(EmptyMedia, { icon: empty.icon }), /* @__PURE__ */ react_default.createElement(EmptyTitle, null, empty.title), empty.description ? /* @__PURE__ */ react_default.createElement(EmptyDescription, null, empty.description) : null)) : children);
+)) : null), addForm, loading ? /* @__PURE__ */ react_default.createElement("div", { className: "k-skeleton", "aria-busy": "true" }, /* @__PURE__ */ react_default.createElement("div", { className: "k-skeleton-row" }), /* @__PURE__ */ react_default.createElement("div", { className: "k-skeleton-row" })) : total === 0 ? /* @__PURE__ */ react_default.createElement(Empty, null, /* @__PURE__ */ react_default.createElement(EmptyHeader, null, /* @__PURE__ */ react_default.createElement(EmptyMedia, { icon: empty.icon }), /* @__PURE__ */ react_default.createElement(EmptyTitle, null, empty.title), empty.description ? /* @__PURE__ */ react_default.createElement(EmptyDescription, null, empty.description) : null)) : shown === 0 ? /* @__PURE__ */ react_default.createElement(Empty, null, /* @__PURE__ */ react_default.createElement(EmptyHeader, null, /* @__PURE__ */ react_default.createElement(EmptyTitle, null, noMatches.title), noMatches.hint ? /* @__PURE__ */ react_default.createElement(EmptyDescription, null, noMatches.hint) : null)) : children);
 var ListAddForm = ({ value, onChange, onSubmit, placeholder, submitLabel, pending, reason, onReason, reasonPlaceholder }) => {
   const kubek = useKubek();
   const Input = kubek?.ui?.Input ?? "input";
@@ -1285,7 +1310,8 @@ var BansTab = ({
         }
       ),
       meta: `${list.entries.length} entries`,
-      total: rows.length,
+      total: list.entries.length,
+      shown: rows.length,
       query,
       onQuery: setQuery,
       loading: list.isLoading,
@@ -1293,6 +1319,10 @@ var BansTab = ({
         icon: /* @__PURE__ */ react_default.createElement(Ban, null),
         title: kind === "players" ? "No banned players" : "No banned addresses",
         description: "Bans made here are written to the server's ban lists."
+      },
+      noMatches: {
+        title: list.t("ext.players.no_matches") || "No matches",
+        hint: list.t("ext.players.no_matches_hint") || "Try a different name or UUID."
       },
       addForm: /* @__PURE__ */ react_default.createElement(
         ListAddForm,
@@ -1398,7 +1428,8 @@ var NameListTab = ({ serverId, type, onChanged }) => {
     ListTab,
     {
       meta: `${list.entries.length} entries`,
-      total: rows.length,
+      total: list.entries.length,
+      shown: rows.length,
       query,
       onQuery: setQuery,
       loading: list.isLoading,
@@ -1406,6 +1437,10 @@ var NameListTab = ({ serverId, type, onChanged }) => {
         icon,
         title: type === "ops" ? "No operators yet" : "The whitelist is empty",
         description: type === "ops" ? "Grant operator to a player by username." : "Add a player by username to allow them in."
+      },
+      noMatches: {
+        title: list.t("ext.players.no_matches") || "No matches",
+        hint: list.t("ext.players.no_matches_hint") || "Try a different name or UUID."
       },
       addForm: /* @__PURE__ */ react_default.createElement(
         ListAddForm,
@@ -1739,17 +1774,13 @@ if (typeof document !== "undefined") {
 
 .k-strip {
   display: grid;
-  grid-template-columns: repeat(1, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1px;
   overflow: hidden;
   border: 1px solid var(--border);
   border-radius: 12px;
   background: var(--border);
   box-shadow: var(--elevation-card, 0 1px 2px rgb(0 0 0 / 0.06));
-}
-
-@media (min-width: 640px) {
-  .k-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (min-width: 1024px) {
@@ -2844,6 +2875,17 @@ if (typeof document !== "undefined") {
 .k-select-full { width: 100%; }
 
 .k-coord-input { width: 100%; text-align: center; font-variant-numeric: tabular-nums; }
+
+/* Phones: wrap the tab strip instead of hiding tabs behind a scroll */
+@media (max-width: 640px) {
+  .k-tabs {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  .k-tab {
+    flex: 1 1 auto;
+  }
+}
 `;
     document.head.appendChild(style);
   }
