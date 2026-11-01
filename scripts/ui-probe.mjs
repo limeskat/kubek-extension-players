@@ -270,6 +270,18 @@ try {
               canvas: scroll ? getComputedStyle(scroll).backgroundColor : null,
               slot: slot ? getComputedStyle(slot).backgroundColor : null,
               countColor: count ? getComputedStyle(count).color : null,
+              slotVar: scroll ? getComputedStyle(scroll).getPropertyValue("--k-slot-size").trim() : null,
+              media520: window.matchMedia("(max-width: 520px)").matches,
+              panelClass: document.querySelector(".k-inv--classic")?.className ?? null,
+              box: scroll ? { scrollW: scroll.scrollWidth, clientW: scroll.clientWidth } : null,
+              layoutW: (() => {
+                const layout = document.querySelector(".k-inv-layout");
+                return layout ? Math.round(layout.getBoundingClientRect().width) : null;
+              })(),
+              gridW: (() => {
+                const grid = document.querySelector(".k-inv-grid");
+                return grid ? Math.round(grid.getBoundingClientRect().width) : null;
+              })(),
             };
           });
         }
