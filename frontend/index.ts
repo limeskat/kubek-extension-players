@@ -2650,9 +2650,12 @@ if (typeof document !== "undefined") {
 .k-inv-scroll {
   --k-slot-size: 40px;
   display: flex;
+  width: fit-content;
+  max-width: 100%;
   flex-direction: column;
   align-items: center;
   gap: 6px;
+  justify-self: center;
   overflow-x: auto;
   padding-bottom: 2px;
 }
@@ -2738,7 +2741,14 @@ if (typeof document !== "undefined") {
 }
 
 @media (max-width: 520px) {
-  .k-inv-scroll { --k-slot-size: 28px; }
+  .k-inv-scroll { --k-slot-size: 24px; }
+
+  /* The classic frame adds padding and a bevel, so it needs one step down to fit */
+  .k-inv--classic .k-inv-scroll {
+    --k-slot-size: 26px;
+    padding: 6px;
+    border-width: 2px;
+  }
 }
 
 /* Classic skin: the only place with literal colors, on purpose */
@@ -2938,6 +2948,20 @@ if (typeof document !== "undefined") {
 .k-select option {
   background-color: var(--popover);
   color: var(--popover-foreground);
+}
+
+/* Phones: the classic frame needs smaller slots and tighter gaps to fit without scrolling */
+@media (max-width: 520px) {
+  .k-inv--classic .k-inv-scroll {
+    --k-slot-size: 24px;
+    padding: 3px;
+    border-width: 2px;
+  }
+
+  .k-inv--classic .k-inv-grid,
+  .k-inv--classic .k-inv-armor-col {
+    gap: 3px;
+  }
 }
 `;
     document.head.appendChild(style);
