@@ -77,5 +77,8 @@
   "ext.players.tab_lists": "Списки игроков",
   "ext.players.tab_online": "Онлайн",
   "ext.players.teleported": "Игрок телепортирован",
-  "ext.players.change_position": "Изменить позицию"
+  "ext.players.change_position": "Изменить позицию",
+  "ext.players.delete_player": "Удалить игрока",
+  "ext.players.delete_player_hint": "Удаляет все файлы данных и запись в usercache. Игрок вернётся как новый.",
+  "ext.players.delete_player_done": "Игрок удалён"
 }

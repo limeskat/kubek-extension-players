@@ -19,12 +19,13 @@ const EMPTY: PurgeOptions = {
   advancementsFile: false,
 };
 
-export const DangerZone: React.FC<SectionProps> = ({
+export const DangerZone: React.FC<SectionProps & { onDeleted?: () => void }> = ({
   serverId,
   uuid,
   player,
   onChanged,
   onRefetch,
+  onDeleted,
 }) => {
   const kubek = useKubek();
   const { http, query, hooks, icons = {}, ui } = kubek;
@@ -36,6 +37,7 @@ export const DangerZone: React.FC<SectionProps> = ({
 
   const [options, setOptions] = React.useState<PurgeOptions>(EMPTY);
   const [confirming, setConfirming] = React.useState(false);
+  const [deleting, setDeleting] = React.useState(false);
 
   const online = player.summary.isOnline;
   const anySelected = Object.values(options).some(Boolean);
@@ -54,6 +56,25 @@ export const DangerZone: React.FC<SectionProps> = ({
       });
     },
     onError: (error: unknown) => {
+      void getMutationErrorMessage(error).then((message) =>
+        notify({ type: "error", title: message }),
+      );
+    },
+  });
+
+  const deletePlayerMutation = query.useMutation({
+    mutationFn: () => http.delete(`ext/com.kubek.players/servers/${serverId}/players/${uuid}`),
+    onSuccess: (data: any) => {
+      setDeleting(false);
+      onChanged();
+      notify({
+        type: "success",
+        title: data?.message || t("ext.players.delete_player_done") || "Player deleted",
+      });
+      onDeleted?.();
+    },
+    onError: (error: unknown) => {
+      setDeleting(false);
       void getMutationErrorMessage(error).then((message) =>
         notify({ type: "error", title: message }),
       );
@@ -156,6 +177,27 @@ export const DangerZone: React.FC<SectionProps> = ({
         </ui.Button>
       </PanelFoot>
 
+      <div className="k-danger-delete">
+        <div className="k-access-text">
+          <div className="k-access-label">
+            {t("ext.players.delete_player") || "Delete player"}
+          </div>
+          <div className="k-access-hint">
+            {t("ext.players.delete_player_hint") ||
+              "Removes every data file and the usercache entry. They rejoin as a new player."}
+          </div>
+        </div>
+        <ui.Button
+          variant="destructive"
+          size="sm"
+          disabled={online || deletePlayerMutation.isPending}
+          onClick={() => setDeleting(true)}
+        >
+          <Trash />
+          {t("ext.players.delete_player") || "Delete player"}
+        </ui.Button>
+      </div>
+
       <Dialog
         open={confirming}
         onClose={() => setConfirming(false)}
@@ -185,6 +227,33 @@ export const DangerZone: React.FC<SectionProps> = ({
             onClick={() => purgeMutation.mutate(options)}
           >
             {t("ext.players.confirm_purge") || "Delete data"}
+          </ui.Button>
+        </DialogFooter>
+      </Dialog>
+
+      <Dialog open={deleting} onClose={() => setDeleting(false)} label="Delete player" width={480}>
+        <DialogHeader
+          title={`Delete ${player.summary.username}?`}
+          description="This removes the player from the server completely and cannot be undone."
+        />
+        <DialogBody>
+          <ul className="k-danger-list">
+            <li>Player data (.dat and its backup)</li>
+            <li>Statistics file</li>
+            <li>Advancements file</li>
+            <li>usercache.json entry</li>
+          </ul>
+        </DialogBody>
+        <DialogFooter>
+          <ui.Button variant="outline" onClick={() => setDeleting(false)}>
+            {t("ext.players.cancel") || "Cancel"}
+          </ui.Button>
+          <ui.Button
+            variant="destructive"
+            disabled={deletePlayerMutation.isPending}
+            onClick={() => deletePlayerMutation.mutate()}
+          >
+            {t("ext.players.delete_player") || "Delete player"}
           </ui.Button>
         </DialogFooter>
       </Dialog>

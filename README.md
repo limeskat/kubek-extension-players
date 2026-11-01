@@ -16,6 +16,7 @@ A player management extension for the [Kubek Minecraft Server Panel](https://git
 - **Player Actions**: Heal, Feed, Kill, Starve, Kick, Gamemode switcher and Teleport. Online players are teleported through the console; offline players get their saved position rewritten and it applies on their next join.
 - **Player Data Management**: Inspect offline player records (`usercache.json`, NBT `.dat` files) and safely purge or reset player data.
 - **Native UI**: Panel tokens only, `window.Kubek.ui` controls, player heads from the panel's `/api/heads/{name}`, non-blocking toasts instead of `alert()`.
+- **Delete Player**: removes every data file and the usercache entry so the player disappears from the panel and rejoins as new; whitelist/OP/ban entries stay. Blocked while the player is online.
 - **Inventory Views**: Native slots by default, with an optional classic Minecraft bevel; the choice is remembered per browser.
 
 ## Compatibility & Requirements

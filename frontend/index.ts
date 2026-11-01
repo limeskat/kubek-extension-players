@@ -637,7 +637,8 @@ var DangerZone = ({
   uuid,
   player,
   onChanged,
-  onRefetch
+  onRefetch,
+  onDeleted
 }) => {
   const kubek = useKubek();
   const { http, query, hooks, icons = {}, ui } = kubek;
@@ -647,6 +648,7 @@ var DangerZone = ({
   const UserX = icons.UserX || icons.User || (() => null);
   const [options, setOptions] = react_default.useState(EMPTY);
   const [confirming, setConfirming] = react_default.useState(false);
+  const [deleting, setDeleting] = react_default.useState(false);
   const online = player.summary.isOnline;
   const anySelected = Object.values(options).some(Boolean);
   const purgeMutation = query.useMutation({
@@ -662,6 +664,24 @@ var DangerZone = ({
       });
     },
     onError: (error) => {
+      void getMutationErrorMessage(error).then(
+        (message) => notify({ type: "error", title: message })
+      );
+    }
+  });
+  const deletePlayerMutation = query.useMutation({
+    mutationFn: () => http.delete(`ext/com.kubek.players/servers/${serverId}/players/${uuid}`),
+    onSuccess: (data) => {
+      setDeleting(false);
+      onChanged();
+      notify({
+        type: "success",
+        title: data?.message || t("ext.players.delete_player_done") || "Player deleted"
+      });
+      onDeleted?.();
+    },
+    onError: (error) => {
+      setDeleting(false);
       void getMutationErrorMessage(error).then(
         (message) => notify({ type: "error", title: message })
       );
@@ -730,6 +750,16 @@ var DangerZone = ({
     },
     /* @__PURE__ */ react_default.createElement(UserX, null),
     t("ext.players.kick") || "Kick"
+  )), /* @__PURE__ */ react_default.createElement("div", { className: "k-danger-delete" }, /* @__PURE__ */ react_default.createElement("div", { className: "k-access-text" }, /* @__PURE__ */ react_default.createElement("div", { className: "k-access-label" }, t("ext.players.delete_player") || "Delete player"), /* @__PURE__ */ react_default.createElement("div", { className: "k-access-hint" }, t("ext.players.delete_player_hint") || "Removes every data file and the usercache entry. They rejoin as a new player.")), /* @__PURE__ */ react_default.createElement(
+    ui.Button,
+    {
+      variant: "destructive",
+      size: "sm",
+      disabled: online || deletePlayerMutation.isPending,
+      onClick: () => setDeleting(true)
+    },
+    /* @__PURE__ */ react_default.createElement(Trash, null),
+    t("ext.players.delete_player") || "Delete player"
   )), /* @__PURE__ */ react_default.createElement(
     Dialog,
     {
@@ -755,7 +785,21 @@ var DangerZone = ({
       },
       t("ext.players.confirm_purge") || "Delete data"
     ))
-  ));
+  ), /* @__PURE__ */ react_default.createElement(Dialog, { open: deleting, onClose: () => setDeleting(false), label: "Delete player", width: 480 }, /* @__PURE__ */ react_default.createElement(
+    DialogHeader,
+    {
+      title: `Delete ${player.summary.username}?`,
+      description: "This removes the player from the server completely and cannot be undone."
+    }
+  ), /* @__PURE__ */ react_default.createElement(DialogBody, null, /* @__PURE__ */ react_default.createElement("ul", { className: "k-danger-list" }, /* @__PURE__ */ react_default.createElement("li", null, "Player data (.dat and its backup)"), /* @__PURE__ */ react_default.createElement("li", null, "Statistics file"), /* @__PURE__ */ react_default.createElement("li", null, "Advancements file"), /* @__PURE__ */ react_default.createElement("li", null, "usercache.json entry"))), /* @__PURE__ */ react_default.createElement(DialogFooter, null, /* @__PURE__ */ react_default.createElement(ui.Button, { variant: "outline", onClick: () => setDeleting(false) }, t("ext.players.cancel") || "Cancel"), /* @__PURE__ */ react_default.createElement(
+    ui.Button,
+    {
+      variant: "destructive",
+      disabled: deletePlayerMutation.isPending,
+      onClick: () => deletePlayerMutation.mutate()
+    },
+    t("ext.players.delete_player") || "Delete player"
+  ))));
 };
 
 // frontend/src/components/MinecraftIcons.tsx
@@ -1101,7 +1145,8 @@ var PlayerDetailsDialog = ({ serverId, uuid, onClose, onChanged }) => {
       uuid,
       player,
       onChanged,
-      onRefetch: () => detailsQuery.refetch()
+      onRefetch: () => detailsQuery.refetch(),
+      onDeleted: onClose
     }
   )), /* @__PURE__ */ react_default.createElement("div", { className: "k-player-side" }, /* @__PURE__ */ react_default.createElement(
     Position,
@@ -2962,6 +3007,16 @@ if (typeof document !== "undefined") {
   .k-inv--classic .k-inv-armor-col {
     gap: 3px;
   }
+}
+
+.k-danger-delete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-top: 1px solid color-mix(in oklch, var(--destructive) 22%, var(--border));
+  background: color-mix(in oklch, var(--destructive) 4%, transparent);
 }
 `;
     document.head.appendChild(style);

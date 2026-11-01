@@ -133,6 +133,7 @@ export const PlayerDetailsDialog: React.FC<{
                 player={player}
                 onChanged={onChanged}
                 onRefetch={() => detailsQuery.refetch()}
+                onDeleted={onClose}
               />
             </div>
             <div className="k-player-side">

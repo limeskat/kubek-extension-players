@@ -413,5 +413,58 @@ export function createPlayersRoutes(
         });
       },
     },
+
+    // 10. Delete a player entirely: data files, backups and the usercache entry
+    {
+      method: "DELETE",
+      path: "/servers/:serverId/players/:uuid",
+      permission: "ext.players.purge",
+      handler: async (req, res) => {
+        const { serverId, uuid } = req.params;
+        const cleanUuid = uuid.toLowerCase();
+        const username = resolvePlayerName(serverId, cleanUuid);
+        const online = Array.from(onlineTracker.get(serverId) || []).some(
+          (name) => name.toLowerCase() === username.toLowerCase(),
+        );
+
+        // Same reason as purge: the running server rewrites these files on save
+        if (online) {
+          return res.status(409).json({
+            error: `Cannot delete ${username} while they are online. Ask them to disconnect first.`,
+          });
+        }
+
+        const dataPath = files.findPlayerDataPath(serverId, cleanUuid);
+        const targets = [
+          dataPath,
+          dataPath ? `${dataPath}_old` : null,
+          files.findPlayerStatsPath(serverId, cleanUuid),
+          files.findPlayerAdvancementsPath(serverId, cleanUuid),
+        ].filter((target): target is string => Boolean(target && fs.existsSync(target)));
+
+        const deleted: string[] = [];
+        for (const target of targets) {
+          try {
+            fs.unlinkSync(target);
+            deleted.push(target);
+          } catch {
+            // keep deleting the other files
+          }
+        }
+
+        const removedFromCache = files.removeUserCacheEntry(serverId, cleanUuid, username);
+
+        if (deleted.length === 0 && removedFromCache === 0) {
+          return res.status(404).json({ error: `No player data found for ${username}.` });
+        }
+
+        res.json({
+          success: true,
+          deleted,
+          removedFromCache,
+          message: `Deleted ${username}: ${deleted.length} file(s), ${removedFromCache} cache entr${removedFromCache === 1 ? "y" : "ies"} removed`,
+        });
+      },
+    },
   ];
 }
