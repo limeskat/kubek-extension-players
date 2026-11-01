@@ -111,21 +111,17 @@ export class MinecraftFilesService {
   }
 
   /**
-   * Drop every usercache entry for one player, matching the uuid or the name.
-   * Returns how many entries were removed.
+   * Drop the usercache entry for one uuid. Names are not matched on purpose: two cache
+   * entries can share a name with different uuids (mode switches, stale records), and
+   * deleting one must not remove the other.
    */
-  removeUserCacheEntry(serverId: string, uuid: string, name?: string): number {
+  removeUserCacheEntry(serverId: string, uuid: string): number {
     const entries = this.getUserCache(serverId);
     const targetUuid = uuid.toLowerCase();
-    const targetName = name?.trim().toLowerCase();
 
-    const kept = entries.filter((entry) => {
-      const entryUuid = String(entry.uuid || "").toLowerCase();
-      const entryName = String(entry.name || "").toLowerCase();
-      if (entryUuid === targetUuid) return false;
-      if (targetName && entryName === targetName) return false;
-      return true;
-    });
+    const kept = entries.filter(
+      (entry) => String(entry.uuid || "").toLowerCase() !== targetUuid,
+    );
 
     const removed = entries.length - kept.length;
     if (removed > 0) {
@@ -238,6 +234,38 @@ export class MinecraftFilesService {
       (u) => `players/advancements/${u}.json`,
       (u) => `advancements/${u}.json`,
     ]);
+  }
+
+  /**
+   * Every per-player file that exists for one uuid, across all worlds and both layouts.
+   * Deleting a player must not leave copies behind in other worlds.
+   */
+  findAllPlayerFiles(serverId: string, uuid: string): string[] {
+    const cleanUuid = uuid.toLowerCase();
+    const dataLayouts = [
+      (u: string) => `players/data/${u}.dat`,
+      (u: string) => `playerdata/${u}.dat`,
+    ];
+    const layouts = [
+      ...dataLayouts,
+      (u: string) => `players/stats/${u}.json`,
+      (u: string) => `stats/${u}.json`,
+      (u: string) => `players/advancements/${u}.json`,
+      (u: string) => `advancements/${u}.json`,
+    ];
+
+    const files: string[] = [];
+    for (const world of this.getWorldDirs(serverId)) {
+      for (const layout of layouts) {
+        const candidate = path.join(world, layout(cleanUuid));
+        if (this.isFile(candidate)) files.push(candidate);
+      }
+      for (const layout of dataLayouts) {
+        const backup = `${path.join(world, layout(cleanUuid))}_old`;
+        if (this.isFile(backup)) files.push(backup);
+      }
+    }
+    return files;
   }
 
   /**

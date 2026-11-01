@@ -434,13 +434,9 @@ export function createPlayersRoutes(
           });
         }
 
-        const dataPath = files.findPlayerDataPath(serverId, cleanUuid);
-        const targets = [
-          dataPath,
-          dataPath ? `${dataPath}_old` : null,
-          files.findPlayerStatsPath(serverId, cleanUuid),
-          files.findPlayerAdvancementsPath(serverId, cleanUuid),
-        ].filter((target): target is string => Boolean(target && fs.existsSync(target)));
+        // Every world and both layouts, not just the newest file: a leftover copy
+        // in another world would keep the player's progress alive.
+        const targets = files.findAllPlayerFiles(serverId, cleanUuid);
 
         const deleted: string[] = [];
         for (const target of targets) {
@@ -452,7 +448,7 @@ export function createPlayersRoutes(
           }
         }
 
-        const removedFromCache = files.removeUserCacheEntry(serverId, cleanUuid, username);
+        const removedFromCache = files.removeUserCacheEntry(serverId, cleanUuid);
 
         if (deleted.length === 0 && removedFromCache === 0) {
           return res.status(404).json({ error: `No player data found for ${username}.` });
