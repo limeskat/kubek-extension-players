@@ -4,6 +4,14 @@ All notable changes to the Kubek Players Management extension are documented her
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project uses [Semantic Versioning](https://semver.org/).
 
+## [1.5.1] - 2026-11-02
+
+### Changed
+
+- Inventory slots grow to fill the panel: 52px on desktop, 50px up to 1200px, 40px on tablets
+  and 24px on phones. The classic frame padding drops to 4px with a 2px bevel, so the grid
+  nearly touches the panel bounds and item icons render larger.
+
 ## [1.5.0] - 2026-11-02
 
 ### Changed

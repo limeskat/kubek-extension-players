@@ -2,7 +2,7 @@
   "manifestVersion": 1,
   "id": "com.kubek.players",
   "name": "Players Management",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "Player management for Kubek with a native panel UI: access tabs, live vitals, inventory inspector, teleport, statistics and data purge.",
   "author": {
     "name": "Kubek Community",

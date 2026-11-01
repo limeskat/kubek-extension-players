@@ -3145,7 +3145,7 @@ if (typeof document !== "undefined") {
 .k-inv-canvas { min-width: 0; }
 
 .k-inv-scroll {
-  --k-slot-size: 40px;
+  --k-slot-size: 52px;
   display: flex;
   width: fit-content;
   max-width: 100%;
@@ -3154,7 +3154,7 @@ if (typeof document !== "undefined") {
   gap: 6px;
   justify-self: center;
   overflow-x: auto;
-  padding-bottom: 2px;
+  padding-bottom: 0;
 }
 
 .k-inv-armor {
@@ -3233,8 +3233,12 @@ if (typeof document !== "undefined") {
   pointer-events: none;
 }
 
+@media (max-width: 1200px) {
+  .k-inv-scroll { --k-slot-size: 50px; }
+}
+
 @media (max-width: 900px) {
-  .k-inv-scroll { --k-slot-size: 34px; }
+  .k-inv-scroll { --k-slot-size: 40px; }
 }
 
 @media (max-width: 520px) {
@@ -3251,11 +3255,11 @@ if (typeof document !== "undefined") {
 /* Classic skin: the only place with literal colors, on purpose */
 
 .k-inv--classic .k-inv-scroll {
-  padding: 10px 12px;
-  border-top: 3px solid #ffffff;
-  border-left: 3px solid #ffffff;
-  border-bottom: 3px solid #555555;
-  border-right: 3px solid #555555;
+  padding: 4px;
+  border-top: 2px solid #ffffff;
+  border-left: 2px solid #ffffff;
+  border-bottom: 2px solid #555555;
+  border-right: 2px solid #555555;
   background: #c6c6c6;
 }
 
