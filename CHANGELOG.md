@@ -4,6 +4,17 @@ All notable changes to the Kubek Players Management extension are documented her
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project uses [Semantic Versioning](https://semver.org/).
 
+## [1.5.0] - 2026-11-02
+
+### Changed
+
+- Item icons now come from the hosted vanilla renderer (`api.minecraftitems.xyz`) for vanilla
+  items on 1.21.4 and newer, which matches the in-game GUI for blocks, stairs, tools and the
+  shield. Icons are preloaded once and then served from the browser cache.
+- The local model renderer, flat-texture resolution and generic glyph remain as fallbacks, so
+  modded items, older versions and offline panels still render. `USE_REMOTE_ICONS` in
+  `item-icons.ts` disables the hosted path.
+
 ## [1.4.0] - 2026-11-02
 
 ### Added
