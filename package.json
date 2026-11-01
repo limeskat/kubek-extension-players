@@ -17,6 +17,7 @@
     "@types/react-dom": "^19.0.0",
     "esbuild": "^0.25.0",
     "lucide-react": "^0.475.0",
+    "react-dom": "^19.2.8",
     "typescript": "^5.7.0"
   }
 }
