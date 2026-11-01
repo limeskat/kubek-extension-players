@@ -3,6 +3,9 @@ import type { CommandExecutorService } from "../services/command-executor.servic
 import type { MinecraftFilesService } from "../services/minecraft-files.service";
 import type { SkinAvatarService } from "../services/skin-avatar.service";
 
+const ACTION_FAILED =
+  "The change could not be applied. The server is stopped and the player is unknown (they must join once), or the console command failed.";
+
 export function createListsRoutes(
   files: MinecraftFilesService,
   executor: CommandExecutorService,
@@ -88,24 +91,28 @@ export function createListsRoutes(
         }
 
         if (type === "whitelist") {
-          await executor.addToWhitelist(serverId, identifier.trim());
+          const ok = await executor.addToWhitelist(serverId, identifier.trim());
+          if (!ok) return res.status(409).json({ error: ACTION_FAILED });
           return res.json({ success: true, message: `Added ${identifier} to whitelist` });
         }
 
         if (type === "ops") {
-          await executor.opPlayer(serverId, identifier.trim());
+          const ok = await executor.opPlayer(serverId, identifier.trim());
+          if (!ok) return res.status(409).json({ error: ACTION_FAILED });
           return res.json({ success: true, message: `Granted OP to ${identifier}` });
         }
 
         if (type === "banned-players" || type === "banned_players") {
           const reason = body.reason || "Banned by operator";
-          await executor.banPlayer(serverId, identifier.trim(), reason);
+          const ok = await executor.banPlayer(serverId, identifier.trim(), reason);
+          if (!ok) return res.status(409).json({ error: ACTION_FAILED });
           return res.json({ success: true, message: `Banned player ${identifier}` });
         }
 
         if (type === "banned-ips" || type === "banned_ips") {
           const reason = body.reason || "Banned IP";
-          await executor.banIp(serverId, identifier.trim(), reason);
+          const ok = await executor.banIp(serverId, identifier.trim(), reason);
+          if (!ok) return res.status(409).json({ error: ACTION_FAILED });
           return res.json({ success: true, message: `Banned IP ${identifier}` });
         }
 
@@ -126,22 +133,26 @@ export function createListsRoutes(
         }
 
         if (type === "whitelist") {
-          await executor.removeFromWhitelist(serverId, identifier);
+          const ok = await executor.removeFromWhitelist(serverId, identifier);
+          if (!ok) return res.status(409).json({ error: ACTION_FAILED });
           return res.json({ success: true, message: `Removed ${identifier} from whitelist` });
         }
 
         if (type === "ops") {
-          await executor.deopPlayer(serverId, identifier);
+          const ok = await executor.deopPlayer(serverId, identifier);
+          if (!ok) return res.status(409).json({ error: ACTION_FAILED });
           return res.json({ success: true, message: `Revoked OP from ${identifier}` });
         }
 
         if (type === "banned-players" || type === "banned_players") {
-          await executor.unbanPlayer(serverId, identifier);
+          const ok = await executor.unbanPlayer(serverId, identifier);
+          if (!ok) return res.status(409).json({ error: ACTION_FAILED });
           return res.json({ success: true, message: `Pardoned player ${identifier}` });
         }
 
         if (type === "banned-ips" || type === "banned_ips") {
-          await executor.unbanIp(serverId, identifier);
+          const ok = await executor.unbanIp(serverId, identifier);
+          if (!ok) return res.status(409).json({ error: ACTION_FAILED });
           return res.json({ success: true, message: `Pardoned IP ${identifier}` });
         }
 

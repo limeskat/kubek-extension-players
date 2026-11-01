@@ -84,6 +84,27 @@ var CategoryCards = ({
   }));
 };
 
+// frontend/src/utils/errors.ts
+async function getMutationErrorMessage(error) {
+  const err = error;
+  const response = err?.response;
+  if (response && typeof response.json === "function") {
+    try {
+      const body = await response.json();
+      if (typeof body?.error === "string") return body.error;
+      if (typeof body?.message === "string") return body.message;
+    } catch {
+    }
+  }
+  if (typeof err?.message === "string" && err.message) return err.message;
+  return "The action failed. Check that the server is running and try again.";
+}
+function alertMutationError(error) {
+  void getMutationErrorMessage(error).then((message) => {
+    if (typeof window !== "undefined") window.alert(message);
+  });
+}
+
 // frontend/src/components/CategoryListModal.tsx
 var CategoryListModal = ({
   serverId,
@@ -122,7 +143,8 @@ var CategoryListModal = ({
       setReasonValue("");
       listQuery.refetch();
       onChanged();
-    }
+    },
+    onError: alertMutationError
   });
   const deleteMutation = query.useMutation({
     mutationFn: (identifier) => http.delete(
@@ -131,7 +153,8 @@ var CategoryListModal = ({
     onSuccess: () => {
       listQuery.refetch();
       onChanged();
-    }
+    },
+    onError: alertMutationError
   });
   const handleAdd = (e) => {
     e.preventDefault();
@@ -150,83 +173,99 @@ var CategoryListModal = ({
   const GlobeIcon = icons.Globe || (() => null);
   const TrashIcon = icons.Trash2 || (() => null);
   const PlusIcon = icons.Plus || (() => null);
-  return /* @__PURE__ */ react_default.createElement("div", { className: "fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in duration-200" }, /* @__PURE__ */ react_default.createElement("div", { className: "bg-card border border-border/80 w-full max-w-xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]" }, /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center justify-between px-6 py-4 border-b border-border/50 bg-muted/30" }, /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center gap-2.5" }, /* @__PURE__ */ react_default.createElement("div", { className: `p-2 rounded-lg text-white ${isBan ? "bg-rose-600" : "bg-blue-600"}` }, isBan ? /* @__PURE__ */ react_default.createElement(UserXIcon, { className: "w-5 h-5" }) : /* @__PURE__ */ react_default.createElement(UsersIcon, { className: "w-5 h-5" })), /* @__PURE__ */ react_default.createElement("div", null, /* @__PURE__ */ react_default.createElement("h3", { className: "font-bold text-lg text-foreground" }, titles[category]), /* @__PURE__ */ react_default.createElement("p", { className: "text-xs text-muted-foreground" }, entries.length, " ", entries.length === 1 ? "entry" : "entries", " recorded"))), /* @__PURE__ */ react_default.createElement(
-    "button",
+  return /* @__PURE__ */ react_default.createElement("div", { className: "fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in duration-200" }, /* @__PURE__ */ react_default.createElement(
+    "div",
     {
-      type: "button",
-      onClick: onClose,
-      className: "p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60 transition"
+      className: "bg-card border border-border/80 w-full max-w-xl rounded-2xl shadow-2xl overflow-hidden flex flex-col",
+      style: { maxHeight: "85vh", maxWidth: "640px" }
     },
-    /* @__PURE__ */ react_default.createElement(XIcon, { className: "w-5 h-5" })
-  )), /* @__PURE__ */ react_default.createElement("div", { className: "p-6 overflow-y-auto flex-1 space-y-2.5" }, listQuery.isLoading ? /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center justify-center py-12 text-muted-foreground" }, /* @__PURE__ */ react_default.createElement(RefreshIcon, { className: "w-6 h-6 animate-spin" })) : entries.length === 0 ? /* @__PURE__ */ react_default.createElement("div", { className: "text-center py-12 text-muted-foreground text-sm" }, /* @__PURE__ */ react_default.createElement(UsersIcon, { className: "w-8 h-8 mx-auto mb-2 opacity-40" }), t("ext.players.no_entries") || "No entries found in this list.") : entries.map((entry, index) => {
-    const nameOrIp = entry.name || entry.ip || entry.uuid;
-    const avatarUrl = entry.avatarUrl;
-    return /* @__PURE__ */ react_default.createElement(
+    /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center justify-between px-6 py-4 border-b border-border/50 bg-muted/30" }, /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center gap-2.5" }, /* @__PURE__ */ react_default.createElement("div", { className: `p-2 rounded-lg text-white ${isBan ? "bg-rose-600" : "bg-blue-600"}` }, isBan ? /* @__PURE__ */ react_default.createElement(UserXIcon, { className: "w-5 h-5" }) : /* @__PURE__ */ react_default.createElement(UsersIcon, { className: "w-5 h-5" })), /* @__PURE__ */ react_default.createElement("div", null, /* @__PURE__ */ react_default.createElement("h3", { className: "font-bold text-lg text-foreground" }, titles[category]), /* @__PURE__ */ react_default.createElement("p", { className: "text-xs text-muted-foreground" }, entries.length, " ", entries.length === 1 ? "entry" : "entries", " recorded"))), /* @__PURE__ */ react_default.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: onClose,
+        className: "p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60 transition"
+      },
+      /* @__PURE__ */ react_default.createElement(XIcon, { className: "w-5 h-5" })
+    )),
+    /* @__PURE__ */ react_default.createElement(
       "div",
       {
-        key: entry.uuid || entry.ip || entry.name || index,
-        className: "flex items-center justify-between p-3 rounded-xl bg-muted/40 hover:bg-muted/70 border border-border/40 transition"
+        className: "p-6 flex-1 space-y-2.5",
+        style: { minHeight: 0, overflowY: "auto", overscrollBehavior: "contain" }
       },
-      /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center gap-3" }, isIp ? /* @__PURE__ */ react_default.createElement("div", { className: "w-9 h-9 rounded-lg bg-rose-500/20 text-rose-400 flex items-center justify-center font-mono text-xs font-bold" }, /* @__PURE__ */ react_default.createElement(GlobeIcon, { className: "w-4 h-4" })) : /* @__PURE__ */ react_default.createElement(
-        "img",
+      listQuery.isLoading ? /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center justify-center py-12 text-muted-foreground" }, /* @__PURE__ */ react_default.createElement(RefreshIcon, { className: "w-6 h-6 animate-spin" })) : entries.length === 0 ? /* @__PURE__ */ react_default.createElement("div", { className: "text-center py-12 text-muted-foreground text-sm" }, /* @__PURE__ */ react_default.createElement(UsersIcon, { className: "w-8 h-8 mx-auto mb-2 opacity-40" }), t("ext.players.no_entries") || "No entries found in this list.") : entries.map((entry, index) => {
+        const nameOrIp = entry.name || entry.ip || entry.uuid;
+        const avatarUrl = entry.avatarUrl;
+        return /* @__PURE__ */ react_default.createElement(
+          "div",
+          {
+            key: entry.uuid || entry.ip || entry.name || index,
+            className: "flex items-center justify-between p-3 rounded-xl bg-muted/40 hover:bg-muted/70 border border-border/40 transition"
+          },
+          /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center gap-3" }, isIp ? /* @__PURE__ */ react_default.createElement("div", { className: "w-9 h-9 rounded-lg bg-rose-500/20 text-rose-400 flex items-center justify-center font-mono text-xs font-bold" }, /* @__PURE__ */ react_default.createElement(GlobeIcon, { className: "w-4 h-4" })) : /* @__PURE__ */ react_default.createElement(
+            "img",
+            {
+              src: avatarUrl || `https://mc-heads.net/avatar/${nameOrIp}/36`,
+              alt: nameOrIp,
+              className: "w-9 h-9 rounded-lg shadow-inner bg-background object-cover",
+              onError: (e) => {
+                e.target.src = "https://mc-heads.net/avatar/MHF_Steve/36";
+              }
+            }
+          ), /* @__PURE__ */ react_default.createElement("div", null, /* @__PURE__ */ react_default.createElement("div", { className: "font-semibold text-sm text-foreground" }, nameOrIp), entry.reason && /* @__PURE__ */ react_default.createElement("div", { className: "text-xs text-muted-foreground line-clamp-1" }, "Reason: ", entry.reason))),
+          /* @__PURE__ */ react_default.createElement(
+            "button",
+            {
+              type: "button",
+              onClick: () => deleteMutation.mutate(nameOrIp),
+              disabled: deleteMutation.isPending,
+              className: "p-2 rounded-lg text-rose-400 hover:text-rose-300 hover:bg-rose-500/20 border border-rose-500/30 transition shadow-sm",
+              title: "Remove from list"
+            },
+            /* @__PURE__ */ react_default.createElement(TrashIcon, { className: "w-4 h-4" })
+          )
+        );
+      })
+    ),
+    /* @__PURE__ */ react_default.createElement(
+      "form",
+      {
+        onSubmit: handleAdd,
+        className: "p-4 border-t border-border/50 bg-muted/20 flex flex-col sm:flex-row gap-2"
+      },
+      /* @__PURE__ */ react_default.createElement(
+        "input",
         {
-          src: avatarUrl || `https://crafatar.com/avatars/${nameOrIp}?size=36`,
-          alt: nameOrIp,
-          className: "w-9 h-9 rounded-lg shadow-inner bg-background object-cover",
-          onError: (e) => {
-            e.target.src = "https://crafatar.com/avatars/steve?size=36";
-          }
+          type: "text",
+          value: inputValue,
+          onChange: (e) => setInputValue(e.target.value),
+          placeholder: placeholders[category],
+          className: "flex-1 px-3.5 py-2.5 rounded-xl bg-background border border-border/80 text-sm focus:outline-none focus:ring-2 focus:ring-primary text-foreground placeholder:text-muted-foreground"
         }
-      ), /* @__PURE__ */ react_default.createElement("div", null, /* @__PURE__ */ react_default.createElement("div", { className: "font-semibold text-sm text-foreground" }, nameOrIp), entry.reason && /* @__PURE__ */ react_default.createElement("div", { className: "text-xs text-muted-foreground line-clamp-1" }, "Reason: ", entry.reason))),
+      ),
+      isBan && /* @__PURE__ */ react_default.createElement(
+        "input",
+        {
+          type: "text",
+          value: reasonValue,
+          onChange: (e) => setReasonValue(e.target.value),
+          placeholder: "Ban Reason (optional)",
+          className: "sm:w-44 px-3 py-2.5 rounded-xl bg-background border border-border/80 text-sm focus:outline-none focus:ring-2 focus:ring-primary text-foreground placeholder:text-muted-foreground"
+        }
+      ),
       /* @__PURE__ */ react_default.createElement(
         "button",
         {
-          type: "button",
-          onClick: () => deleteMutation.mutate(nameOrIp),
-          disabled: deleteMutation.isPending,
-          className: "p-2 rounded-lg text-rose-400 hover:text-rose-300 hover:bg-rose-500/20 border border-rose-500/30 transition shadow-sm",
-          title: "Remove from list"
+          type: "submit",
+          disabled: !inputValue.trim() || addMutation.isPending,
+          className: "px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-sm shadow-md transition disabled:opacity-50 flex items-center justify-center gap-1.5"
         },
-        /* @__PURE__ */ react_default.createElement(TrashIcon, { className: "w-4 h-4" })
+        /* @__PURE__ */ react_default.createElement(PlusIcon, { className: "w-4 h-4" }),
+        t("ext.players.add_entry") || "+ Add"
       )
-    );
-  })), /* @__PURE__ */ react_default.createElement(
-    "form",
-    {
-      onSubmit: handleAdd,
-      className: "p-4 border-t border-border/50 bg-muted/20 flex flex-col sm:flex-row gap-2"
-    },
-    /* @__PURE__ */ react_default.createElement(
-      "input",
-      {
-        type: "text",
-        value: inputValue,
-        onChange: (e) => setInputValue(e.target.value),
-        placeholder: placeholders[category],
-        className: "flex-1 px-3.5 py-2.5 rounded-xl bg-background border border-border/80 text-sm focus:outline-none focus:ring-2 focus:ring-primary text-foreground placeholder:text-muted-foreground"
-      }
-    ),
-    isBan && /* @__PURE__ */ react_default.createElement(
-      "input",
-      {
-        type: "text",
-        value: reasonValue,
-        onChange: (e) => setReasonValue(e.target.value),
-        placeholder: "Ban Reason (optional)",
-        className: "sm:w-44 px-3 py-2.5 rounded-xl bg-background border border-border/80 text-sm focus:outline-none focus:ring-2 focus:ring-primary text-foreground placeholder:text-muted-foreground"
-      }
-    ),
-    /* @__PURE__ */ react_default.createElement(
-      "button",
-      {
-        type: "submit",
-        disabled: !inputValue.trim() || addMutation.isPending,
-        className: "px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-sm shadow-md transition disabled:opacity-50 flex items-center justify-center gap-1.5"
-      },
-      /* @__PURE__ */ react_default.createElement(PlusIcon, { className: "w-4 h-4" }),
-      t("ext.players.add_entry") || "+ Add"
     )
-  )));
+  ));
 };
 
 // frontend/src/components/OfflinePlayersList.tsx
@@ -267,11 +306,11 @@ var OfflinePlayersList = ({
     /* @__PURE__ */ react_default.createElement("td", { className: "px-4 py-3" }, /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ react_default.createElement(
       "img",
       {
-        src: player.skinAvatarUrl || `https://crafatar.com/avatars/${player.uuid}?size=32`,
+        src: player.skinAvatarUrl || `https://mc-heads.net/avatar/${player.uuid}/32`,
         alt: player.username,
         className: "w-8 h-8 rounded-lg bg-background shadow-inner object-cover border border-border/40",
         onError: (e) => {
-          e.target.src = "https://crafatar.com/avatars/steve?size=32";
+          e.target.src = "https://mc-heads.net/avatar/MHF_Steve/32";
         }
       }
     ), /* @__PURE__ */ react_default.createElement("span", { className: "font-bold text-foreground group-hover:text-primary transition" }, player.username))),
@@ -310,11 +349,11 @@ var OnlinePlayersList = ({
     /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ react_default.createElement("div", { className: "relative" }, /* @__PURE__ */ react_default.createElement(
       "img",
       {
-        src: player.skinAvatarUrl || `https://crafatar.com/avatars/${player.username}?size=40`,
+        src: player.skinAvatarUrl || `https://mc-heads.net/avatar/${player.username}/40`,
         alt: player.username,
         className: "w-10 h-10 rounded-xl bg-background shadow-inner object-cover border border-border/40",
         onError: (e) => {
-          e.target.src = "https://crafatar.com/avatars/steve?size=40";
+          e.target.src = "https://mc-heads.net/avatar/MHF_Steve/40";
         }
       }
     ), /* @__PURE__ */ react_default.createElement("div", { className: "absolute -bottom-1 -right-1 players-pulse-dot border-2 border-card" })), /* @__PURE__ */ react_default.createElement("div", null, /* @__PURE__ */ react_default.createElement("div", { className: "font-bold text-sm text-foreground group-hover:text-primary transition" }, player.username), /* @__PURE__ */ react_default.createElement("div", { className: "text-[11px] text-emerald-400 font-medium" }, "Online"))),
@@ -479,6 +518,7 @@ var TeleportModal = ({
   serverId,
   uuid,
   username,
+  isOnline = true,
   currentLocation,
   onClose,
   onSuccess
@@ -496,9 +536,15 @@ var TeleportModal = ({
   const tpMutation = query.useMutation({
     mutationFn: (body) => http.post(`ext/com.kubek.players/servers/${serverId}/players/${uuid}/teleport`, body),
     onSuccess: () => {
+      if (!isOnline) {
+        alert(
+          `${username}'s new position was saved. It will apply the next time they join.`
+        );
+      }
       onSuccess();
       onClose();
-    }
+    },
+    onError: alertMutationError
   });
   const handleTeleport = (e) => {
     e.preventDefault();
@@ -517,115 +563,132 @@ var TeleportModal = ({
   const CompassIcon = icons.Compass || icons.MapPin || (() => null);
   const XIcon = icons.X || (() => null);
   const SparklesIcon = icons.Sparkles || (() => null);
-  return /* @__PURE__ */ react_default.createElement("div", { className: "fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 animate-in fade-in duration-200" }, /* @__PURE__ */ react_default.createElement("div", { className: "bg-card border border-border/80 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden flex flex-col" }, /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center justify-between px-6 py-4 border-b border-border/50 bg-blue-600/10" }, /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center gap-2.5" }, /* @__PURE__ */ react_default.createElement("div", { className: "p-2 rounded-lg bg-blue-600 text-white shadow-sm" }, /* @__PURE__ */ react_default.createElement(CompassIcon, { className: "w-5 h-5" })), /* @__PURE__ */ react_default.createElement("div", null, /* @__PURE__ */ react_default.createElement("h3", { className: "font-bold text-lg text-foreground" }, t("ext.players.teleport") || "Teleport", " ", username), /* @__PURE__ */ react_default.createElement("p", { className: "text-xs text-muted-foreground" }, "Specify target world & coordinates"))), /* @__PURE__ */ react_default.createElement(
-    "button",
+  return /* @__PURE__ */ react_default.createElement("div", { className: "fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 animate-in fade-in duration-200" }, /* @__PURE__ */ react_default.createElement(
+    "div",
     {
-      type: "button",
-      onClick: onClose,
-      className: "p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60 transition"
+      className: "bg-card border border-border/80 w-full rounded-2xl shadow-2xl overflow-hidden flex flex-col",
+      style: { maxWidth: "480px", maxHeight: "90vh" }
     },
-    /* @__PURE__ */ react_default.createElement(XIcon, { className: "w-5 h-5" })
-  )), /* @__PURE__ */ react_default.createElement("form", { onSubmit: handleTeleport, className: "p-6 space-y-4" }, /* @__PURE__ */ react_default.createElement("div", null, /* @__PURE__ */ react_default.createElement("label", { className: "block text-xs font-bold text-muted-foreground mb-1.5 uppercase tracking-wider" }, t("ext.players.dimension") || "Dimension"), /* @__PURE__ */ react_default.createElement(
-    "select",
-    {
-      value: dimension,
-      onChange: (e) => setDimension(e.target.value),
-      className: "w-full px-3.5 py-2.5 rounded-xl bg-background border border-border/80 text-sm focus:outline-none focus:ring-2 focus:ring-primary text-foreground"
-    },
-    dimensions.map((d) => /* @__PURE__ */ react_default.createElement("option", { key: d.value, value: d.value }, d.label))
-  )), /* @__PURE__ */ react_default.createElement("div", { className: "grid grid-cols-3 gap-3" }, /* @__PURE__ */ react_default.createElement("div", null, /* @__PURE__ */ react_default.createElement("label", { className: "block text-xs font-bold text-muted-foreground mb-1 text-center" }, "X"), /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center rounded-xl border border-border/80 bg-background overflow-hidden" }, /* @__PURE__ */ react_default.createElement(
-    "button",
-    {
-      type: "button",
-      onClick: () => setX((prev) => +(Number(prev) - 1).toFixed(2)),
-      className: "px-2.5 py-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 font-bold"
-    },
-    "-"
-  ), /* @__PURE__ */ react_default.createElement(
-    "input",
-    {
-      type: "number",
-      step: "any",
-      value: x,
-      onChange: (e) => setX(parseFloat(e.target.value) || 0),
-      className: "w-full text-center bg-transparent py-2 text-sm focus:outline-none font-mono"
-    }
-  ), /* @__PURE__ */ react_default.createElement(
-    "button",
-    {
-      type: "button",
-      onClick: () => setX((prev) => +(Number(prev) + 1).toFixed(2)),
-      className: "px-2.5 py-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 font-bold"
-    },
-    "+"
-  ))), /* @__PURE__ */ react_default.createElement("div", null, /* @__PURE__ */ react_default.createElement("label", { className: "block text-xs font-bold text-muted-foreground mb-1 text-center" }, "Y"), /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center rounded-xl border border-border/80 bg-background overflow-hidden" }, /* @__PURE__ */ react_default.createElement(
-    "button",
-    {
-      type: "button",
-      onClick: () => setY((prev) => +(Number(prev) - 1).toFixed(2)),
-      className: "px-2.5 py-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 font-bold"
-    },
-    "-"
-  ), /* @__PURE__ */ react_default.createElement(
-    "input",
-    {
-      type: "number",
-      step: "any",
-      value: y,
-      onChange: (e) => setY(parseFloat(e.target.value) || 0),
-      className: "w-full text-center bg-transparent py-2 text-sm focus:outline-none font-mono"
-    }
-  ), /* @__PURE__ */ react_default.createElement(
-    "button",
-    {
-      type: "button",
-      onClick: () => setY((prev) => +(Number(prev) + 1).toFixed(2)),
-      className: "px-2.5 py-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 font-bold"
-    },
-    "+"
-  ))), /* @__PURE__ */ react_default.createElement("div", null, /* @__PURE__ */ react_default.createElement("label", { className: "block text-xs font-bold text-muted-foreground mb-1 text-center" }, "Z"), /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center rounded-xl border border-border/80 bg-background overflow-hidden" }, /* @__PURE__ */ react_default.createElement(
-    "button",
-    {
-      type: "button",
-      onClick: () => setZ((prev) => +(Number(prev) - 1).toFixed(2)),
-      className: "px-2.5 py-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 font-bold"
-    },
-    "-"
-  ), /* @__PURE__ */ react_default.createElement(
-    "input",
-    {
-      type: "number",
-      step: "any",
-      value: z,
-      onChange: (e) => setZ(parseFloat(e.target.value) || 0),
-      className: "w-full text-center bg-transparent py-2 text-sm focus:outline-none font-mono"
-    }
-  ), /* @__PURE__ */ react_default.createElement(
-    "button",
-    {
-      type: "button",
-      onClick: () => setZ((prev) => +(Number(prev) + 1).toFixed(2)),
-      className: "px-2.5 py-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 font-bold"
-    },
-    "+"
-  )))), /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center justify-end gap-2.5 pt-3" }, /* @__PURE__ */ react_default.createElement(
-    "button",
-    {
-      type: "button",
-      onClick: onClose,
-      className: "px-4 py-2.5 rounded-xl border border-border/70 text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/40 transition"
-    },
-    t("ext.players.cancel") || "Cancel"
-  ), /* @__PURE__ */ react_default.createElement(
-    "button",
-    {
-      type: "submit",
-      disabled: tpMutation.isPending,
-      className: "px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm shadow-md transition flex items-center gap-1.5 disabled:opacity-50"
-    },
-    /* @__PURE__ */ react_default.createElement(SparklesIcon, { className: "w-4 h-4" }),
-    t("ext.players.teleport") || "Teleport"
-  )))));
+    /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center justify-between px-6 py-4 border-b border-border/50 bg-blue-600/10" }, /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center gap-2.5" }, /* @__PURE__ */ react_default.createElement("div", { className: "p-2 rounded-lg bg-blue-600 text-white shadow-sm" }, /* @__PURE__ */ react_default.createElement(CompassIcon, { className: "w-5 h-5" })), /* @__PURE__ */ react_default.createElement("div", null, /* @__PURE__ */ react_default.createElement("h3", { className: "font-bold text-lg text-foreground" }, t("ext.players.teleport") || "Teleport", " ", username), /* @__PURE__ */ react_default.createElement("p", { className: "text-xs text-muted-foreground" }, "Specify target world & coordinates"))), /* @__PURE__ */ react_default.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: onClose,
+        className: "p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60 transition"
+      },
+      /* @__PURE__ */ react_default.createElement(XIcon, { className: "w-5 h-5" })
+    )),
+    /* @__PURE__ */ react_default.createElement("form", { onSubmit: handleTeleport, className: "p-6 space-y-4" }, !isOnline && /* @__PURE__ */ react_default.createElement("div", { className: "p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-300 text-xs leading-relaxed" }, username, " is offline. The position is written to their player data and applied when they next join."), /* @__PURE__ */ react_default.createElement("div", null, /* @__PURE__ */ react_default.createElement("label", { className: "block text-xs font-bold text-muted-foreground mb-1.5 uppercase tracking-wider" }, t("ext.players.dimension") || "Dimension"), /* @__PURE__ */ react_default.createElement(
+      "select",
+      {
+        value: dimension,
+        onChange: (e) => setDimension(e.target.value),
+        className: "w-full px-3.5 py-2.5 rounded-xl bg-background border border-border/80 text-sm focus:outline-none focus:ring-2 focus:ring-primary text-foreground"
+      },
+      dimensions.map((d) => /* @__PURE__ */ react_default.createElement("option", { key: d.value, value: d.value }, d.label))
+    )), /* @__PURE__ */ react_default.createElement(
+      "div",
+      {
+        className: "grid gap-3",
+        style: { gridTemplateColumns: "repeat(3, minmax(0, 1fr))" }
+      },
+      /* @__PURE__ */ react_default.createElement("div", null, /* @__PURE__ */ react_default.createElement("label", { className: "block text-xs font-bold text-muted-foreground mb-1 text-center" }, "X"), /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center rounded-xl border border-border/80 bg-background overflow-hidden" }, /* @__PURE__ */ react_default.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: () => setX((prev) => +(Number(prev) - 1).toFixed(2)),
+          className: "px-2.5 py-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 font-bold"
+        },
+        "-"
+      ), /* @__PURE__ */ react_default.createElement(
+        "input",
+        {
+          type: "number",
+          step: "any",
+          value: x,
+          onChange: (e) => setX(parseFloat(e.target.value) || 0),
+          className: "w-full text-center bg-transparent py-2 text-sm focus:outline-none font-mono"
+        }
+      ), /* @__PURE__ */ react_default.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: () => setX((prev) => +(Number(prev) + 1).toFixed(2)),
+          className: "px-2.5 py-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 font-bold"
+        },
+        "+"
+      ))),
+      /* @__PURE__ */ react_default.createElement("div", null, /* @__PURE__ */ react_default.createElement("label", { className: "block text-xs font-bold text-muted-foreground mb-1 text-center" }, "Y"), /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center rounded-xl border border-border/80 bg-background overflow-hidden" }, /* @__PURE__ */ react_default.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: () => setY((prev) => +(Number(prev) - 1).toFixed(2)),
+          className: "px-2.5 py-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 font-bold"
+        },
+        "-"
+      ), /* @__PURE__ */ react_default.createElement(
+        "input",
+        {
+          type: "number",
+          step: "any",
+          value: y,
+          onChange: (e) => setY(parseFloat(e.target.value) || 0),
+          className: "w-full text-center bg-transparent py-2 text-sm focus:outline-none font-mono"
+        }
+      ), /* @__PURE__ */ react_default.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: () => setY((prev) => +(Number(prev) + 1).toFixed(2)),
+          className: "px-2.5 py-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 font-bold"
+        },
+        "+"
+      ))),
+      /* @__PURE__ */ react_default.createElement("div", null, /* @__PURE__ */ react_default.createElement("label", { className: "block text-xs font-bold text-muted-foreground mb-1 text-center" }, "Z"), /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center rounded-xl border border-border/80 bg-background overflow-hidden" }, /* @__PURE__ */ react_default.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: () => setZ((prev) => +(Number(prev) - 1).toFixed(2)),
+          className: "px-2.5 py-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 font-bold"
+        },
+        "-"
+      ), /* @__PURE__ */ react_default.createElement(
+        "input",
+        {
+          type: "number",
+          step: "any",
+          value: z,
+          onChange: (e) => setZ(parseFloat(e.target.value) || 0),
+          className: "w-full text-center bg-transparent py-2 text-sm focus:outline-none font-mono"
+        }
+      ), /* @__PURE__ */ react_default.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: () => setZ((prev) => +(Number(prev) + 1).toFixed(2)),
+          className: "px-2.5 py-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 font-bold"
+        },
+        "+"
+      )))
+    ), /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center justify-end gap-2.5 pt-3" }, /* @__PURE__ */ react_default.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: onClose,
+        className: "px-4 py-2.5 rounded-xl border border-border/70 text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/40 transition"
+      },
+      t("ext.players.cancel") || "Cancel"
+    ), /* @__PURE__ */ react_default.createElement(
+      "button",
+      {
+        type: "submit",
+        disabled: tpMutation.isPending,
+        className: "px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm shadow-md transition flex items-center gap-1.5 disabled:opacity-50"
+      },
+      /* @__PURE__ */ react_default.createElement(SparklesIcon, { className: "w-4 h-4" }),
+      isOnline ? t("ext.players.teleport") || "Teleport" : t("ext.players.save_position") || "Save position"
+    )))
+  ));
 };
 
 // frontend/src/components/modals/PurgeConfirmModal.tsx
@@ -642,41 +705,47 @@ var PurgeConfirmModal = ({
   const TrashIcon = icons.Trash2 || (() => null);
   const XIcon = icons.X || (() => null);
   const selectedItems = [];
-  if (options.experiencePoints) selectedItems.push("Experience points & Level");
-  if (options.inventory) selectedItems.push("Player inventory & Hotbar items");
-  if (options.enderChest) selectedItems.push("Ender Chest contents");
-  if (options.playerDataFile) selectedItems.push("World playerdata file (.dat)");
+  if (options.playerDataFile) selectedItems.push("Player data (XP, inventory, ender chest, position)");
   if (options.statisticsFile) selectedItems.push("Gameplay statistics file (.json)");
   if (options.advancementsFile) selectedItems.push("Advancements & Progress (.json)");
-  return /* @__PURE__ */ react_default.createElement("div", { className: "fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-150" }, /* @__PURE__ */ react_default.createElement("div", { className: "bg-card border border-rose-500/40 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150" }, /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center justify-between px-6 py-4 border-b border-border/50 bg-rose-500/10" }, /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center gap-2.5" }, /* @__PURE__ */ react_default.createElement("div", { className: "p-2 rounded-xl bg-rose-500/20 text-rose-400" }, /* @__PURE__ */ react_default.createElement(AlertTriangleIcon, { className: "w-5 h-5" })), /* @__PURE__ */ react_default.createElement("h3", { className: "font-extrabold text-base text-foreground" }, "Confirm Data Deletion")), /* @__PURE__ */ react_default.createElement(
-    "button",
+  return /* @__PURE__ */ react_default.createElement("div", { className: "fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-150" }, /* @__PURE__ */ react_default.createElement(
+    "div",
     {
-      type: "button",
-      onClick: onCancel,
-      disabled: isPending,
-      className: "p-1.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/60 transition"
+      className: "bg-card border border-rose-500/40 w-full rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150",
+      style: { maxWidth: "480px", maxHeight: "90vh" }
     },
-    /* @__PURE__ */ react_default.createElement(XIcon, { className: "w-5 h-5" })
-  )), /* @__PURE__ */ react_default.createElement("div", { className: "p-6 space-y-4 text-sm" }, /* @__PURE__ */ react_default.createElement("p", { className: "text-muted-foreground leading-relaxed" }, "Are you sure you want to permanently delete the selected data for player", " ", /* @__PURE__ */ react_default.createElement("span", { className: "font-extrabold text-foreground" }, username), "?"), /* @__PURE__ */ react_default.createElement("div", { className: "p-3.5 rounded-2xl bg-muted/40 border border-border/50 space-y-2" }, /* @__PURE__ */ react_default.createElement("div", { className: "text-xs font-bold text-rose-400 uppercase tracking-wider" }, "Selected data categories (", selectedItems.length, "):"), /* @__PURE__ */ react_default.createElement("ul", { className: "space-y-1 text-xs text-foreground/90" }, selectedItems.map((item, idx) => /* @__PURE__ */ react_default.createElement("li", { key: `purge-item-${idx}`, className: "flex items-center gap-2" }, /* @__PURE__ */ react_default.createElement("span", { className: "w-1.5 h-1.5 rounded-full bg-rose-500 flex-shrink-0" }), /* @__PURE__ */ react_default.createElement("span", null, item))))), /* @__PURE__ */ react_default.createElement("div", { className: "p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-semibold" }, "\u26A0\uFE0F This operation cannot be undone. Backup files are recommended before proceeding.")), /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center justify-end gap-3 px-6 py-4 border-t border-border/50 bg-muted/20" }, /* @__PURE__ */ react_default.createElement(
-    "button",
-    {
-      type: "button",
-      onClick: onCancel,
-      disabled: isPending,
-      className: "px-4 py-2 rounded-xl bg-muted hover:bg-muted/80 text-foreground font-semibold text-xs transition"
-    },
-    "Cancel"
-  ), /* @__PURE__ */ react_default.createElement(
-    "button",
-    {
-      type: "button",
-      onClick: onConfirm,
-      disabled: isPending,
-      className: "px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-xs shadow-md transition flex items-center gap-2 disabled:opacity-50"
-    },
-    /* @__PURE__ */ react_default.createElement(TrashIcon, { className: "w-4 h-4" }),
-    isPending ? "Deleting..." : "Yes, Delete Data"
-  ))));
+    /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center justify-between px-6 py-4 border-b border-border/50 bg-rose-500/10" }, /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center gap-2.5" }, /* @__PURE__ */ react_default.createElement("div", { className: "p-2 rounded-xl bg-rose-500/20 text-rose-400" }, /* @__PURE__ */ react_default.createElement(AlertTriangleIcon, { className: "w-5 h-5" })), /* @__PURE__ */ react_default.createElement("h3", { className: "font-extrabold text-base text-foreground" }, "Confirm Data Deletion")), /* @__PURE__ */ react_default.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: onCancel,
+        disabled: isPending,
+        className: "p-1.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/60 transition"
+      },
+      /* @__PURE__ */ react_default.createElement(XIcon, { className: "w-5 h-5" })
+    )),
+    /* @__PURE__ */ react_default.createElement("div", { className: "p-6 space-y-4 text-sm" }, /* @__PURE__ */ react_default.createElement("p", { className: "text-muted-foreground leading-relaxed" }, "Are you sure you want to permanently delete the selected data for player", " ", /* @__PURE__ */ react_default.createElement("span", { className: "font-extrabold text-foreground" }, username), "?"), /* @__PURE__ */ react_default.createElement("div", { className: "p-3.5 rounded-2xl bg-muted/40 border border-border/50 space-y-2" }, /* @__PURE__ */ react_default.createElement("div", { className: "text-xs font-bold text-rose-400 uppercase tracking-wider" }, "Selected data categories (", selectedItems.length, "):"), /* @__PURE__ */ react_default.createElement("ul", { className: "space-y-1 text-xs text-foreground/90" }, selectedItems.map((item, idx) => /* @__PURE__ */ react_default.createElement("li", { key: `purge-item-${idx}`, className: "flex items-center gap-2" }, /* @__PURE__ */ react_default.createElement("span", { className: "w-1.5 h-1.5 rounded-full bg-rose-500 flex-shrink-0" }), /* @__PURE__ */ react_default.createElement("span", null, item))))), /* @__PURE__ */ react_default.createElement("div", { className: "p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-semibold" }, "\u26A0\uFE0F This operation cannot be undone. Backup files are recommended before proceeding.")),
+    /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center justify-end gap-3 px-6 py-4 border-t border-border/50 bg-muted/20" }, /* @__PURE__ */ react_default.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: onCancel,
+        disabled: isPending,
+        className: "px-4 py-2 rounded-xl bg-muted hover:bg-muted/80 text-foreground font-semibold text-xs transition"
+      },
+      "Cancel"
+    ), /* @__PURE__ */ react_default.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: onConfirm,
+        disabled: isPending,
+        className: "px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-xs shadow-md transition flex items-center gap-2 disabled:opacity-50"
+      },
+      /* @__PURE__ */ react_default.createElement(TrashIcon, { className: "w-4 h-4" }),
+      isPending ? "Deleting..." : "Yes, Delete Data"
+    ))
+  ));
 };
 
 // frontend/src/components/PlayerDetailsModal.tsx
@@ -695,9 +764,6 @@ var PlayerDetailsModal = ({
   const [copiedUuid, setCopiedUuid] = useState(false);
   const [inventoryTab, setInventoryTab] = useState("main");
   const [purgeOptions, setPurgeOptions] = useState({
-    experiencePoints: false,
-    inventory: false,
-    enderChest: false,
     playerDataFile: false,
     statisticsFile: false,
     advancementsFile: false
@@ -714,28 +780,32 @@ var PlayerDetailsModal = ({
     onSuccess: () => {
       detailsQuery.refetch();
       onChanged();
-    }
+    },
+    onError: alertMutationError
   });
   const gamemodeMutation = query.useMutation({
     mutationFn: (gamemode) => http.post(`ext/com.kubek.players/servers/${serverId}/players/${uuid}/gamemode`, { gamemode }),
     onSuccess: () => {
       detailsQuery.refetch();
       onChanged();
-    }
+    },
+    onError: alertMutationError
   });
   const kickMutation = query.useMutation({
     mutationFn: () => http.post(`ext/com.kubek.players/servers/${serverId}/players/${uuid}/kick`),
     onSuccess: () => {
       detailsQuery.refetch();
       onChanged();
-    }
+    },
+    onError: alertMutationError
   });
   const permissionMutation = query.useMutation({
     mutationFn: (body) => http.post(`ext/com.kubek.players/servers/${serverId}/players/${uuid}/permissions`, body),
     onSuccess: () => {
       detailsQuery.refetch();
       onChanged();
-    }
+    },
+    onError: alertMutationError
   });
   const purgeMutation = query.useMutation({
     mutationFn: (body) => http.post(`ext/com.kubek.players/servers/${serverId}/players/${uuid}/purge`, body),
@@ -744,7 +814,8 @@ var PlayerDetailsModal = ({
       detailsQuery.refetch();
       onChanged();
       alert("Selected player data has been purged successfully.");
-    }
+    },
+    onError: alertMutationError
   });
   const handleCopyUuid = () => {
     if (details?.summary?.uuid) {
@@ -756,9 +827,6 @@ var PlayerDetailsModal = ({
   const handleToggleSelectAll = (checked) => {
     setSelectAllPurge(checked);
     setPurgeOptions({
-      experiencePoints: checked,
-      inventory: checked,
-      enderChest: checked,
       playerDataFile: checked,
       statisticsFile: checked,
       advancementsFile: checked
@@ -824,8 +892,8 @@ var PlayerDetailsModal = ({
       return /* @__PURE__ */ react_default.createElement("div", { key: slotKey, className: "mc-slot", title: "Empty" }, placeholderIcon || null);
     }
     const cleanId = (item.id || "").replace("minecraft:", "");
-    const itemImgUrl = `https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/1.20.4/assets/minecraft/textures/item/${cleanId}.png`;
-    const blockImgUrl = `https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/1.20.4/assets/minecraft/textures/block/${cleanId}.png`;
+    const itemImgUrl = `https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/1.21.9/assets/minecraft/textures/item/${cleanId}.png`;
+    const blockImgUrl = `https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/1.21.9/assets/minecraft/textures/block/${cleanId}.png`;
     return /* @__PURE__ */ react_default.createElement(
       "div",
       {
@@ -862,329 +930,364 @@ var PlayerDetailsModal = ({
       item.count > 1 && /* @__PURE__ */ react_default.createElement("span", { className: "mc-slot-count" }, item.count)
     );
   };
-  return /* @__PURE__ */ react_default.createElement("div", { className: "fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-200" }, /* @__PURE__ */ react_default.createElement("div", { className: "bg-card border border-border/80 w-full max-w-6xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]" }, /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center justify-between px-6 py-3.5 border-b border-border/50 bg-muted/30" }, /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ react_default.createElement(UserIcon, { className: "w-5 h-5 text-primary" }), /* @__PURE__ */ react_default.createElement("h3", { className: "font-bold text-base text-foreground" }, t("ext.players.details") || "Player details")), /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ react_default.createElement("span", { className: "text-xs text-muted-foreground hidden sm:inline" }, "Refreshed ", details?.lastRefreshedText || "just now"), /* @__PURE__ */ react_default.createElement(
-    "button",
+  return /* @__PURE__ */ react_default.createElement("div", { className: "fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-200" }, /* @__PURE__ */ react_default.createElement(
+    "div",
     {
-      type: "button",
-      onClick: () => detailsQuery.refetch(),
-      disabled: detailsQuery.isLoading,
-      className: "px-3 py-1.5 rounded-xl bg-blue-600/15 hover:bg-blue-600/25 border border-blue-500/30 text-blue-400 text-xs font-bold flex items-center gap-1.5 transition"
+      className: "bg-card border border-border/80 w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden flex flex-col",
+      style: { maxHeight: "92vh", maxWidth: "1040px" }
     },
-    /* @__PURE__ */ react_default.createElement(
-      RefreshIcon,
+    /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center justify-between px-4 sm:px-5 py-3 border-b border-border/50 bg-muted/30" }, /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ react_default.createElement(UserIcon, { className: "w-5 h-5 text-primary" }), /* @__PURE__ */ react_default.createElement("h3", { className: "font-bold text-base text-foreground" }, t("ext.players.details") || "Player details")), /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ react_default.createElement("span", { className: "text-xs text-muted-foreground hidden sm:inline" }, "Refreshed ", details?.lastRefreshedText || "just now"), /* @__PURE__ */ react_default.createElement(
+      "button",
       {
-        className: `w-3.5 h-3.5 ${detailsQuery.isLoading ? "animate-spin" : ""}`
-      }
-    ),
-    t("ext.players.refresh") || "Refresh"
-  ), /* @__PURE__ */ react_default.createElement(
-    "button",
-    {
-      type: "button",
-      onClick: onClose,
-      className: "p-1.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/60 transition"
-    },
-    /* @__PURE__ */ react_default.createElement(XIcon, { className: "w-5 h-5" })
-  ))), detailsQuery.isLoading && !details ? /* @__PURE__ */ react_default.createElement("div", { className: "flex-1 flex items-center justify-center py-24 text-muted-foreground" }, /* @__PURE__ */ react_default.createElement(RefreshIcon, { className: "w-8 h-8 animate-spin mr-3 text-primary" }), "Loading player details...") : /* @__PURE__ */ react_default.createElement("div", { className: "p-6 overflow-y-auto flex-1 space-y-6" }, /* @__PURE__ */ react_default.createElement("div", { className: "p-5 rounded-2xl bg-gradient-to-r from-muted/60 to-muted/20 border border-border/70 flex flex-col md:flex-row md:items-center justify-between gap-4" }, /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center gap-4" }, /* @__PURE__ */ react_default.createElement("div", { className: "relative" }, /* @__PURE__ */ react_default.createElement(
-    "img",
-    {
-      src: details?.summary?.skinAvatarUrl || `https://crafatar.com/avatars/${details?.summary?.username}?size=56`,
-      alt: details?.summary?.username,
-      className: "w-14 h-14 rounded-2xl bg-background shadow-md border-2 border-border/80 object-cover",
-      onError: (e) => {
-        e.target.src = "https://crafatar.com/avatars/steve?size=56";
-      }
-    }
-  ), details?.summary?.isOnline && /* @__PURE__ */ react_default.createElement("div", { className: "absolute -bottom-1 -right-1 players-pulse-dot border-2 border-card" })), /* @__PURE__ */ react_default.createElement("div", null, /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center gap-2.5 flex-wrap" }, /* @__PURE__ */ react_default.createElement("h2", { className: "text-xl font-black text-foreground" }, details?.summary?.username), details?.summary?.isOnline ? /* @__PURE__ */ react_default.createElement("span", { className: "px-2.5 py-0.5 rounded-full font-bold text-xs bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1" }, /* @__PURE__ */ react_default.createElement("span", { className: "w-1.5 h-1.5 rounded-full bg-emerald-400" }), "Online") : /* @__PURE__ */ react_default.createElement("span", { className: "px-2.5 py-0.5 rounded-full font-medium text-xs bg-muted text-muted-foreground border border-border" }, "Offline")), /* @__PURE__ */ react_default.createElement(
-    "button",
-    {
-      type: "button",
-      onClick: handleCopyUuid,
-      className: "flex items-center gap-1.5 mt-1 text-xs font-mono text-muted-foreground hover:text-foreground transition group",
-      title: "Click to copy UUID"
-    },
-    /* @__PURE__ */ react_default.createElement("span", null, details?.summary?.uuid),
-    copiedUuid ? /* @__PURE__ */ react_default.createElement(CheckIcon, { className: "w-3.5 h-3.5 text-emerald-400" }) : /* @__PURE__ */ react_default.createElement(CopyIcon, { className: "w-3.5 h-3.5 opacity-60 group-hover:opacity-100" })
-  ))), /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center gap-3 flex-wrap" }, /* @__PURE__ */ react_default.createElement(
-    GamemodeSelect,
-    {
-      value: details?.gamemode || "Survival",
-      onChange: (mode) => gamemodeMutation.mutate(mode),
-      disabled: gamemodeMutation.isPending
-    }
-  ), /* @__PURE__ */ react_default.createElement(
-    "button",
-    {
-      type: "button",
-      onClick: () => kickMutation.mutate(),
-      disabled: kickMutation.isPending || !details?.summary?.isOnline,
-      className: "px-4 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs shadow-md transition disabled:opacity-40 flex items-center gap-1.5"
-    },
-    /* @__PURE__ */ react_default.createElement(UserXIcon, { className: "w-3.5 h-3.5" }),
-    t("ext.players.kick") || "Kick"
-  ))), /* @__PURE__ */ react_default.createElement("div", { className: "mc-split-container" }, /* @__PURE__ */ react_default.createElement("div", { className: "mc-split-left" }, /* @__PURE__ */ react_default.createElement("div", { className: "p-5 rounded-2xl bg-card border border-border/70 space-y-4 shadow-sm" }, /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center justify-between" }, /* @__PURE__ */ react_default.createElement("h4", { className: "text-sm font-bold text-foreground flex items-center gap-2" }, /* @__PURE__ */ react_default.createElement(ActivityIcon, { className: "w-4 h-4 text-emerald-400" }), t("ext.players.vitals") || "Health and Experience"), /* @__PURE__ */ react_default.createElement("span", { className: "text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20" }, "Level ", details?.vitals?.level ?? 0)), /* @__PURE__ */ react_default.createElement("div", { className: "mc-bar-bg" }, /* @__PURE__ */ react_default.createElement(
-    "div",
-    {
-      className: "mc-bar-xp",
-      style: {
-        width: `${Math.round((details?.vitals?.xpProgress ?? 0) * 100)}%`
-      }
-    }
-  )), /* @__PURE__ */ react_default.createElement("div", { className: "mc-hud-row" }, /* @__PURE__ */ react_default.createElement(
-    "button",
-    {
-      type: "button",
-      onClick: () => vitalsMutation.mutate("kill"),
-      disabled: vitalsMutation.isPending,
-      className: "w-20 py-1.5 rounded-xl bg-rose-600/15 hover:bg-rose-600 border border-rose-500/30 text-rose-400 hover:text-white font-bold text-xs transition flex items-center justify-center gap-1.5 flex-shrink-0",
-      title: "Kill player"
-    },
-    /* @__PURE__ */ react_default.createElement(SkullIcon, { className: "w-3.5 h-3.5" }),
-    /* @__PURE__ */ react_default.createElement("span", null, t("ext.players.kill") || "Kill")
-  ), /* @__PURE__ */ react_default.createElement("div", { className: "mc-icons-grid" }, renderHearts(details?.vitals?.health)), /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center gap-2 flex-shrink-0" }, /* @__PURE__ */ react_default.createElement("span", { className: "w-24 text-center text-xs font-mono font-extrabold text-rose-400 bg-rose-500/10 py-1 rounded-lg border border-rose-500/20" }, details?.vitals?.health ?? 20, " / 20 HP"), /* @__PURE__ */ react_default.createElement(
-    "button",
-    {
-      type: "button",
-      onClick: () => vitalsMutation.mutate("heal"),
-      disabled: vitalsMutation.isPending,
-      className: "w-20 py-1.5 rounded-xl bg-emerald-600/15 hover:bg-emerald-600 border border-emerald-500/30 text-emerald-400 hover:text-white font-bold text-xs transition flex items-center justify-center gap-1.5 flex-shrink-0",
-      title: "Heal player"
-    },
-    /* @__PURE__ */ react_default.createElement(HeartPulseIcon, { className: "w-3.5 h-3.5" }),
-    /* @__PURE__ */ react_default.createElement("span", null, t("ext.players.heal") || "Heal")
-  ))), /* @__PURE__ */ react_default.createElement("div", { className: "mc-hud-row" }, /* @__PURE__ */ react_default.createElement(
-    "button",
-    {
-      type: "button",
-      onClick: () => vitalsMutation.mutate("starve"),
-      disabled: vitalsMutation.isPending,
-      className: "w-20 py-1.5 rounded-xl bg-rose-600/15 hover:bg-rose-600 border border-rose-500/30 text-rose-400 hover:text-white font-bold text-xs transition flex items-center justify-center gap-1.5 flex-shrink-0",
-      title: "Starve player"
-    },
-    /* @__PURE__ */ react_default.createElement(SkullIcon, { className: "w-3.5 h-3.5" }),
-    /* @__PURE__ */ react_default.createElement("span", null, t("ext.players.starve") || "Starve")
-  ), /* @__PURE__ */ react_default.createElement("div", { className: "mc-icons-grid" }, renderFood(details?.vitals?.food)), /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center gap-2 flex-shrink-0" }, /* @__PURE__ */ react_default.createElement("span", { className: "w-24 text-center text-xs font-mono font-extrabold text-amber-400 bg-amber-500/10 py-1 rounded-lg border border-amber-500/20" }, details?.vitals?.food ?? 20, " / 20 Food"), /* @__PURE__ */ react_default.createElement(
-    "button",
-    {
-      type: "button",
-      onClick: () => vitalsMutation.mutate("feed"),
-      disabled: vitalsMutation.isPending,
-      className: "w-20 py-1.5 rounded-xl bg-emerald-600/15 hover:bg-emerald-600 border border-emerald-500/30 text-emerald-400 hover:text-white font-bold text-xs transition flex items-center justify-center gap-1.5 flex-shrink-0",
-      title: "Feed player"
-    },
-    /* @__PURE__ */ react_default.createElement(UtensilsIcon, { className: "w-3.5 h-3.5" }),
-    /* @__PURE__ */ react_default.createElement("span", null, t("ext.players.feed") || "Feed")
-  )))), /* @__PURE__ */ react_default.createElement("div", { className: "p-5 rounded-2xl bg-card border border-border/70 space-y-4 shadow-sm" }, /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center justify-between" }, /* @__PURE__ */ react_default.createElement("h4", { className: "text-sm font-bold text-foreground flex items-center gap-2" }, /* @__PURE__ */ react_default.createElement(BoxIcon, { className: "w-4 h-4 text-amber-400" }), t("ext.players.inventory") || "Inventory"), /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center bg-muted/60 p-0.5 rounded-xl border border-border/60 text-xs" }, /* @__PURE__ */ react_default.createElement(
-    "button",
-    {
-      type: "button",
-      onClick: () => setInventoryTab("main"),
-      className: `px-3 py-1 rounded-lg font-bold transition ${inventoryTab === "main" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`
-    },
-    "Inventory"
-  ), /* @__PURE__ */ react_default.createElement(
-    "button",
-    {
-      type: "button",
-      onClick: () => setInventoryTab("ender"),
-      className: `px-3 py-1 rounded-lg font-bold transition ${inventoryTab === "ender" ? "bg-purple-600 text-white shadow-sm" : "text-muted-foreground hover:text-foreground"}`
-    },
-    "Ender Chest"
-  ))), /* @__PURE__ */ react_default.createElement("div", { className: "flex justify-center items-center w-full py-2 overflow-x-auto" }, /* @__PURE__ */ react_default.createElement("div", { className: "mc-inv-container" }, inventoryTab === "main" ? /* @__PURE__ */ react_default.createElement("div", { className: "flex flex-col gap-1" }, /* @__PURE__ */ react_default.createElement(
-    "div",
-    {
-      className: "grid gap-1",
-      style: {
-        gridTemplateColumns: "54px 54px repeat(9, 54px)",
-        gridTemplateRows: "repeat(3, 54px)"
-      }
-    },
-    renderSlot(
-      details?.inventory?.armor?.helmet,
-      "armor-helmet",
-      /* @__PURE__ */ react_default.createElement(SlotHelmetIcon, null)
-    ),
-    /* @__PURE__ */ react_default.createElement("div", { className: "w-[54px] h-[54px] opacity-0 pointer-events-none" }),
-    (details?.inventory?.main?.slice(0, 9) || Array(9).fill(null)).map(
-      (item, idx) => renderSlot(item, `main-slot-${idx}`)
-    ),
-    renderSlot(
-      details?.inventory?.armor?.chestplate,
-      "armor-chestplate",
-      /* @__PURE__ */ react_default.createElement(SlotChestplateIcon, null)
-    ),
-    /* @__PURE__ */ react_default.createElement("div", { className: "w-[54px] h-[54px] opacity-0 pointer-events-none" }),
-    (details?.inventory?.main?.slice(9, 18) || Array(9).fill(null)).map(
-      (item, idx) => renderSlot(item, `main-slot-${9 + idx}`)
-    ),
-    renderSlot(
-      details?.inventory?.armor?.leggings,
-      "armor-leggings",
-      /* @__PURE__ */ react_default.createElement(SlotLeggingsIcon, null)
-    ),
-    /* @__PURE__ */ react_default.createElement("div", { className: "w-[54px] h-[54px] opacity-0 pointer-events-none" }),
-    (details?.inventory?.main?.slice(18, 27) || Array(9).fill(null)).map(
-      (item, idx) => renderSlot(item, `main-slot-${18 + idx}`)
+        type: "button",
+        onClick: () => detailsQuery.refetch(),
+        disabled: detailsQuery.isLoading,
+        className: "px-3 py-1.5 rounded-xl bg-blue-600/15 hover:bg-blue-600/25 border border-blue-500/30 text-blue-400 text-xs font-bold flex items-center gap-1.5 transition"
+      },
+      /* @__PURE__ */ react_default.createElement(
+        RefreshIcon,
+        {
+          className: `w-3.5 h-3.5 ${detailsQuery.isLoading ? "animate-spin" : ""}`
+        }
+      ),
+      t("ext.players.refresh") || "Refresh"
+    ), /* @__PURE__ */ react_default.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: onClose,
+        className: "p-1.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/60 transition"
+      },
+      /* @__PURE__ */ react_default.createElement(XIcon, { className: "w-5 h-5" })
+    ))),
+    detailsQuery.isLoading && !details ? /* @__PURE__ */ react_default.createElement("div", { className: "flex-1 flex items-center justify-center py-24 text-muted-foreground" }, /* @__PURE__ */ react_default.createElement(RefreshIcon, { className: "w-8 h-8 animate-spin mr-3 text-primary" }), "Loading player details...") : /* @__PURE__ */ react_default.createElement(
+      "div",
+      {
+        className: "p-4 sm:p-5 flex-1 space-y-4",
+        style: {
+          minHeight: 0,
+          overflowY: "auto",
+          overscrollBehavior: "contain"
+        }
+      },
+      /* @__PURE__ */ react_default.createElement("div", { className: "p-4 rounded-2xl bg-gradient-to-r from-muted/60 to-muted/20 border border-border/70 flex flex-col md:flex-row md:items-center justify-between gap-3" }, /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center gap-4" }, /* @__PURE__ */ react_default.createElement("div", { className: "relative" }, /* @__PURE__ */ react_default.createElement(
+        "img",
+        {
+          src: details?.summary?.skinAvatarUrl || `https://mc-heads.net/avatar/${details?.summary?.username}/56`,
+          alt: details?.summary?.username,
+          className: "w-14 h-14 rounded-2xl bg-background shadow-md border-2 border-border/80 object-cover",
+          onError: (e) => {
+            e.target.src = "https://mc-heads.net/avatar/MHF_Steve/56";
+          }
+        }
+      ), details?.summary?.isOnline && /* @__PURE__ */ react_default.createElement("div", { className: "absolute -bottom-1 -right-1 players-pulse-dot border-2 border-card" })), /* @__PURE__ */ react_default.createElement("div", null, /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center gap-2.5 flex-wrap" }, /* @__PURE__ */ react_default.createElement("h2", { className: "text-xl font-black text-foreground" }, details?.summary?.username), details?.summary?.isOnline ? /* @__PURE__ */ react_default.createElement("span", { className: "px-2.5 py-0.5 rounded-full font-bold text-xs bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1" }, /* @__PURE__ */ react_default.createElement("span", { className: "w-1.5 h-1.5 rounded-full bg-emerald-400" }), "Online") : /* @__PURE__ */ react_default.createElement("span", { className: "px-2.5 py-0.5 rounded-full font-medium text-xs bg-muted text-muted-foreground border border-border" }, "Offline")), /* @__PURE__ */ react_default.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: handleCopyUuid,
+          className: "flex items-center gap-1.5 mt-1 text-xs font-mono text-muted-foreground hover:text-foreground transition group",
+          title: "Click to copy UUID"
+        },
+        /* @__PURE__ */ react_default.createElement("span", null, details?.summary?.uuid),
+        copiedUuid ? /* @__PURE__ */ react_default.createElement(CheckIcon, { className: "w-3.5 h-3.5 text-emerald-400" }) : /* @__PURE__ */ react_default.createElement(CopyIcon, { className: "w-3.5 h-3.5 opacity-60 group-hover:opacity-100" })
+      ))), /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center gap-3 flex-wrap" }, /* @__PURE__ */ react_default.createElement(
+        GamemodeSelect,
+        {
+          value: details?.gamemode || "Survival",
+          onChange: (mode) => gamemodeMutation.mutate(mode),
+          disabled: gamemodeMutation.isPending || !details?.summary?.isOnline
+        }
+      ), /* @__PURE__ */ react_default.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: () => kickMutation.mutate(),
+          disabled: kickMutation.isPending || !details?.summary?.isOnline,
+          className: "px-4 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs shadow-md transition disabled:opacity-40 flex items-center gap-1.5"
+        },
+        /* @__PURE__ */ react_default.createElement(UserXIcon, { className: "w-3.5 h-3.5" }),
+        t("ext.players.kick") || "Kick"
+      ))),
+      /* @__PURE__ */ react_default.createElement("div", { className: "mc-split-container" }, /* @__PURE__ */ react_default.createElement("div", { className: "mc-split-left" }, /* @__PURE__ */ react_default.createElement("div", { className: "p-4 rounded-2xl bg-card border border-border/70 space-y-4 shadow-sm" }, /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center justify-between" }, /* @__PURE__ */ react_default.createElement("h4", { className: "text-sm font-bold text-foreground flex items-center gap-2" }, /* @__PURE__ */ react_default.createElement(ActivityIcon, { className: "w-4 h-4 text-emerald-400" }), t("ext.players.vitals") || "Health and Experience"), /* @__PURE__ */ react_default.createElement("span", { className: "text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20" }, "Level ", details?.vitals?.level ?? 0)), /* @__PURE__ */ react_default.createElement("div", { className: "mc-bar-bg" }, /* @__PURE__ */ react_default.createElement(
+        "div",
+        {
+          className: "mc-bar-xp",
+          style: {
+            width: `${Math.round((details?.vitals?.xpProgress ?? 0) * 100)}%`
+          }
+        }
+      )), /* @__PURE__ */ react_default.createElement("div", { className: "mc-hud-row" }, /* @__PURE__ */ react_default.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: () => vitalsMutation.mutate("kill"),
+          disabled: vitalsMutation.isPending || !details?.summary?.isOnline,
+          className: "w-20 py-1.5 rounded-xl bg-rose-600/15 hover:bg-rose-600 border border-rose-500/30 text-rose-400 hover:text-white font-bold text-xs transition flex items-center justify-center gap-1.5 flex-shrink-0",
+          title: "Kill player"
+        },
+        /* @__PURE__ */ react_default.createElement(SkullIcon, { className: "w-3.5 h-3.5" }),
+        /* @__PURE__ */ react_default.createElement("span", null, t("ext.players.kill") || "Kill")
+      ), /* @__PURE__ */ react_default.createElement("div", { className: "mc-icons-grid" }, renderHearts(details?.vitals?.health)), /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center gap-2 flex-shrink-0" }, /* @__PURE__ */ react_default.createElement("span", { className: "w-24 text-center text-xs font-mono font-extrabold text-rose-400 bg-rose-500/10 py-1 rounded-lg border border-rose-500/20" }, details?.vitals?.health ?? 20, " / 20 HP"), /* @__PURE__ */ react_default.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: () => vitalsMutation.mutate("heal"),
+          disabled: vitalsMutation.isPending || !details?.summary?.isOnline,
+          className: "w-20 py-1.5 rounded-xl bg-emerald-600/15 hover:bg-emerald-600 border border-emerald-500/30 text-emerald-400 hover:text-white font-bold text-xs transition flex items-center justify-center gap-1.5 flex-shrink-0",
+          title: "Heal player"
+        },
+        /* @__PURE__ */ react_default.createElement(HeartPulseIcon, { className: "w-3.5 h-3.5" }),
+        /* @__PURE__ */ react_default.createElement("span", null, t("ext.players.heal") || "Heal")
+      ))), /* @__PURE__ */ react_default.createElement("div", { className: "mc-hud-row" }, /* @__PURE__ */ react_default.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: () => vitalsMutation.mutate("starve"),
+          disabled: vitalsMutation.isPending || !details?.summary?.isOnline,
+          className: "w-20 py-1.5 rounded-xl bg-rose-600/15 hover:bg-rose-600 border border-rose-500/30 text-rose-400 hover:text-white font-bold text-xs transition flex items-center justify-center gap-1.5 flex-shrink-0",
+          title: "Starve player"
+        },
+        /* @__PURE__ */ react_default.createElement(SkullIcon, { className: "w-3.5 h-3.5" }),
+        /* @__PURE__ */ react_default.createElement("span", null, t("ext.players.starve") || "Starve")
+      ), /* @__PURE__ */ react_default.createElement("div", { className: "mc-icons-grid" }, renderFood(details?.vitals?.food)), /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center gap-2 flex-shrink-0" }, /* @__PURE__ */ react_default.createElement("span", { className: "w-24 text-center text-xs font-mono font-extrabold text-amber-400 bg-amber-500/10 py-1 rounded-lg border border-amber-500/20" }, details?.vitals?.food ?? 20, " / 20 Food"), /* @__PURE__ */ react_default.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: () => vitalsMutation.mutate("feed"),
+          disabled: vitalsMutation.isPending || !details?.summary?.isOnline,
+          className: "w-20 py-1.5 rounded-xl bg-emerald-600/15 hover:bg-emerald-600 border border-emerald-500/30 text-emerald-400 hover:text-white font-bold text-xs transition flex items-center justify-center gap-1.5 flex-shrink-0",
+          title: "Feed player"
+        },
+        /* @__PURE__ */ react_default.createElement(UtensilsIcon, { className: "w-3.5 h-3.5" }),
+        /* @__PURE__ */ react_default.createElement("span", null, t("ext.players.feed") || "Feed")
+      )))), /* @__PURE__ */ react_default.createElement("div", { className: "p-4 rounded-2xl bg-card border border-border/70 space-y-4 shadow-sm" }, /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center justify-between" }, /* @__PURE__ */ react_default.createElement("h4", { className: "text-sm font-bold text-foreground flex items-center gap-2" }, /* @__PURE__ */ react_default.createElement(BoxIcon, { className: "w-4 h-4 text-amber-400" }), t("ext.players.inventory") || "Inventory"), /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center bg-muted/60 p-0.5 rounded-xl border border-border/60 text-xs" }, /* @__PURE__ */ react_default.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: () => setInventoryTab("main"),
+          className: `px-3 py-1 rounded-lg font-bold transition ${inventoryTab === "main" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`
+        },
+        "Inventory"
+      ), /* @__PURE__ */ react_default.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: () => setInventoryTab("ender"),
+          className: `px-3 py-1 rounded-lg font-bold transition ${inventoryTab === "ender" ? "bg-purple-600 text-white shadow-sm" : "text-muted-foreground hover:text-foreground"}`
+        },
+        "Ender Chest"
+      ))), /* @__PURE__ */ react_default.createElement("div", { className: "flex justify-center items-center w-full py-2 overflow-x-auto" }, /* @__PURE__ */ react_default.createElement("div", { className: "mc-inv-container" }, inventoryTab === "main" ? /* @__PURE__ */ react_default.createElement("div", { className: "flex flex-col gap-1" }, /* @__PURE__ */ react_default.createElement(
+        "div",
+        {
+          className: "grid gap-1",
+          style: {
+            gridTemplateColumns: "var(--mc-slot-size) var(--mc-slot-size) repeat(9, var(--mc-slot-size))",
+            gridTemplateRows: "repeat(3, var(--mc-slot-size))"
+          }
+        },
+        renderSlot(
+          details?.inventory?.armor?.helmet,
+          "armor-helmet",
+          /* @__PURE__ */ react_default.createElement(SlotHelmetIcon, null)
+        ),
+        /* @__PURE__ */ react_default.createElement(
+          "div",
+          {
+            className: "opacity-0 pointer-events-none",
+            style: {
+              width: "var(--mc-slot-size)",
+              height: "var(--mc-slot-size)"
+            }
+          }
+        ),
+        (details?.inventory?.main?.slice(0, 9) || Array(9).fill(null)).map(
+          (item, idx) => renderSlot(item, `main-slot-${idx}`)
+        ),
+        renderSlot(
+          details?.inventory?.armor?.chestplate,
+          "armor-chestplate",
+          /* @__PURE__ */ react_default.createElement(SlotChestplateIcon, null)
+        ),
+        /* @__PURE__ */ react_default.createElement(
+          "div",
+          {
+            className: "opacity-0 pointer-events-none",
+            style: {
+              width: "var(--mc-slot-size)",
+              height: "var(--mc-slot-size)"
+            }
+          }
+        ),
+        (details?.inventory?.main?.slice(9, 18) || Array(9).fill(null)).map(
+          (item, idx) => renderSlot(item, `main-slot-${9 + idx}`)
+        ),
+        renderSlot(
+          details?.inventory?.armor?.leggings,
+          "armor-leggings",
+          /* @__PURE__ */ react_default.createElement(SlotLeggingsIcon, null)
+        ),
+        /* @__PURE__ */ react_default.createElement(
+          "div",
+          {
+            className: "opacity-0 pointer-events-none",
+            style: {
+              width: "var(--mc-slot-size)",
+              height: "var(--mc-slot-size)"
+            }
+          }
+        ),
+        (details?.inventory?.main?.slice(18, 27) || Array(9).fill(null)).map(
+          (item, idx) => renderSlot(item, `main-slot-${18 + idx}`)
+        )
+      ), /* @__PURE__ */ react_default.createElement("div", { className: "border-t border-dashed border-[#555555]/80 my-1 w-full" }), /* @__PURE__ */ react_default.createElement(
+        "div",
+        {
+          className: "grid gap-1",
+          style: {
+            gridTemplateColumns: "var(--mc-slot-size) var(--mc-slot-size) repeat(9, var(--mc-slot-size))",
+            gridTemplateRows: "var(--mc-slot-size)"
+          }
+        },
+        renderSlot(
+          details?.inventory?.armor?.boots,
+          "armor-boots",
+          /* @__PURE__ */ react_default.createElement(SlotBootsIcon, null)
+        ),
+        renderSlot(
+          details?.inventory?.offhand,
+          "armor-shield",
+          /* @__PURE__ */ react_default.createElement(SlotShieldIcon, null)
+        ),
+        (details?.inventory?.hotbar || Array(9).fill(null)).map(
+          (item, idx) => renderSlot(item, `hotbar-slot-${idx}`)
+        )
+      )) : (
+        /* Ender Chest (27 slots) */
+        /* @__PURE__ */ react_default.createElement("div", { className: "mc-ender-grid" }, (details?.inventory?.enderChest || Array(27).fill(null)).map(
+          (item, idx) => renderSlot(item, `ender-slot-${idx}`)
+        ))
+      ))))), /* @__PURE__ */ react_default.createElement("div", { className: "mc-split-right" }, /* @__PURE__ */ react_default.createElement("div", { className: "p-4 rounded-2xl bg-card border border-border/70 space-y-3.5 shadow-sm" }, /* @__PURE__ */ react_default.createElement("h4", { className: "text-sm font-bold text-foreground flex items-center gap-2" }, /* @__PURE__ */ react_default.createElement(ShieldIcon, { className: "w-4 h-4 text-blue-400" }), t("ext.players.control") || "Control"), /* @__PURE__ */ react_default.createElement("div", { className: "space-y-2.5" }, /* @__PURE__ */ react_default.createElement("label", { className: "flex items-center justify-between p-3 rounded-xl bg-muted/40 border border-border/40 cursor-pointer hover:bg-muted/70 transition" }, /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center gap-2.5" }, /* @__PURE__ */ react_default.createElement(UserCheckIcon, { className: "w-4 h-4 text-blue-400" }), /* @__PURE__ */ react_default.createElement("div", null, /* @__PURE__ */ react_default.createElement("div", { className: "text-sm font-semibold text-foreground" }, t("ext.players.whitelisted") || "Whitelisted"), /* @__PURE__ */ react_default.createElement("div", { className: "text-[11px] text-muted-foreground" }, "Allow player to join when whitelist is active"))), /* @__PURE__ */ react_default.createElement(
+        "input",
+        {
+          type: "checkbox",
+          checked: Boolean(details?.permissions?.isWhitelisted),
+          onChange: (e) => permissionMutation.mutate({
+            perm: "whitelist",
+            value: e.target.checked
+          }),
+          className: "w-5 h-5 rounded text-blue-600 focus:ring-blue-500 cursor-pointer"
+        }
+      )), /* @__PURE__ */ react_default.createElement("label", { className: "flex items-center justify-between p-3 rounded-xl bg-muted/40 border border-border/40 cursor-pointer hover:bg-muted/70 transition" }, /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center gap-2.5" }, /* @__PURE__ */ react_default.createElement(CrownIcon, { className: "w-4 h-4 text-amber-400" }), /* @__PURE__ */ react_default.createElement("div", null, /* @__PURE__ */ react_default.createElement("div", { className: "text-sm font-semibold text-foreground" }, t("ext.players.operator") || "Operator"), /* @__PURE__ */ react_default.createElement("div", { className: "text-[11px] text-muted-foreground" }, "Grant OP level admin commands & permissions"))), /* @__PURE__ */ react_default.createElement(
+        "input",
+        {
+          type: "checkbox",
+          checked: Boolean(details?.permissions?.isOp),
+          onChange: (e) => permissionMutation.mutate({
+            perm: "op",
+            value: e.target.checked
+          }),
+          className: "w-5 h-5 rounded text-amber-500 focus:ring-amber-400 cursor-pointer"
+        }
+      )), /* @__PURE__ */ react_default.createElement("label", { className: "flex items-center justify-between p-3 rounded-xl bg-muted/40 border border-border/40 cursor-pointer hover:bg-muted/70 transition" }, /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center gap-2.5" }, /* @__PURE__ */ react_default.createElement(UserXIcon, { className: "w-4 h-4 text-rose-400" }), /* @__PURE__ */ react_default.createElement("div", null, /* @__PURE__ */ react_default.createElement("div", { className: "text-sm font-semibold text-foreground" }, t("ext.players.banned") || "Banned"), /* @__PURE__ */ react_default.createElement("div", { className: "text-[11px] text-muted-foreground" }, "Block player from connecting to the server"))), /* @__PURE__ */ react_default.createElement(
+        "input",
+        {
+          type: "checkbox",
+          checked: Boolean(details?.permissions?.isBanned),
+          onChange: (e) => permissionMutation.mutate({
+            perm: "ban",
+            value: e.target.checked
+          }),
+          className: "w-5 h-5 rounded text-rose-600 focus:ring-rose-500 cursor-pointer"
+        }
+      )))), /* @__PURE__ */ react_default.createElement("div", { className: "p-4 rounded-2xl bg-card border border-border/70 space-y-4 shadow-sm" }, /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center justify-between gap-2", style: { flexWrap: "wrap" } }, /* @__PURE__ */ react_default.createElement("h4", { className: "text-sm font-bold text-foreground flex items-center gap-2", style: { whiteSpace: "nowrap" } }, /* @__PURE__ */ react_default.createElement(MapPinIcon, { className: "w-4 h-4 text-purple-400" }), details?.summary?.isOnline ? t("ext.players.position") || "Current position" : t("ext.players.last_position") || "Last known position"), /* @__PURE__ */ react_default.createElement("span", { className: "text-xs font-mono font-bold text-purple-400 bg-purple-500/10 px-2.5 py-1 rounded-lg border border-purple-500/20" }, details?.location?.world || "minecraft:overworld")), /* @__PURE__ */ react_default.createElement(
+        "div",
+        {
+          className: "grid gap-3",
+          style: { gridTemplateColumns: "repeat(3, minmax(0, 1fr))" }
+        },
+        /* @__PURE__ */ react_default.createElement("div", { className: "coord-box" }, /* @__PURE__ */ react_default.createElement("div", { className: "text-[10px] font-extrabold text-rose-400 uppercase tracking-wider mb-0.5" }, "X Axis"), /* @__PURE__ */ react_default.createElement("div", { className: "font-mono font-extrabold text-base text-foreground" }, details?.location?.x ?? 0)),
+        /* @__PURE__ */ react_default.createElement("div", { className: "coord-box" }, /* @__PURE__ */ react_default.createElement("div", { className: "text-[10px] font-extrabold text-emerald-400 uppercase tracking-wider mb-0.5" }, "Y Axis (Height)"), /* @__PURE__ */ react_default.createElement("div", { className: "font-mono font-extrabold text-base text-foreground" }, details?.location?.y ?? 64)),
+        /* @__PURE__ */ react_default.createElement("div", { className: "coord-box" }, /* @__PURE__ */ react_default.createElement("div", { className: "text-[10px] font-extrabold text-blue-400 uppercase tracking-wider mb-0.5" }, "Z Axis"), /* @__PURE__ */ react_default.createElement("div", { className: "font-mono font-extrabold text-base text-foreground" }, details?.location?.z ?? 0))
+      ), /* @__PURE__ */ react_default.createElement("p", { className: "text-[10px] text-muted-foreground" }, t("ext.players.player_data_saved") || "Player data saved", ":", " ", details?.dataUpdatedAt ? new Date(details.dataUpdatedAt).toLocaleString() : "no data file found"), /* @__PURE__ */ react_default.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: () => setShowTeleport(true),
+          className: "w-full py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-sm shadow-md transition flex items-center justify-center gap-2"
+        },
+        /* @__PURE__ */ react_default.createElement(SparklesIcon, { className: "w-4 h-4" }),
+        t("ext.players.teleport") || "Teleport"
+      )), /* @__PURE__ */ react_default.createElement("div", { className: "p-4 rounded-2xl bg-card border border-border/70 space-y-4 shadow-sm" }, /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center justify-between gap-2", style: { flexWrap: "wrap" } }, /* @__PURE__ */ react_default.createElement("h4", { className: "text-sm font-bold text-foreground flex items-center gap-2", style: { whiteSpace: "nowrap" } }, /* @__PURE__ */ react_default.createElement(SkullIcon, { className: "w-4 h-4 text-rose-400" }), t("ext.players.last_death") || "Last death"), details?.lastDeath && /* @__PURE__ */ react_default.createElement("span", { className: "text-xs font-mono font-bold text-rose-400 bg-rose-500/10 px-2.5 py-1 rounded-lg border border-rose-500/20" }, details.lastDeath.world)), details?.lastDeath ? /* @__PURE__ */ react_default.createElement(
+        "div",
+        {
+          className: "grid gap-3",
+          style: { gridTemplateColumns: "repeat(3, minmax(0, 1fr))" }
+        },
+        /* @__PURE__ */ react_default.createElement("div", { className: "coord-box" }, /* @__PURE__ */ react_default.createElement("div", { className: "text-[10px] font-extrabold text-rose-400 uppercase tracking-wider mb-0.5" }, "X Axis"), /* @__PURE__ */ react_default.createElement("div", { className: "font-mono font-extrabold text-base text-foreground" }, details.lastDeath.x)),
+        /* @__PURE__ */ react_default.createElement("div", { className: "coord-box" }, /* @__PURE__ */ react_default.createElement("div", { className: "text-[10px] font-extrabold text-emerald-400 uppercase tracking-wider mb-0.5" }, "Y Axis (Height)"), /* @__PURE__ */ react_default.createElement("div", { className: "font-mono font-extrabold text-base text-foreground" }, details.lastDeath.y)),
+        /* @__PURE__ */ react_default.createElement("div", { className: "coord-box" }, /* @__PURE__ */ react_default.createElement("div", { className: "text-[10px] font-extrabold text-blue-400 uppercase tracking-wider mb-0.5" }, "Z Axis"), /* @__PURE__ */ react_default.createElement("div", { className: "font-mono font-extrabold text-base text-foreground" }, details.lastDeath.z))
+      ) : /* @__PURE__ */ react_default.createElement("p", { className: "text-xs text-muted-foreground" }, "No death location recorded for this player.")))),
+      /* @__PURE__ */ react_default.createElement("div", { className: "p-4 rounded-2xl bg-card border border-border/70 space-y-4 shadow-sm" }, /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center justify-between" }, /* @__PURE__ */ react_default.createElement("h4", { className: "text-sm font-bold text-foreground flex items-center gap-2" }, /* @__PURE__ */ react_default.createElement(BarChartIcon, { className: "w-4 h-4 text-cyan-400" }), t("ext.players.stats") || "Gameplay Statistics")), /* @__PURE__ */ react_default.createElement("div", { className: "mc-stats-grid-4" }, /* @__PURE__ */ react_default.createElement("div", { className: "p-3 rounded-xl bg-muted/40 border border-border/40 text-center" }, /* @__PURE__ */ react_default.createElement(ClockIcon, { className: "w-5 h-5 mx-auto text-cyan-400 mb-1.5" }), /* @__PURE__ */ react_default.createElement("div", { className: "text-[11px] text-muted-foreground font-medium" }, "Total Playtime"), /* @__PURE__ */ react_default.createElement("div", { className: "font-black text-sm text-foreground truncate mt-0.5" }, details?.stats?.playtimeText || "0m")), /* @__PURE__ */ react_default.createElement("div", { className: "p-3 rounded-xl bg-muted/40 border border-border/40 text-center" }, /* @__PURE__ */ react_default.createElement(SwordsIcon, { className: "w-5 h-5 mx-auto text-rose-400 mb-1.5" }), /* @__PURE__ */ react_default.createElement("div", { className: "text-[11px] text-muted-foreground font-medium" }, "Player Kills"), /* @__PURE__ */ react_default.createElement("div", { className: "font-black text-sm text-foreground mt-0.5" }, details?.stats?.playerKills ?? 0)), /* @__PURE__ */ react_default.createElement("div", { className: "p-3 rounded-xl bg-muted/40 border border-border/40 text-center" }, /* @__PURE__ */ react_default.createElement(SkullIcon, { className: "w-5 h-5 mx-auto text-muted-foreground mb-1.5" }), /* @__PURE__ */ react_default.createElement("div", { className: "text-[11px] text-muted-foreground font-medium" }, "Total Deaths"), /* @__PURE__ */ react_default.createElement("div", { className: "font-black text-sm text-foreground mt-0.5" }, details?.stats?.deaths ?? 0)), /* @__PURE__ */ react_default.createElement("div", { className: "p-3 rounded-xl bg-muted/40 border border-border/40 text-center" }, /* @__PURE__ */ react_default.createElement(GaugeIcon, { className: "w-5 h-5 mx-auto text-amber-400 mb-1.5" }), /* @__PURE__ */ react_default.createElement("div", { className: "text-[11px] text-muted-foreground font-medium" }, "Kill / Death Ratio"), /* @__PURE__ */ react_default.createElement("div", { className: "font-black text-sm text-foreground mt-0.5" }, details?.stats?.kdr ?? 0))), /* @__PURE__ */ react_default.createElement("div", { className: "mc-stats-grid-3 pt-2" }, /* @__PURE__ */ react_default.createElement("div", { className: "p-3.5 rounded-xl bg-muted/30 border border-border/30 space-y-2" }, /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center gap-1.5 text-xs font-bold text-foreground mb-1" }, /* @__PURE__ */ react_default.createElement(FootprintsIcon, { className: "w-3.5 h-3.5 text-blue-400" }), /* @__PURE__ */ react_default.createElement("span", null, "Travel & Movement")), /* @__PURE__ */ react_default.createElement("div", { className: "flex justify-between text-xs text-muted-foreground" }, /* @__PURE__ */ react_default.createElement("span", null, "Total Distance:"), /* @__PURE__ */ react_default.createElement("span", { className: "font-bold text-foreground" }, details?.stats?.distanceTotal ?? 0, " blocks")), /* @__PURE__ */ react_default.createElement("div", { className: "flex justify-between text-xs text-muted-foreground" }, /* @__PURE__ */ react_default.createElement("span", null, "Distance Sprinted:"), /* @__PURE__ */ react_default.createElement("span", { className: "font-bold text-foreground" }, details?.stats?.distanceSprinted ?? 0, " blocks")), /* @__PURE__ */ react_default.createElement("div", { className: "flex justify-between text-xs text-muted-foreground" }, /* @__PURE__ */ react_default.createElement("span", null, "Distance Walked:"), /* @__PURE__ */ react_default.createElement("span", { className: "font-bold text-foreground" }, details?.stats?.distanceWalked ?? 0, " blocks"))), /* @__PURE__ */ react_default.createElement("div", { className: "p-3.5 rounded-xl bg-muted/30 border border-border/30 space-y-2" }, /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center gap-1.5 text-xs font-bold text-foreground mb-1" }, /* @__PURE__ */ react_default.createElement(PickaxeIcon, { className: "w-3.5 h-3.5 text-amber-400" }), /* @__PURE__ */ react_default.createElement("span", null, "Mining & Construction")), /* @__PURE__ */ react_default.createElement("div", { className: "flex justify-between text-xs text-muted-foreground" }, /* @__PURE__ */ react_default.createElement("span", null, "Blocks Broken:"), /* @__PURE__ */ react_default.createElement("span", { className: "font-bold text-foreground" }, details?.stats?.blocksBroken ?? "No data")), /* @__PURE__ */ react_default.createElement("div", { className: "flex justify-between text-xs text-muted-foreground" }, /* @__PURE__ */ react_default.createElement("span", null, "Items Used:"), /* @__PURE__ */ react_default.createElement("span", { className: "font-bold text-foreground" }, details?.stats?.itemsUsed ?? "No data"))), /* @__PURE__ */ react_default.createElement("div", { className: "p-3.5 rounded-xl bg-muted/30 border border-border/30 space-y-2" }, /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center gap-1.5 text-xs font-bold text-foreground mb-1" }, /* @__PURE__ */ react_default.createElement(SwordsIcon, { className: "w-3.5 h-3.5 text-rose-400" }), /* @__PURE__ */ react_default.createElement("span", null, "Combat & Hunting")), /* @__PURE__ */ react_default.createElement("div", { className: "flex justify-between text-xs text-muted-foreground" }, /* @__PURE__ */ react_default.createElement("span", null, "Entities Killed:"), /* @__PURE__ */ react_default.createElement("span", { className: "font-bold text-foreground" }, details?.stats?.entitiesKilled ?? "No data")), /* @__PURE__ */ react_default.createElement("div", { className: "flex justify-between text-xs text-muted-foreground" }, /* @__PURE__ */ react_default.createElement("span", null, "K/D Ratio:"), /* @__PURE__ */ react_default.createElement("span", { className: "font-bold text-foreground" }, details?.stats?.kdr ?? 0))))),
+      /* @__PURE__ */ react_default.createElement("div", { className: "p-4 rounded-2xl bg-rose-600/10 border border-rose-500/30 space-y-4 shadow-sm" }, /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center justify-between" }, /* @__PURE__ */ react_default.createElement("h4", { className: "text-sm font-bold text-rose-400 flex items-center gap-2" }, /* @__PURE__ */ react_default.createElement(TrashIcon, { className: "w-4 h-4" }), t("ext.players.purge_data") || "Delete player data"), /* @__PURE__ */ react_default.createElement("span", { className: "text-xs text-rose-400/80" }, "Permanent destructive purge tool")), /* @__PURE__ */ react_default.createElement("div", { className: "mc-purge-grid" }, /* @__PURE__ */ react_default.createElement("label", { className: "flex items-center gap-2 p-2.5 rounded-xl bg-background/50 border border-border/40 cursor-pointer hover:bg-background/80 transition" }, /* @__PURE__ */ react_default.createElement(
+        "input",
+        {
+          type: "checkbox",
+          checked: purgeOptions.playerDataFile,
+          onChange: (e) => setPurgeOptions((prev) => ({
+            ...prev,
+            playerDataFile: e.target.checked
+          })),
+          className: "rounded text-rose-600"
+        }
+      ), /* @__PURE__ */ react_default.createElement("span", null, "Player data (XP, inventory, ender chest, position)")), /* @__PURE__ */ react_default.createElement("label", { className: "flex items-center gap-2 p-2.5 rounded-xl bg-background/50 border border-border/40 cursor-pointer hover:bg-background/80 transition" }, /* @__PURE__ */ react_default.createElement(
+        "input",
+        {
+          type: "checkbox",
+          checked: purgeOptions.statisticsFile,
+          onChange: (e) => setPurgeOptions((prev) => ({
+            ...prev,
+            statisticsFile: e.target.checked
+          })),
+          className: "rounded text-rose-600"
+        }
+      ), /* @__PURE__ */ react_default.createElement("span", null, "Statistics file")), /* @__PURE__ */ react_default.createElement("label", { className: "flex items-center gap-2 p-2.5 rounded-xl bg-background/50 border border-border/40 cursor-pointer hover:bg-background/80 transition" }, /* @__PURE__ */ react_default.createElement(
+        "input",
+        {
+          type: "checkbox",
+          checked: purgeOptions.advancementsFile,
+          onChange: (e) => setPurgeOptions((prev) => ({
+            ...prev,
+            advancementsFile: e.target.checked
+          })),
+          className: "rounded text-rose-600"
+        }
+      ), /* @__PURE__ */ react_default.createElement("span", null, "Advancements file"))), /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center justify-between pt-3 border-t border-rose-500/20" }, /* @__PURE__ */ react_default.createElement("label", { className: "flex items-center gap-2 text-xs font-bold text-foreground cursor-pointer" }, /* @__PURE__ */ react_default.createElement(
+        "input",
+        {
+          type: "checkbox",
+          checked: selectAllPurge,
+          onChange: (e) => handleToggleSelectAll(e.target.checked),
+          className: "rounded text-rose-600"
+        }
+      ), /* @__PURE__ */ react_default.createElement("span", null, "Select all categories")), /* @__PURE__ */ react_default.createElement(
+        "button",
+        {
+          type: "submit",
+          onClick: handleOpenPurgeDialog,
+          disabled: purgeMutation.isPending,
+          className: "px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs shadow-md transition flex items-center gap-2"
+        },
+        /* @__PURE__ */ react_default.createElement(TrashIcon, { className: "w-4 h-4" }),
+        t("ext.players.confirm_purge") || "Delete player data"
+      )))
     )
-  ), /* @__PURE__ */ react_default.createElement("div", { className: "border-t border-dashed border-[#555555]/80 my-1 w-full" }), /* @__PURE__ */ react_default.createElement(
-    "div",
-    {
-      className: "grid gap-1",
-      style: {
-        gridTemplateColumns: "54px 54px repeat(9, 54px)",
-        gridTemplateRows: "54px"
-      }
-    },
-    renderSlot(
-      details?.inventory?.armor?.boots,
-      "armor-boots",
-      /* @__PURE__ */ react_default.createElement(SlotBootsIcon, null)
-    ),
-    renderSlot(
-      details?.inventory?.offhand,
-      "armor-shield",
-      /* @__PURE__ */ react_default.createElement(SlotShieldIcon, null)
-    ),
-    (details?.inventory?.hotbar || Array(9).fill(null)).map(
-      (item, idx) => renderSlot(item, `hotbar-slot-${idx}`)
-    )
-  )) : (
-    /* Ender Chest (27 slots) */
-    /* @__PURE__ */ react_default.createElement("div", { className: "mc-ender-grid" }, (details?.inventory?.enderChest || Array(27).fill(null)).map(
-      (item, idx) => renderSlot(item, `ender-slot-${idx}`)
-    ))
-  ))))), /* @__PURE__ */ react_default.createElement("div", { className: "mc-split-right" }, /* @__PURE__ */ react_default.createElement("div", { className: "p-5 rounded-2xl bg-card border border-border/70 space-y-3.5 shadow-sm" }, /* @__PURE__ */ react_default.createElement("h4", { className: "text-sm font-bold text-foreground flex items-center gap-2" }, /* @__PURE__ */ react_default.createElement(ShieldIcon, { className: "w-4 h-4 text-blue-400" }), t("ext.players.control") || "Control"), /* @__PURE__ */ react_default.createElement("div", { className: "space-y-2.5" }, /* @__PURE__ */ react_default.createElement("label", { className: "flex items-center justify-between p-3 rounded-xl bg-muted/40 border border-border/40 cursor-pointer hover:bg-muted/70 transition" }, /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center gap-2.5" }, /* @__PURE__ */ react_default.createElement(UserCheckIcon, { className: "w-4 h-4 text-blue-400" }), /* @__PURE__ */ react_default.createElement("div", null, /* @__PURE__ */ react_default.createElement("div", { className: "text-sm font-semibold text-foreground" }, t("ext.players.whitelisted") || "Whitelisted"), /* @__PURE__ */ react_default.createElement("div", { className: "text-[11px] text-muted-foreground" }, "Allow player to join when whitelist is active"))), /* @__PURE__ */ react_default.createElement(
-    "input",
-    {
-      type: "checkbox",
-      checked: Boolean(details?.permissions?.isWhitelisted),
-      onChange: (e) => permissionMutation.mutate({
-        perm: "whitelist",
-        value: e.target.checked
-      }),
-      className: "w-5 h-5 rounded text-blue-600 focus:ring-blue-500 cursor-pointer"
-    }
-  )), /* @__PURE__ */ react_default.createElement("label", { className: "flex items-center justify-between p-3 rounded-xl bg-muted/40 border border-border/40 cursor-pointer hover:bg-muted/70 transition" }, /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center gap-2.5" }, /* @__PURE__ */ react_default.createElement(CrownIcon, { className: "w-4 h-4 text-amber-400" }), /* @__PURE__ */ react_default.createElement("div", null, /* @__PURE__ */ react_default.createElement("div", { className: "text-sm font-semibold text-foreground" }, t("ext.players.operator") || "Operator"), /* @__PURE__ */ react_default.createElement("div", { className: "text-[11px] text-muted-foreground" }, "Grant OP level admin commands & permissions"))), /* @__PURE__ */ react_default.createElement(
-    "input",
-    {
-      type: "checkbox",
-      checked: Boolean(details?.permissions?.isOp),
-      onChange: (e) => permissionMutation.mutate({
-        perm: "op",
-        value: e.target.checked
-      }),
-      className: "w-5 h-5 rounded text-amber-500 focus:ring-amber-400 cursor-pointer"
-    }
-  )), /* @__PURE__ */ react_default.createElement("label", { className: "flex items-center justify-between p-3 rounded-xl bg-muted/40 border border-border/40 cursor-pointer hover:bg-muted/70 transition" }, /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center gap-2.5" }, /* @__PURE__ */ react_default.createElement(UserXIcon, { className: "w-4 h-4 text-rose-400" }), /* @__PURE__ */ react_default.createElement("div", null, /* @__PURE__ */ react_default.createElement("div", { className: "text-sm font-semibold text-foreground" }, t("ext.players.banned") || "Banned"), /* @__PURE__ */ react_default.createElement("div", { className: "text-[11px] text-muted-foreground" }, "Block player from connecting to the server"))), /* @__PURE__ */ react_default.createElement(
-    "input",
-    {
-      type: "checkbox",
-      checked: Boolean(details?.permissions?.isBanned),
-      onChange: (e) => permissionMutation.mutate({
-        perm: "ban",
-        value: e.target.checked
-      }),
-      className: "w-5 h-5 rounded text-rose-600 focus:ring-rose-500 cursor-pointer"
-    }
-  )))), /* @__PURE__ */ react_default.createElement("div", { className: "p-5 rounded-2xl bg-card border border-border/70 space-y-4 shadow-sm" }, /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center justify-between" }, /* @__PURE__ */ react_default.createElement("h4", { className: "text-sm font-bold text-foreground flex items-center gap-2" }, /* @__PURE__ */ react_default.createElement(MapPinIcon, { className: "w-4 h-4 text-purple-400" }), t("ext.players.position") || "Current position"), /* @__PURE__ */ react_default.createElement("span", { className: "text-xs font-mono font-bold text-purple-400 bg-purple-500/10 px-2.5 py-1 rounded-lg border border-purple-500/20" }, details?.location?.world || "minecraft:overworld")), /* @__PURE__ */ react_default.createElement("div", { className: "grid grid-cols-3 gap-3" }, /* @__PURE__ */ react_default.createElement("div", { className: "coord-box" }, /* @__PURE__ */ react_default.createElement("div", { className: "text-[10px] font-extrabold text-rose-400 uppercase tracking-wider mb-0.5" }, "X Axis"), /* @__PURE__ */ react_default.createElement("div", { className: "font-mono font-extrabold text-base text-foreground" }, details?.location?.x ?? 0)), /* @__PURE__ */ react_default.createElement("div", { className: "coord-box" }, /* @__PURE__ */ react_default.createElement("div", { className: "text-[10px] font-extrabold text-emerald-400 uppercase tracking-wider mb-0.5" }, "Y Axis (Height)"), /* @__PURE__ */ react_default.createElement("div", { className: "font-mono font-extrabold text-base text-foreground" }, details?.location?.y ?? 64)), /* @__PURE__ */ react_default.createElement("div", { className: "coord-box" }, /* @__PURE__ */ react_default.createElement("div", { className: "text-[10px] font-extrabold text-blue-400 uppercase tracking-wider mb-0.5" }, "Z Axis"), /* @__PURE__ */ react_default.createElement("div", { className: "font-mono font-extrabold text-base text-foreground" }, details?.location?.z ?? 0))), /* @__PURE__ */ react_default.createElement(
-    "button",
-    {
-      type: "button",
-      onClick: () => setShowTeleport(true),
-      className: "w-full py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-sm shadow-md transition flex items-center justify-center gap-2"
-    },
-    /* @__PURE__ */ react_default.createElement(SparklesIcon, { className: "w-4 h-4" }),
-    t("ext.players.teleport") || "Teleport"
-  )))), /* @__PURE__ */ react_default.createElement("div", { className: "p-5 rounded-2xl bg-card border border-border/70 space-y-4 shadow-sm" }, /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center justify-between" }, /* @__PURE__ */ react_default.createElement("h4", { className: "text-sm font-bold text-foreground flex items-center gap-2" }, /* @__PURE__ */ react_default.createElement(BarChartIcon, { className: "w-4 h-4 text-cyan-400" }), t("ext.players.stats") || "Gameplay Statistics")), /* @__PURE__ */ react_default.createElement("div", { className: "mc-stats-grid-4" }, /* @__PURE__ */ react_default.createElement("div", { className: "p-3 rounded-xl bg-muted/40 border border-border/40 text-center" }, /* @__PURE__ */ react_default.createElement(ClockIcon, { className: "w-5 h-5 mx-auto text-cyan-400 mb-1.5" }), /* @__PURE__ */ react_default.createElement("div", { className: "text-[11px] text-muted-foreground font-medium" }, "Total Playtime"), /* @__PURE__ */ react_default.createElement("div", { className: "font-black text-sm text-foreground truncate mt-0.5" }, details?.stats?.playtimeText || "0m")), /* @__PURE__ */ react_default.createElement("div", { className: "p-3 rounded-xl bg-muted/40 border border-border/40 text-center" }, /* @__PURE__ */ react_default.createElement(SwordsIcon, { className: "w-5 h-5 mx-auto text-rose-400 mb-1.5" }), /* @__PURE__ */ react_default.createElement("div", { className: "text-[11px] text-muted-foreground font-medium" }, "Player Kills"), /* @__PURE__ */ react_default.createElement("div", { className: "font-black text-sm text-foreground mt-0.5" }, details?.stats?.playerKills ?? 0)), /* @__PURE__ */ react_default.createElement("div", { className: "p-3 rounded-xl bg-muted/40 border border-border/40 text-center" }, /* @__PURE__ */ react_default.createElement(SkullIcon, { className: "w-5 h-5 mx-auto text-muted-foreground mb-1.5" }), /* @__PURE__ */ react_default.createElement("div", { className: "text-[11px] text-muted-foreground font-medium" }, "Total Deaths"), /* @__PURE__ */ react_default.createElement("div", { className: "font-black text-sm text-foreground mt-0.5" }, details?.stats?.deaths ?? 0)), /* @__PURE__ */ react_default.createElement("div", { className: "p-3 rounded-xl bg-muted/40 border border-border/40 text-center" }, /* @__PURE__ */ react_default.createElement(GaugeIcon, { className: "w-5 h-5 mx-auto text-amber-400 mb-1.5" }), /* @__PURE__ */ react_default.createElement("div", { className: "text-[11px] text-muted-foreground font-medium" }, "Kill / Death Ratio"), /* @__PURE__ */ react_default.createElement("div", { className: "font-black text-sm text-foreground mt-0.5" }, details?.stats?.kdr ?? 0))), /* @__PURE__ */ react_default.createElement("div", { className: "mc-stats-grid-3 pt-2" }, /* @__PURE__ */ react_default.createElement("div", { className: "p-3.5 rounded-xl bg-muted/30 border border-border/30 space-y-2" }, /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center gap-1.5 text-xs font-bold text-foreground mb-1" }, /* @__PURE__ */ react_default.createElement(FootprintsIcon, { className: "w-3.5 h-3.5 text-blue-400" }), /* @__PURE__ */ react_default.createElement("span", null, "Travel & Movement")), /* @__PURE__ */ react_default.createElement("div", { className: "flex justify-between text-xs text-muted-foreground" }, /* @__PURE__ */ react_default.createElement("span", null, "Total Distance:"), /* @__PURE__ */ react_default.createElement("span", { className: "font-bold text-foreground" }, details?.stats?.distanceTotal ?? 0, " blocks")), /* @__PURE__ */ react_default.createElement("div", { className: "flex justify-between text-xs text-muted-foreground" }, /* @__PURE__ */ react_default.createElement("span", null, "Distance Sprinted:"), /* @__PURE__ */ react_default.createElement("span", { className: "font-bold text-foreground" }, details?.stats?.distanceSprinted ?? 0, " blocks")), /* @__PURE__ */ react_default.createElement("div", { className: "flex justify-between text-xs text-muted-foreground" }, /* @__PURE__ */ react_default.createElement("span", null, "Distance Walked:"), /* @__PURE__ */ react_default.createElement("span", { className: "font-bold text-foreground" }, details?.stats?.distanceWalked ?? 0, " blocks"))), /* @__PURE__ */ react_default.createElement("div", { className: "p-3.5 rounded-xl bg-muted/30 border border-border/30 space-y-2" }, /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center gap-1.5 text-xs font-bold text-foreground mb-1" }, /* @__PURE__ */ react_default.createElement(PickaxeIcon, { className: "w-3.5 h-3.5 text-amber-400" }), /* @__PURE__ */ react_default.createElement("span", null, "Mining & Construction")), /* @__PURE__ */ react_default.createElement("div", { className: "flex justify-between text-xs text-muted-foreground" }, /* @__PURE__ */ react_default.createElement("span", null, "Blocks Broken:"), /* @__PURE__ */ react_default.createElement("span", { className: "font-bold text-foreground" }, details?.stats?.blocksBroken ?? "No data")), /* @__PURE__ */ react_default.createElement("div", { className: "flex justify-between text-xs text-muted-foreground" }, /* @__PURE__ */ react_default.createElement("span", null, "Items Used:"), /* @__PURE__ */ react_default.createElement("span", { className: "font-bold text-foreground" }, details?.stats?.itemsUsed ?? "No data"))), /* @__PURE__ */ react_default.createElement("div", { className: "p-3.5 rounded-xl bg-muted/30 border border-border/30 space-y-2" }, /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center gap-1.5 text-xs font-bold text-foreground mb-1" }, /* @__PURE__ */ react_default.createElement(SwordsIcon, { className: "w-3.5 h-3.5 text-rose-400" }), /* @__PURE__ */ react_default.createElement("span", null, "Combat & Hunting")), /* @__PURE__ */ react_default.createElement("div", { className: "flex justify-between text-xs text-muted-foreground" }, /* @__PURE__ */ react_default.createElement("span", null, "Entities Killed:"), /* @__PURE__ */ react_default.createElement("span", { className: "font-bold text-foreground" }, details?.stats?.entitiesKilled ?? "No data")), /* @__PURE__ */ react_default.createElement("div", { className: "flex justify-between text-xs text-muted-foreground" }, /* @__PURE__ */ react_default.createElement("span", null, "K/D Ratio:"), /* @__PURE__ */ react_default.createElement("span", { className: "font-bold text-foreground" }, details?.stats?.kdr ?? 0))))), /* @__PURE__ */ react_default.createElement("div", { className: "p-5 rounded-2xl bg-rose-600/10 border border-rose-500/30 space-y-4 shadow-sm" }, /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center justify-between" }, /* @__PURE__ */ react_default.createElement("h4", { className: "text-sm font-bold text-rose-400 flex items-center gap-2" }, /* @__PURE__ */ react_default.createElement(TrashIcon, { className: "w-4 h-4" }), t("ext.players.purge_data") || "Delete player data"), /* @__PURE__ */ react_default.createElement("span", { className: "text-xs text-rose-400/80" }, "Permanent destructive purge tool")), /* @__PURE__ */ react_default.createElement("div", { className: "mc-purge-grid" }, /* @__PURE__ */ react_default.createElement("label", { className: "flex items-center gap-2 p-2.5 rounded-xl bg-background/50 border border-border/40 cursor-pointer hover:bg-background/80 transition" }, /* @__PURE__ */ react_default.createElement(
-    "input",
-    {
-      type: "checkbox",
-      checked: purgeOptions.experiencePoints,
-      onChange: (e) => setPurgeOptions((prev) => ({
-        ...prev,
-        experiencePoints: e.target.checked
-      })),
-      className: "rounded text-rose-600"
-    }
-  ), /* @__PURE__ */ react_default.createElement("span", null, "Experience points")), /* @__PURE__ */ react_default.createElement("label", { className: "flex items-center gap-2 p-2.5 rounded-xl bg-background/50 border border-border/40 cursor-pointer hover:bg-background/80 transition" }, /* @__PURE__ */ react_default.createElement(
-    "input",
-    {
-      type: "checkbox",
-      checked: purgeOptions.inventory,
-      onChange: (e) => setPurgeOptions((prev) => ({
-        ...prev,
-        inventory: e.target.checked
-      })),
-      className: "rounded text-rose-600"
-    }
-  ), /* @__PURE__ */ react_default.createElement("span", null, "Inventory")), /* @__PURE__ */ react_default.createElement("label", { className: "flex items-center gap-2 p-2.5 rounded-xl bg-background/50 border border-border/40 cursor-pointer hover:bg-background/80 transition" }, /* @__PURE__ */ react_default.createElement(
-    "input",
-    {
-      type: "checkbox",
-      checked: purgeOptions.enderChest,
-      onChange: (e) => setPurgeOptions((prev) => ({
-        ...prev,
-        enderChest: e.target.checked
-      })),
-      className: "rounded text-rose-600"
-    }
-  ), /* @__PURE__ */ react_default.createElement("span", null, "Ender Chest")), /* @__PURE__ */ react_default.createElement("label", { className: "flex items-center gap-2 p-2.5 rounded-xl bg-background/50 border border-border/40 cursor-pointer hover:bg-background/80 transition" }, /* @__PURE__ */ react_default.createElement(
-    "input",
-    {
-      type: "checkbox",
-      checked: purgeOptions.playerDataFile,
-      onChange: (e) => setPurgeOptions((prev) => ({
-        ...prev,
-        playerDataFile: e.target.checked
-      })),
-      className: "rounded text-rose-600"
-    }
-  ), /* @__PURE__ */ react_default.createElement("span", null, "Player data file")), /* @__PURE__ */ react_default.createElement("label", { className: "flex items-center gap-2 p-2.5 rounded-xl bg-background/50 border border-border/40 cursor-pointer hover:bg-background/80 transition" }, /* @__PURE__ */ react_default.createElement(
-    "input",
-    {
-      type: "checkbox",
-      checked: purgeOptions.statisticsFile,
-      onChange: (e) => setPurgeOptions((prev) => ({
-        ...prev,
-        statisticsFile: e.target.checked
-      })),
-      className: "rounded text-rose-600"
-    }
-  ), /* @__PURE__ */ react_default.createElement("span", null, "Statistics file")), /* @__PURE__ */ react_default.createElement("label", { className: "flex items-center gap-2 p-2.5 rounded-xl bg-background/50 border border-border/40 cursor-pointer hover:bg-background/80 transition" }, /* @__PURE__ */ react_default.createElement(
-    "input",
-    {
-      type: "checkbox",
-      checked: purgeOptions.advancementsFile,
-      onChange: (e) => setPurgeOptions((prev) => ({
-        ...prev,
-        advancementsFile: e.target.checked
-      })),
-      className: "rounded text-rose-600"
-    }
-  ), /* @__PURE__ */ react_default.createElement("span", null, "Advancements file"))), /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center justify-between pt-3 border-t border-rose-500/20" }, /* @__PURE__ */ react_default.createElement("label", { className: "flex items-center gap-2 text-xs font-bold text-foreground cursor-pointer" }, /* @__PURE__ */ react_default.createElement(
-    "input",
-    {
-      type: "checkbox",
-      checked: selectAllPurge,
-      onChange: (e) => handleToggleSelectAll(e.target.checked),
-      className: "rounded text-rose-600"
-    }
-  ), /* @__PURE__ */ react_default.createElement("span", null, "Select all categories")), /* @__PURE__ */ react_default.createElement(
-    "button",
-    {
-      type: "submit",
-      onClick: handleOpenPurgeDialog,
-      disabled: purgeMutation.isPending,
-      className: "px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs shadow-md transition flex items-center gap-2"
-    },
-    /* @__PURE__ */ react_default.createElement(TrashIcon, { className: "w-4 h-4" }),
-    t("ext.players.confirm_purge") || "Delete player data"
-  ))))), showTeleport && /* @__PURE__ */ react_default.createElement(
+  ), showTeleport && /* @__PURE__ */ react_default.createElement(
     TeleportModal,
     {
       serverId,
       uuid,
       username: details?.summary?.username || uuid,
+      isOnline: Boolean(details?.summary?.isOnline),
       currentLocation: details?.location,
       onClose: () => setShowTeleport(false),
       onSuccess: () => detailsQuery.refetch()
@@ -1290,75 +1393,85 @@ var PlayersDashboard = () => {
   const UsersIcon = icons.Users || icons.User || (() => null);
   const ServerIcon = icons.Server || (() => null);
   const RefreshIcon = icons.RefreshCw || (() => null);
-  return /* @__PURE__ */ react_default.createElement("div", { className: "p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in duration-300" }, /* @__PURE__ */ react_default.createElement("div", { className: "flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border/60" }, /* @__PURE__ */ react_default.createElement("div", null, /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ react_default.createElement("div", { className: "p-2.5 rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/20" }, /* @__PURE__ */ react_default.createElement(UsersIcon, { className: "w-6 h-6" })), /* @__PURE__ */ react_default.createElement("div", null, /* @__PURE__ */ react_default.createElement("h1", { className: "text-2xl font-black tracking-tight text-foreground" }, t("ext.players.title") || "Players Management"), /* @__PURE__ */ react_default.createElement("p", { className: "text-xs text-muted-foreground" }, t("ext.players.subtitle") || "Manage server access lists, real-time vitals, inventories, and player data.")))), /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center gap-3" }, servers.length > 1 && /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center rounded-xl bg-card border border-border/80 px-3 py-2 shadow-sm" }, /* @__PURE__ */ react_default.createElement(ServerIcon, { className: "w-4 h-4 text-muted-foreground mr-2" }), /* @__PURE__ */ react_default.createElement(
-    "select",
+  return /* @__PURE__ */ react_default.createElement(
+    "div",
     {
-      value: selectedServerId,
-      onChange: (e) => {
-        setSelectedServerId(e.target.value);
-        localStorage.setItem("selected_server_id", e.target.value);
-      },
-      className: "bg-transparent text-xs font-bold text-foreground focus:outline-none cursor-pointer"
+      className: "p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in duration-300",
+      style: { maxWidth: "1280px", marginLeft: "auto", marginRight: "auto" }
     },
-    servers.map((s) => /* @__PURE__ */ react_default.createElement("option", { key: s.id, value: s.id }, s.name, " (", s.status, ")"))
-  )), /* @__PURE__ */ react_default.createElement(
-    "button",
-    {
-      type: "button",
-      onClick: handleRefreshAll,
-      className: "p-2.5 rounded-xl bg-card hover:bg-muted border border-border/80 text-muted-foreground hover:text-foreground transition shadow-sm",
-      title: "Refresh telemetry"
-    },
-    /* @__PURE__ */ react_default.createElement(
-      RefreshIcon,
+    /* @__PURE__ */ react_default.createElement("div", { className: "flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border/60" }, /* @__PURE__ */ react_default.createElement("div", null, /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ react_default.createElement("div", { className: "p-2.5 rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/20" }, /* @__PURE__ */ react_default.createElement(UsersIcon, { className: "w-6 h-6" })), /* @__PURE__ */ react_default.createElement("div", null, /* @__PURE__ */ react_default.createElement("h1", { className: "text-2xl font-black tracking-tight text-foreground" }, t("ext.players.title") || "Players Management"), /* @__PURE__ */ react_default.createElement("p", { className: "text-xs text-muted-foreground" }, t("ext.players.subtitle") || "Manage server access lists, real-time vitals, inventories, and player data.")))), /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center gap-3" }, servers.length > 1 && /* @__PURE__ */ react_default.createElement("div", { className: "flex items-center rounded-xl bg-card border border-border/80 px-3 py-2 shadow-sm" }, /* @__PURE__ */ react_default.createElement(ServerIcon, { className: "w-4 h-4 text-muted-foreground mr-2" }), /* @__PURE__ */ react_default.createElement(
+      "select",
       {
-        className: `w-4 h-4 ${onlineQuery.isLoading ? "animate-spin" : ""}`
+        value: selectedServerId,
+        onChange: (e) => {
+          setSelectedServerId(e.target.value);
+          localStorage.setItem("selected_server_id", e.target.value);
+        },
+        className: "bg-transparent text-xs font-bold text-foreground focus:outline-none cursor-pointer"
+      },
+      servers.map((s) => /* @__PURE__ */ react_default.createElement("option", { key: s.id, value: s.id }, s.name, " (", s.status, ")"))
+    )), /* @__PURE__ */ react_default.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: handleRefreshAll,
+        className: "p-2.5 rounded-xl bg-card hover:bg-muted border border-border/80 text-muted-foreground hover:text-foreground transition shadow-sm",
+        title: "Refresh telemetry"
+      },
+      /* @__PURE__ */ react_default.createElement(
+        RefreshIcon,
+        {
+          className: `w-4 h-4 ${onlineQuery.isLoading ? "animate-spin" : ""}`
+        }
+      )
+    ))),
+    !selectedServerId ? /* @__PURE__ */ react_default.createElement("div", { className: "p-12 rounded-3xl border border-border bg-card/40 text-center text-muted-foreground" }, /* @__PURE__ */ react_default.createElement(ServerIcon, { className: "w-10 h-10 mx-auto mb-3 opacity-40 text-muted-foreground" }), /* @__PURE__ */ react_default.createElement("h3", { className: "text-base font-bold text-foreground mb-1" }, "No Server Selected"), /* @__PURE__ */ react_default.createElement("p", { className: "text-xs text-muted-foreground" }, "Please create or select a server to manage its players.")) : /* @__PURE__ */ react_default.createElement(react_default.Fragment, null, /* @__PURE__ */ react_default.createElement(
+      CategoryCards,
+      {
+        summary,
+        onOpenCategory: (cat) => setActiveCategory(cat)
+      }
+    ), /* @__PURE__ */ react_default.createElement(
+      OnlinePlayersList,
+      {
+        onlinePlayers,
+        isLoading: onlineQuery.isLoading,
+        onSelectPlayer: (uuid) => setSelectedPlayerUuid(uuid)
+      }
+    ), /* @__PURE__ */ react_default.createElement(
+      OfflinePlayersList,
+      {
+        players: allPlayers,
+        isLoading: directoryQuery.isLoading,
+        onSelectPlayer: (uuid) => setSelectedPlayerUuid(uuid)
+      }
+    )),
+    activeCategory && selectedServerId && /* @__PURE__ */ react_default.createElement(
+      CategoryListModal,
+      {
+        serverId: selectedServerId,
+        category: activeCategory,
+        onClose: () => setActiveCategory(null),
+        onChanged: () => {
+          summaryQuery.refetch();
+          directoryQuery.refetch();
+        }
+      }
+    ),
+    selectedPlayerUuid && selectedServerId && /* @__PURE__ */ react_default.createElement(
+      PlayerDetailsModal,
+      {
+        serverId: selectedServerId,
+        uuid: selectedPlayerUuid,
+        onClose: () => setSelectedPlayerUuid(null),
+        onChanged: () => {
+          summaryQuery.refetch();
+          onlineQuery.refetch();
+          directoryQuery.refetch();
+        }
       }
     )
-  ))), !selectedServerId ? /* @__PURE__ */ react_default.createElement("div", { className: "p-12 rounded-3xl border border-border bg-card/40 text-center text-muted-foreground" }, /* @__PURE__ */ react_default.createElement(ServerIcon, { className: "w-10 h-10 mx-auto mb-3 opacity-40 text-muted-foreground" }), /* @__PURE__ */ react_default.createElement("h3", { className: "text-base font-bold text-foreground mb-1" }, "No Server Selected"), /* @__PURE__ */ react_default.createElement("p", { className: "text-xs text-muted-foreground" }, "Please create or select a server to manage its players.")) : /* @__PURE__ */ react_default.createElement(react_default.Fragment, null, /* @__PURE__ */ react_default.createElement(
-    CategoryCards,
-    {
-      summary,
-      onOpenCategory: (cat) => setActiveCategory(cat)
-    }
-  ), /* @__PURE__ */ react_default.createElement(
-    OnlinePlayersList,
-    {
-      onlinePlayers,
-      isLoading: onlineQuery.isLoading,
-      onSelectPlayer: (uuid) => setSelectedPlayerUuid(uuid)
-    }
-  ), /* @__PURE__ */ react_default.createElement(
-    OfflinePlayersList,
-    {
-      players: allPlayers,
-      isLoading: directoryQuery.isLoading,
-      onSelectPlayer: (uuid) => setSelectedPlayerUuid(uuid)
-    }
-  )), activeCategory && selectedServerId && /* @__PURE__ */ react_default.createElement(
-    CategoryListModal,
-    {
-      serverId: selectedServerId,
-      category: activeCategory,
-      onClose: () => setActiveCategory(null),
-      onChanged: () => {
-        summaryQuery.refetch();
-        directoryQuery.refetch();
-      }
-    }
-  ), selectedPlayerUuid && selectedServerId && /* @__PURE__ */ react_default.createElement(
-    PlayerDetailsModal,
-    {
-      serverId: selectedServerId,
-      uuid: selectedPlayerUuid,
-      onClose: () => setSelectedPlayerUuid(null),
-      onChanged: () => {
-        summaryQuery.refetch();
-        onlineQuery.refetch();
-        directoryQuery.refetch();
-      }
-    }
-  ));
+  );
 };
 
 // frontend/src/styles/players.css
@@ -1368,7 +1481,7 @@ if (typeof document !== "undefined") {
     const style = document.createElement("style");
     style.id = styleId;
     style.setAttribute("data-extension", "com.kubek.players");
-    style.textContent = "/* Scoped styles for Kubek Players Management Extension */\n\n.players-pulse-dot {\n  width: 8px;\n  height: 8px;\n  background-color: #10b981;\n  border-radius: 9999px;\n  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);\n  animation: playersPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;\n}\n\n@keyframes playersPulse {\n  0% {\n    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);\n  }\n  70% {\n    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);\n  }\n  100% {\n    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);\n  }\n}\n\n/* 60 / 40 Split Layout */\n.mc-split-container {\n  display: flex !important;\n  flex-direction: column !important;\n  gap: 24px !important;\n  width: 100% !important;\n}\n\n.mc-split-left {\n  width: 100% !important;\n  display: flex !important;\n  flex-direction: column !important;\n  gap: 24px !important;\n}\n\n.mc-split-right {\n  width: 100% !important;\n  display: flex !important;\n  flex-direction: column !important;\n  gap: 24px !important;\n}\n\n@media (min-width: 1024px) {\n  .mc-split-container {\n    flex-direction: row !important;\n    align-items: flex-start !important;\n  }\n\n  .mc-split-left {\n    flex: 0 0 70% !important;\n    width: 70% !important;\n    max-width: 70% !important;\n  }\n\n  .mc-split-right {\n    flex: 0 0 calc(30% - 24px) !important;\n    width: calc(30% - 24px) !important;\n    max-width: calc(30% - 24px) !important;\n  }\n}\n\n/* Vitals & HUD Styles */\n.mc-hud-row {\n  display: flex !important;\n  align-items: center !important;\n  justify-content: space-between !important;\n  gap: 10px !important;\n  background: rgba(24, 24, 27, 0.5) !important;\n  border: 1px solid rgba(255, 255, 255, 0.08) !important;\n  border-radius: 16px !important;\n  padding: 10px 12px !important;\n  transition: all 0.2s ease !important;\n}\n\n.mc-hud-row:hover {\n  background: rgba(24, 24, 27, 0.75) !important;\n  border-color: rgba(255, 255, 255, 0.12) !important;\n}\n\n.mc-icons-grid {\n  display: grid !important;\n  grid-template-columns: repeat(10, 20px) !important;\n  gap: 3px !important;\n  align-items: center !important;\n  justify-items: center !important;\n}\n\n/* Authentic Minecraft Inventory Container & Slots - High Fidelity Unified Grid */\n.mc-inv-container {\n  display: inline-flex !important;\n  flex-direction: column !important;\n  align-items: center !important;\n  justify-content: center !important;\n  gap: 6px !important;\n  background: #c6c6c6 !important;\n  padding: 14px 16px !important;\n  border-top: 4px solid #ffffff !important;\n  border-left: 4px solid #ffffff !important;\n  border-bottom: 4px solid #555555 !important;\n  border-right: 4px solid #555555 !important;\n  border-radius: 0px !important;\n  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4) !important;\n  box-sizing: border-box !important;\n}\n\n.mc-slot {\n  width: 54px !important;\n  height: 54px !important;\n  min-width: 54px !important;\n  min-height: 54px !important;\n  background: #8b8b8b !important;\n  border-top: 3px solid #373737 !important;\n  border-left: 3px solid #373737 !important;\n  border-bottom: 3px solid #ffffff !important;\n  border-right: 3px solid #ffffff !important;\n  border-radius: 0px !important;\n  display: flex !important;\n  align-items: center !important;\n  justify-content: center !important;\n  position: relative !important;\n  box-sizing: border-box !important;\n  image-rendering: pixelated !important;\n  transition: background 0.1s ease !important;\n}\n\n.mc-slot:hover {\n  background: #a0a0a0 !important;\n  outline: 2px solid #ffffff !important;\n  z-index: 10 !important;\n}\n\n.mc-slot-filled {\n  background: #8b8b8b !important;\n}\n\n.mc-slot-item-img {\n  width: 40px !important;\n  height: 40px !important;\n  object-fit: contain !important;\n  image-rendering: pixelated !important;\n}\n\n.image-pixelated {\n  image-rendering: pixelated !important;\n  image-rendering: -moz-crisp-edges !important;\n  image-rendering: crisp-edges !important;\n}\n\n.mc-slot-item-text {\n  font-size: 9px !important;\n  font-weight: 800 !important;\n  text-align: center !important;\n  line-height: 1 !important;\n  color: #ffffff !important;\n  text-shadow: 1px 1px 0 #000 !important;\n  word-break: break-all !important;\n  padding: 1px !important;\n}\n\n.mc-slot-count {\n  position: absolute !important;\n  bottom: 2px !important;\n  right: 3px !important;\n  font-family: monospace !important;\n  font-size: 13px !important;\n  font-weight: 900 !important;\n  color: #ffffff !important;\n  text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000 !important;\n  pointer-events: none !important;\n}\n\n.mc-ender-grid {\n  display: grid !important;\n  grid-template-columns: repeat(9, 54px) !important;\n  grid-template-rows: repeat(3, 54px) !important;\n  gap: 4px !important;\n}\n\n/* XP Bar */\n.mc-bar-bg {\n  width: 100% !important;\n  height: 8px !important;\n  background: #18181b !important;\n  border: 1px solid #27272a !important;\n  border-radius: 9999px !important;\n  overflow: hidden !important;\n  position: relative !important;\n}\n\n.mc-bar-xp {\n  height: 100% !important;\n  background: linear-gradient(90deg, #10b981, #34d399, #6ee7b7) !important;\n  border-radius: 9999px !important;\n  box-shadow: 0 0 10px rgba(16, 185, 129, 0.6) !important;\n  transition: width 0.4s ease !important;\n}\n\n/* Position Axis Boxes */\n.coord-box {\n  background: rgba(24, 24, 27, 0.6) !important;\n  border: 1px solid rgba(255, 255, 255, 0.08) !important;\n  border-radius: 14px !important;\n  padding: 10px 8px !important;\n  text-align: center !important;\n  transition: border-color 0.2s ease !important;\n}\n\n.coord-box:hover {\n  border-color: rgba(255, 255, 255, 0.2) !important;\n}\n\n/* Stats Grids */\n.mc-stats-grid-4 {\n  display: grid !important;\n  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)) !important;\n  gap: 12px !important;\n}\n\n.mc-stats-grid-3 {\n  display: grid !important;\n  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) !important;\n  gap: 12px !important;\n}\n\n.mc-purge-grid {\n  display: grid !important;\n  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)) !important;\n  gap: 10px !important;\n}\n";
+    style.textContent = "/* Scoped styles for Kubek Players Management Extension */\n\n.players-pulse-dot {\n  width: 8px;\n  height: 8px;\n  background-color: #10b981;\n  border-radius: 9999px;\n  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);\n  animation: playersPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;\n}\n\n@keyframes playersPulse {\n  0% {\n    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);\n  }\n  70% {\n    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);\n  }\n  100% {\n    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);\n  }\n}\n\n/* 60 / 40 Split Layout */\n.mc-split-container {\n  display: flex !important;\n  flex-direction: column !important;\n  gap: 16px !important;\n  width: 100% !important;\n}\n\n.mc-split-left {\n  width: 100% !important;\n  display: flex !important;\n  flex-direction: column !important;\n  gap: 16px !important;\n}\n\n.mc-split-right {\n  width: 100% !important;\n  display: flex !important;\n  flex-direction: column !important;\n  gap: 16px !important;\n}\n\n@media (min-width: 1024px) {\n  .mc-split-container {\n    flex-direction: row !important;\n    align-items: flex-start !important;\n  }\n\n  .mc-split-left {\n    flex: 0 0 70% !important;\n    width: 70% !important;\n    max-width: 70% !important;\n  }\n\n  .mc-split-right {\n    flex: 0 0 calc(30% - 24px) !important;\n    width: calc(30% - 24px) !important;\n    max-width: calc(30% - 24px) !important;\n  }\n}\n\n/* Vitals & HUD Styles */\n.mc-hud-row {\n  display: flex !important;\n  align-items: center !important;\n  justify-content: space-between !important;\n  gap: 8px !important;\n  background: rgba(24, 24, 27, 0.5) !important;\n  border: 1px solid rgba(255, 255, 255, 0.08) !important;\n  border-radius: 12px !important;\n  padding: 8px 10px !important;\n  transition: all 0.2s ease !important;\n}\n\n.mc-hud-row:hover {\n  background: rgba(24, 24, 27, 0.75) !important;\n  border-color: rgba(255, 255, 255, 0.12) !important;\n}\n\n.mc-icons-grid {\n  display: grid !important;\n  grid-template-columns: repeat(10, 20px) !important;\n  gap: 3px !important;\n  align-items: center !important;\n  justify-items: center !important;\n}\n\n/* Authentic Minecraft Inventory Container & Slots - High Fidelity Unified Grid */\n.mc-inv-container {\n  --mc-slot-size: 44px;\n  display: inline-flex !important;\n  flex-direction: column !important;\n  align-items: center !important;\n  justify-content: center !important;\n  gap: 4px !important;\n  background: #c6c6c6 !important;\n  padding: 10px 12px !important;\n  border-top: 3px solid #ffffff !important;\n  border-left: 3px solid #ffffff !important;\n  border-bottom: 3px solid #555555 !important;\n  border-right: 3px solid #555555 !important;\n  border-radius: 0px !important;\n  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35) !important;\n  box-sizing: border-box !important;\n}\n\n.mc-slot {\n  width: var(--mc-slot-size) !important;\n  height: var(--mc-slot-size) !important;\n  min-width: var(--mc-slot-size) !important;\n  min-height: var(--mc-slot-size) !important;\n  background: #8b8b8b !important;\n  border-top: 2px solid #373737 !important;\n  border-left: 2px solid #373737 !important;\n  border-bottom: 2px solid #ffffff !important;\n  border-right: 2px solid #ffffff !important;\n  border-radius: 0px !important;\n  display: flex !important;\n  align-items: center !important;\n  justify-content: center !important;\n  position: relative !important;\n  box-sizing: border-box !important;\n  image-rendering: pixelated !important;\n  transition: background 0.1s ease !important;\n}\n\n.mc-slot:hover {\n  background: #a0a0a0 !important;\n  outline: 2px solid #ffffff !important;\n  z-index: 10 !important;\n}\n\n.mc-slot-filled {\n  background: #8b8b8b !important;\n}\n\n.mc-slot-item-img {\n  width: calc(var(--mc-slot-size) - 12px) !important;\n  height: calc(var(--mc-slot-size) - 12px) !important;\n  object-fit: contain !important;\n  image-rendering: pixelated !important;\n}\n\n.image-pixelated {\n  image-rendering: pixelated !important;\n  image-rendering: -moz-crisp-edges !important;\n  image-rendering: crisp-edges !important;\n}\n\n.mc-slot-item-text {\n  font-size: 9px !important;\n  font-weight: 800 !important;\n  text-align: center !important;\n  line-height: 1 !important;\n  color: #ffffff !important;\n  text-shadow: 1px 1px 0 #000 !important;\n  word-break: break-all !important;\n  padding: 1px !important;\n}\n\n.mc-slot-count {\n  position: absolute !important;\n  bottom: 1px !important;\n  right: 2px !important;\n  font-family: monospace !important;\n  font-size: 12px !important;\n  font-weight: 900 !important;\n  color: #ffffff !important;\n  text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000 !important;\n  pointer-events: none !important;\n}\n\n.mc-ender-grid {\n  display: grid !important;\n  grid-template-columns: repeat(9, var(--mc-slot-size)) !important;\n  grid-template-rows: repeat(3, var(--mc-slot-size)) !important;\n  gap: 4px !important;\n}\n\n/* XP Bar */\n.mc-bar-bg {\n  width: 100% !important;\n  height: 8px !important;\n  background: #18181b !important;\n  border: 1px solid #27272a !important;\n  border-radius: 9999px !important;\n  overflow: hidden !important;\n  position: relative !important;\n}\n\n.mc-bar-xp {\n  height: 100% !important;\n  background: linear-gradient(90deg, #10b981, #34d399, #6ee7b7) !important;\n  border-radius: 9999px !important;\n  box-shadow: 0 0 10px rgba(16, 185, 129, 0.6) !important;\n  transition: width 0.4s ease !important;\n}\n\n/* Position Axis Boxes */\n.coord-box {\n  background: rgba(24, 24, 27, 0.6) !important;\n  border: 1px solid rgba(255, 255, 255, 0.08) !important;\n  border-radius: 12px !important;\n  padding: 8px 6px !important;\n  text-align: center !important;\n  transition: border-color 0.2s ease !important;\n}\n\n.coord-box:hover {\n  border-color: rgba(255, 255, 255, 0.2) !important;\n}\n\n/* Stats Grids */\n.mc-stats-grid-4 {\n  display: grid !important;\n  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)) !important;\n  gap: 10px !important;\n}\n\n.mc-stats-grid-3 {\n  display: grid !important;\n  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;\n  gap: 10px !important;\n}\n\n.mc-purge-grid {\n  display: grid !important;\n  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)) !important;\n  gap: 10px !important;\n}\n\n/* Keep the inventory readable on narrower screens without forcing the modal wider */\n@media (max-width: 900px) {\n  .mc-inv-container {\n    --mc-slot-size: 36px;\n  }\n  .mc-slot-count {\n    font-size: 10px !important;\n  }\n}\n\n@media (max-width: 520px) {\n  .mc-inv-container {\n    --mc-slot-size: 30px;\n    padding: 8px !important;\n  }\n  .mc-slot-count {\n    font-size: 9px !important;\n  }\n}\n";
     document.head.appendChild(style);
   }
 }

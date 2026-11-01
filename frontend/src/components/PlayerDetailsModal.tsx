@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { alertMutationError } from "../utils/errors";
 import {
   MinecraftHeart,
   MinecraftFood,
@@ -38,9 +39,6 @@ export const PlayerDetailsModal: React.FC<PlayerDetailsModalProps> = ({
 
   // Purge Checkbox States
   const [purgeOptions, setPurgeOptions] = useState({
-    experiencePoints: false,
-    inventory: false,
-    enderChest: false,
     playerDataFile: false,
     statisticsFile: false,
     advancementsFile: false,
@@ -64,6 +62,7 @@ export const PlayerDetailsModal: React.FC<PlayerDetailsModalProps> = ({
       detailsQuery.refetch();
       onChanged();
     },
+    onError: alertMutationError,
   });
 
   const gamemodeMutation = query.useMutation({
@@ -73,6 +72,7 @@ export const PlayerDetailsModal: React.FC<PlayerDetailsModalProps> = ({
       detailsQuery.refetch();
       onChanged();
     },
+    onError: alertMutationError,
   });
 
   const kickMutation = query.useMutation({
@@ -82,6 +82,7 @@ export const PlayerDetailsModal: React.FC<PlayerDetailsModalProps> = ({
       detailsQuery.refetch();
       onChanged();
     },
+    onError: alertMutationError,
   });
 
   const permissionMutation = query.useMutation({
@@ -91,6 +92,7 @@ export const PlayerDetailsModal: React.FC<PlayerDetailsModalProps> = ({
       detailsQuery.refetch();
       onChanged();
     },
+    onError: alertMutationError,
   });
 
   const purgeMutation = query.useMutation({
@@ -102,6 +104,7 @@ export const PlayerDetailsModal: React.FC<PlayerDetailsModalProps> = ({
       onChanged();
       alert("Selected player data has been purged successfully.");
     },
+    onError: alertMutationError,
   });
 
   const handleCopyUuid = () => {
@@ -115,9 +118,6 @@ export const PlayerDetailsModal: React.FC<PlayerDetailsModalProps> = ({
   const handleToggleSelectAll = (checked: boolean) => {
     setSelectAllPurge(checked);
     setPurgeOptions({
-      experiencePoints: checked,
-      inventory: checked,
-      enderChest: checked,
       playerDataFile: checked,
       statisticsFile: checked,
       advancementsFile: checked,
@@ -202,8 +202,8 @@ export const PlayerDetailsModal: React.FC<PlayerDetailsModalProps> = ({
     }
 
     const cleanId = (item.id || "").replace("minecraft:", "");
-    const itemImgUrl = `https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/1.20.4/assets/minecraft/textures/item/${cleanId}.png`;
-    const blockImgUrl = `https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/1.20.4/assets/minecraft/textures/block/${cleanId}.png`;
+    const itemImgUrl = `https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/1.21.9/assets/minecraft/textures/item/${cleanId}.png`;
+    const blockImgUrl = `https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/1.21.9/assets/minecraft/textures/block/${cleanId}.png`;
 
     return (
       <div
@@ -241,9 +241,12 @@ export const PlayerDetailsModal: React.FC<PlayerDetailsModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-200">
-      <div className="bg-card border border-border/80 w-full max-w-6xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+      <div
+        className="bg-card border border-border/80 w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden flex flex-col"
+        style={{ maxHeight: "92vh", maxWidth: "1040px" }}
+      >
         {/* Top Control Bar */}
-        <div className="flex items-center justify-between px-6 py-3.5 border-b border-border/50 bg-muted/30">
+        <div className="flex items-center justify-between px-4 sm:px-5 py-3 border-b border-border/50 bg-muted/30">
           <div className="flex items-center gap-3">
             <UserIcon className="w-5 h-5 text-primary" />
             <h3 className="font-bold text-base text-foreground">
@@ -283,17 +286,24 @@ export const PlayerDetailsModal: React.FC<PlayerDetailsModalProps> = ({
             Loading player details...
           </div>
         ) : (
-          <div className="p-6 overflow-y-auto flex-1 space-y-6">
+          <div
+            className="p-4 sm:p-5 flex-1 space-y-4"
+            style={{
+              minHeight: 0,
+              overflowY: "auto",
+              overscrollBehavior: "contain",
+            }}
+          >
             {/* 1. Header Banner */}
-            <div className="p-5 rounded-2xl bg-gradient-to-r from-muted/60 to-muted/20 border border-border/70 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-muted/60 to-muted/20 border border-border/70 flex flex-col md:flex-row md:items-center justify-between gap-3">
               <div className="flex items-center gap-4">
                 <div className="relative">
                   <img
-                    src={details?.summary?.skinAvatarUrl || `https://crafatar.com/avatars/${details?.summary?.username}?size=56`}
+                    src={details?.summary?.skinAvatarUrl || `https://mc-heads.net/avatar/${details?.summary?.username}/56`}
                     alt={details?.summary?.username}
                     className="w-14 h-14 rounded-2xl bg-background shadow-md border-2 border-border/80 object-cover"
                     onError={(e: any) => {
-                      e.target.src = "https://crafatar.com/avatars/steve?size=56";
+                      e.target.src = "https://mc-heads.net/avatar/MHF_Steve/56";
                     }}
                   />
                   {details?.summary?.isOnline && (
@@ -339,7 +349,7 @@ export const PlayerDetailsModal: React.FC<PlayerDetailsModalProps> = ({
                 <GamemodeSelect
                   value={details?.gamemode || "Survival"}
                   onChange={(mode) => gamemodeMutation.mutate(mode)}
-                  disabled={gamemodeMutation.isPending}
+                  disabled={gamemodeMutation.isPending || !details?.summary?.isOnline}
                 />
 
                 {/* Kick Button */}
@@ -360,7 +370,7 @@ export const PlayerDetailsModal: React.FC<PlayerDetailsModalProps> = ({
               {/* LEFT 60% COLUMN (Health and Experience + Inventory) */}
               <div className="mc-split-left">
                 {/* Module 1: Vitals & Experience */}
-                <div className="p-5 rounded-2xl bg-card border border-border/70 space-y-4 shadow-sm">
+                <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-4 shadow-sm">
                   <div className="flex items-center justify-between">
                     <h4 className="text-sm font-bold text-foreground flex items-center gap-2">
                       <ActivityIcon className="w-4 h-4 text-emerald-400" />
@@ -386,7 +396,7 @@ export const PlayerDetailsModal: React.FC<PlayerDetailsModalProps> = ({
                     <button
                       type="button"
                       onClick={() => vitalsMutation.mutate("kill")}
-                      disabled={vitalsMutation.isPending}
+                      disabled={vitalsMutation.isPending || !details?.summary?.isOnline}
                       className="w-20 py-1.5 rounded-xl bg-rose-600/15 hover:bg-rose-600 border border-rose-500/30 text-rose-400 hover:text-white font-bold text-xs transition flex items-center justify-center gap-1.5 flex-shrink-0"
                       title="Kill player"
                     >
@@ -406,7 +416,7 @@ export const PlayerDetailsModal: React.FC<PlayerDetailsModalProps> = ({
                       <button
                         type="button"
                         onClick={() => vitalsMutation.mutate("heal")}
-                        disabled={vitalsMutation.isPending}
+                        disabled={vitalsMutation.isPending || !details?.summary?.isOnline}
                         className="w-20 py-1.5 rounded-xl bg-emerald-600/15 hover:bg-emerald-600 border border-emerald-500/30 text-emerald-400 hover:text-white font-bold text-xs transition flex items-center justify-center gap-1.5 flex-shrink-0"
                         title="Heal player"
                       >
@@ -421,7 +431,7 @@ export const PlayerDetailsModal: React.FC<PlayerDetailsModalProps> = ({
                     <button
                       type="button"
                       onClick={() => vitalsMutation.mutate("starve")}
-                      disabled={vitalsMutation.isPending}
+                      disabled={vitalsMutation.isPending || !details?.summary?.isOnline}
                       className="w-20 py-1.5 rounded-xl bg-rose-600/15 hover:bg-rose-600 border border-rose-500/30 text-rose-400 hover:text-white font-bold text-xs transition flex items-center justify-center gap-1.5 flex-shrink-0"
                       title="Starve player"
                     >
@@ -441,7 +451,7 @@ export const PlayerDetailsModal: React.FC<PlayerDetailsModalProps> = ({
                       <button
                         type="button"
                         onClick={() => vitalsMutation.mutate("feed")}
-                        disabled={vitalsMutation.isPending}
+                        disabled={vitalsMutation.isPending || !details?.summary?.isOnline}
                         className="w-20 py-1.5 rounded-xl bg-emerald-600/15 hover:bg-emerald-600 border border-emerald-500/30 text-emerald-400 hover:text-white font-bold text-xs transition flex items-center justify-center gap-1.5 flex-shrink-0"
                         title="Feed player"
                       >
@@ -453,7 +463,7 @@ export const PlayerDetailsModal: React.FC<PlayerDetailsModalProps> = ({
                 </div>
 
                 {/* Module 2: Inventory Viewer (Exact Authentic Centered Minecraft GUI) */}
-                <div className="p-5 rounded-2xl bg-card border border-border/70 space-y-4 shadow-sm">
+                <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-4 shadow-sm">
                   <div className="flex items-center justify-between">
                     <h4 className="text-sm font-bold text-foreground flex items-center gap-2">
                       <BoxIcon className="w-4 h-4 text-amber-400" />
@@ -496,8 +506,9 @@ export const PlayerDetailsModal: React.FC<PlayerDetailsModalProps> = ({
                           <div
                             className="grid gap-1"
                             style={{
-                              gridTemplateColumns: "54px 54px repeat(9, 54px)",
-                              gridTemplateRows: "repeat(3, 54px)",
+                              gridTemplateColumns:
+                                "var(--mc-slot-size) var(--mc-slot-size) repeat(9, var(--mc-slot-size))",
+                              gridTemplateRows: "repeat(3, var(--mc-slot-size))",
                             }}
                           >
                             {/* Row 1: Helmet + Spacer + Storage 0..8 */}
@@ -506,7 +517,13 @@ export const PlayerDetailsModal: React.FC<PlayerDetailsModalProps> = ({
                               "armor-helmet",
                               <SlotHelmetIcon />,
                             )}
-                            <div className="w-[54px] h-[54px] opacity-0 pointer-events-none" />
+                            <div
+                              className="opacity-0 pointer-events-none"
+                              style={{
+                                width: "var(--mc-slot-size)",
+                                height: "var(--mc-slot-size)",
+                              }}
+                            />
                             {(details?.inventory?.main?.slice(0, 9) || Array(9).fill(null)).map(
                               (item: any, idx: number) =>
                                 renderSlot(item, `main-slot-${idx}`),
@@ -518,7 +535,13 @@ export const PlayerDetailsModal: React.FC<PlayerDetailsModalProps> = ({
                               "armor-chestplate",
                               <SlotChestplateIcon />,
                             )}
-                            <div className="w-[54px] h-[54px] opacity-0 pointer-events-none" />
+                            <div
+                              className="opacity-0 pointer-events-none"
+                              style={{
+                                width: "var(--mc-slot-size)",
+                                height: "var(--mc-slot-size)",
+                              }}
+                            />
                             {(details?.inventory?.main?.slice(9, 18) || Array(9).fill(null)).map(
                               (item: any, idx: number) =>
                                 renderSlot(item, `main-slot-${9 + idx}`),
@@ -530,7 +553,13 @@ export const PlayerDetailsModal: React.FC<PlayerDetailsModalProps> = ({
                               "armor-leggings",
                               <SlotLeggingsIcon />,
                             )}
-                            <div className="w-[54px] h-[54px] opacity-0 pointer-events-none" />
+                            <div
+                              className="opacity-0 pointer-events-none"
+                              style={{
+                                width: "var(--mc-slot-size)",
+                                height: "var(--mc-slot-size)",
+                              }}
+                            />
                             {(details?.inventory?.main?.slice(18, 27) || Array(9).fill(null)).map(
                               (item: any, idx: number) =>
                                 renderSlot(item, `main-slot-${18 + idx}`),
@@ -544,8 +573,9 @@ export const PlayerDetailsModal: React.FC<PlayerDetailsModalProps> = ({
                           <div
                             className="grid gap-1"
                             style={{
-                              gridTemplateColumns: "54px 54px repeat(9, 54px)",
-                              gridTemplateRows: "54px",
+                              gridTemplateColumns:
+                                "var(--mc-slot-size) var(--mc-slot-size) repeat(9, var(--mc-slot-size))",
+                              gridTemplateRows: "var(--mc-slot-size)",
                             }}
                           >
                             {renderSlot(
@@ -581,7 +611,7 @@ export const PlayerDetailsModal: React.FC<PlayerDetailsModalProps> = ({
               {/* RIGHT 40% COLUMN (Control + Teleport) */}
               <div className="mc-split-right">
                 {/* Module 3: Control (Permission Toggles) */}
-                <div className="p-5 rounded-2xl bg-card border border-border/70 space-y-3.5 shadow-sm">
+                <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-3.5 shadow-sm">
                   <h4 className="text-sm font-bold text-foreground flex items-center gap-2">
                     <ShieldIcon className="w-4 h-4 text-blue-400" />
                     {t("ext.players.control") || "Control"}
@@ -663,18 +693,23 @@ export const PlayerDetailsModal: React.FC<PlayerDetailsModalProps> = ({
                 </div>
 
                 {/* Module 4: Current Position & Teleport */}
-                <div className="p-5 rounded-2xl bg-card border border-border/70 space-y-4 shadow-sm">
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2">
+                <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-4 shadow-sm">
+                  <div className="flex items-center justify-between gap-2" style={{ flexWrap: "wrap" }}>
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2" style={{ whiteSpace: "nowrap" }}>
                       <MapPinIcon className="w-4 h-4 text-purple-400" />
-                      {t("ext.players.position") || "Current position"}
+                      {details?.summary?.isOnline
+                        ? t("ext.players.position") || "Current position"
+                        : t("ext.players.last_position") || "Last known position"}
                     </h4>
                     <span className="text-xs font-mono font-bold text-purple-400 bg-purple-500/10 px-2.5 py-1 rounded-lg border border-purple-500/20">
                       {details?.location?.world || "minecraft:overworld"}
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-3">
+                  <div
+                    className="grid gap-3"
+                    style={{ gridTemplateColumns: "repeat(3, minmax(0, 1fr))" }}
+                  >
                     <div className="coord-box">
                       <div className="text-[10px] font-extrabold text-rose-400 uppercase tracking-wider mb-0.5">X Axis</div>
                       <div className="font-mono font-extrabold text-base text-foreground">
@@ -695,6 +730,13 @@ export const PlayerDetailsModal: React.FC<PlayerDetailsModalProps> = ({
                     </div>
                   </div>
 
+                  <p className="text-[10px] text-muted-foreground">
+                    {t("ext.players.player_data_saved") || "Player data saved"}:{" "}
+                    {details?.dataUpdatedAt
+                      ? new Date(details.dataUpdatedAt).toLocaleString()
+                      : "no data file found"}
+                  </p>
+
                   <button
                     type="button"
                     onClick={() => setShowTeleport(true)}
@@ -704,11 +746,56 @@ export const PlayerDetailsModal: React.FC<PlayerDetailsModalProps> = ({
                     {t("ext.players.teleport") || "Teleport"}
                   </button>
                 </div>
+
+                {/* Module 5: Last death location */}
+                <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-4 shadow-sm">
+                  <div className="flex items-center justify-between gap-2" style={{ flexWrap: "wrap" }}>
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2" style={{ whiteSpace: "nowrap" }}>
+                      <SkullIcon className="w-4 h-4 text-rose-400" />
+                      {t("ext.players.last_death") || "Last death"}
+                    </h4>
+                    {details?.lastDeath && (
+                      <span className="text-xs font-mono font-bold text-rose-400 bg-rose-500/10 px-2.5 py-1 rounded-lg border border-rose-500/20">
+                        {details.lastDeath.world}
+                      </span>
+                    )}
+                  </div>
+
+                  {details?.lastDeath ? (
+                    <div
+                      className="grid gap-3"
+                      style={{ gridTemplateColumns: "repeat(3, minmax(0, 1fr))" }}
+                    >
+                      <div className="coord-box">
+                        <div className="text-[10px] font-extrabold text-rose-400 uppercase tracking-wider mb-0.5">X Axis</div>
+                        <div className="font-mono font-extrabold text-base text-foreground">
+                          {details.lastDeath.x}
+                        </div>
+                      </div>
+                      <div className="coord-box">
+                        <div className="text-[10px] font-extrabold text-emerald-400 uppercase tracking-wider mb-0.5">Y Axis (Height)</div>
+                        <div className="font-mono font-extrabold text-base text-foreground">
+                          {details.lastDeath.y}
+                        </div>
+                      </div>
+                      <div className="coord-box">
+                        <div className="text-[10px] font-extrabold text-blue-400 uppercase tracking-wider mb-0.5">Z Axis</div>
+                        <div className="font-mono font-extrabold text-base text-foreground">
+                          {details.lastDeath.z}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">
+                      No death location recorded for this player.
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
 
             {/* BOTTOM SECTION: FULL WIDTH GAMEPLAY STATISTICS */}
-            <div className="p-5 rounded-2xl bg-card border border-border/70 space-y-4 shadow-sm">
+            <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-4 shadow-sm">
               <div className="flex items-center justify-between">
                 <h4 className="text-sm font-bold text-foreground flex items-center gap-2">
                   <BarChartIcon className="w-4 h-4 text-cyan-400" />
@@ -805,7 +892,7 @@ export const PlayerDetailsModal: React.FC<PlayerDetailsModalProps> = ({
             </div>
 
             {/* BOTTOM SECTION: FULL WIDTH DELETE PLAYER DATA */}
-            <div className="p-5 rounded-2xl bg-rose-600/10 border border-rose-500/30 space-y-4 shadow-sm">
+            <div className="p-4 rounded-2xl bg-rose-600/10 border border-rose-500/30 space-y-4 shadow-sm">
               <div className="flex items-center justify-between">
                 <h4 className="text-sm font-bold text-rose-400 flex items-center gap-2">
                   <TrashIcon className="w-4 h-4" />
@@ -818,48 +905,6 @@ export const PlayerDetailsModal: React.FC<PlayerDetailsModalProps> = ({
                 <label className="flex items-center gap-2 p-2.5 rounded-xl bg-background/50 border border-border/40 cursor-pointer hover:bg-background/80 transition">
                   <input
                     type="checkbox"
-                    checked={purgeOptions.experiencePoints}
-                    onChange={(e) =>
-                      setPurgeOptions((prev: any) => ({
-                        ...prev,
-                        experiencePoints: e.target.checked,
-                      }))
-                    }
-                    className="rounded text-rose-600"
-                  />
-                  <span>Experience points</span>
-                </label>
-                <label className="flex items-center gap-2 p-2.5 rounded-xl bg-background/50 border border-border/40 cursor-pointer hover:bg-background/80 transition">
-                  <input
-                    type="checkbox"
-                    checked={purgeOptions.inventory}
-                    onChange={(e) =>
-                      setPurgeOptions((prev: any) => ({
-                        ...prev,
-                        inventory: e.target.checked,
-                      }))
-                    }
-                    className="rounded text-rose-600"
-                  />
-                  <span>Inventory</span>
-                </label>
-                <label className="flex items-center gap-2 p-2.5 rounded-xl bg-background/50 border border-border/40 cursor-pointer hover:bg-background/80 transition">
-                  <input
-                    type="checkbox"
-                    checked={purgeOptions.enderChest}
-                    onChange={(e) =>
-                      setPurgeOptions((prev: any) => ({
-                        ...prev,
-                        enderChest: e.target.checked,
-                      }))
-                    }
-                    className="rounded text-rose-600"
-                  />
-                  <span>Ender Chest</span>
-                </label>
-                <label className="flex items-center gap-2 p-2.5 rounded-xl bg-background/50 border border-border/40 cursor-pointer hover:bg-background/80 transition">
-                  <input
-                    type="checkbox"
                     checked={purgeOptions.playerDataFile}
                     onChange={(e) =>
                       setPurgeOptions((prev: any) => ({
@@ -869,7 +914,7 @@ export const PlayerDetailsModal: React.FC<PlayerDetailsModalProps> = ({
                     }
                     className="rounded text-rose-600"
                   />
-                  <span>Player data file</span>
+                  <span>Player data (XP, inventory, ender chest, position)</span>
                 </label>
                 <label className="flex items-center gap-2 p-2.5 rounded-xl bg-background/50 border border-border/40 cursor-pointer hover:bg-background/80 transition">
                   <input
@@ -933,6 +978,7 @@ export const PlayerDetailsModal: React.FC<PlayerDetailsModalProps> = ({
           serverId={serverId}
           uuid={uuid}
           username={details?.summary?.username || uuid}
+          isOnline={Boolean(details?.summary?.isOnline)}
           currentLocation={details?.location}
           onClose={() => setShowTeleport(false)}
           onSuccess={() => detailsQuery.refetch()}

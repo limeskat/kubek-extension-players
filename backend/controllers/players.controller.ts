@@ -11,6 +11,10 @@ import type {
   PurgeDataOptions,
 } from "../types";
 
+const SERVER_NOT_RUNNING = "Server is not running. Start it and try again.";
+const ACTION_FAILED =
+  "The action could not be applied. The server is stopped, or the player has never joined this server.";
+
 export function createPlayersRoutes(
   files: MinecraftFilesService,
   nbtParser: NbtParserService,
@@ -116,9 +120,7 @@ export function createPlayersRoutes(
 
         // Read Statistics
         const statsPath = files.findPlayerStatsPath(serverId, cleanUuid);
-        const statsData = statsPath
-          ? statsParser.parseStatsFile(statsPath)
-          : statsParser.parseStatsFile("");
+        const statsData = statsParser.parseStatsFile(statsPath ?? "");
 
         // Read Access Permissions
         const whitelist = files.getWhitelist(serverId);
@@ -141,6 +143,11 @@ export function createPlayersRoutes(
             b.name.toLowerCase() === username.toLowerCase(),
         );
 
+        const dataUpdatedAt =
+          datPath && fs.existsSync(datPath)
+            ? fs.statSync(datPath).mtime.toISOString()
+            : null;
+
         const details: PlayerDetails = {
           summary: {
             uuid: cleanUuid,
@@ -156,9 +163,11 @@ export function createPlayersRoutes(
             isBanned,
           },
           location: nbtParser.extractLocation(nbtData),
+          lastDeath: nbtParser.extractLastDeath(nbtData),
           inventory: nbtParser.extractInventory(nbtData),
           stats: statsData,
           lastRefreshedText: new Date().toLocaleTimeString(),
+          dataUpdatedAt,
         };
 
         res.json(details);
@@ -177,19 +186,23 @@ export function createPlayersRoutes(
         const username = resolvePlayerName(serverId, uuid);
 
         if (action === "heal") {
-          await executor.healPlayer(serverId, username);
+          const ok = await executor.healPlayer(serverId, username);
+          if (!ok) return res.status(409).json({ error: SERVER_NOT_RUNNING });
           return res.json({ success: true, message: `Healed ${username}` });
         }
         if (action === "feed") {
-          await executor.feedPlayer(serverId, username);
+          const ok = await executor.feedPlayer(serverId, username);
+          if (!ok) return res.status(409).json({ error: SERVER_NOT_RUNNING });
           return res.json({ success: true, message: `Fed ${username}` });
         }
         if (action === "kill") {
-          await executor.killPlayer(serverId, username);
+          const ok = await executor.killPlayer(serverId, username);
+          if (!ok) return res.status(409).json({ error: SERVER_NOT_RUNNING });
           return res.json({ success: true, message: `Killed ${username}` });
         }
         if (action === "starve") {
-          await executor.starvePlayer(serverId, username);
+          const ok = await executor.starvePlayer(serverId, username);
+          if (!ok) return res.status(409).json({ error: SERVER_NOT_RUNNING });
           return res.json({ success: true, message: `Starved ${username}` });
         }
 
@@ -210,7 +223,8 @@ export function createPlayersRoutes(
           return res.status(400).json({ error: "Missing gamemode in request body" });
         }
         const username = resolvePlayerName(serverId, uuid);
-        await executor.setGamemode(serverId, username, gamemode);
+        const ok = await executor.setGamemode(serverId, username, gamemode);
+        if (!ok) return res.status(409).json({ error: SERVER_NOT_RUNNING });
         res.json({ success: true, message: `Updated gamemode of ${username} to ${gamemode}` });
       },
     },
@@ -225,7 +239,8 @@ export function createPlayersRoutes(
         const body = (req.body as { reason?: string }) || {};
         const reason = body.reason || "Kicked by administrator";
         const username = resolvePlayerName(serverId, uuid);
-        await executor.kickPlayer(serverId, username, reason);
+        const ok = await executor.kickPlayer(serverId, username, reason);
+        if (!ok) return res.status(409).json({ error: SERVER_NOT_RUNNING });
         res.json({ success: true, message: `Kicked player ${username}` });
       },
     },
@@ -238,17 +253,59 @@ export function createPlayersRoutes(
       handler: async (req, res) => {
         const { serverId, uuid } = req.params;
         const body = (req.body || {}) as { world?: string; x?: number; y?: number; z?: number };
-        if (body.x === undefined || body.y === undefined || body.z === undefined) {
-          return res.status(400).json({ error: "Missing x, y, or z coordinates" });
+        const x = Number(body.x);
+        const y = Number(body.y);
+        const z = Number(body.z);
+        if (![x, y, z].every(Number.isFinite)) {
+          return res.status(400).json({ error: "Missing or invalid x, y, or z coordinates" });
         }
-        const username = resolvePlayerName(serverId, uuid);
-        await executor.teleportPlayer(serverId, username, {
-          world: body.world || "minecraft:overworld",
-          x: body.x,
-          y: body.y,
-          z: body.z,
+        const world = body.world || "minecraft:overworld";
+        if (!/^[A-Za-z0-9_.:-]+$/.test(world)) {
+          return res.status(400).json({ error: "Invalid dimension name" });
+        }
+
+        const cleanUuid = uuid.toLowerCase();
+        const username = resolvePlayerName(serverId, cleanUuid);
+        const online = Array.from(onlineTracker.get(serverId) || []).some(
+          (name) => name.toLowerCase() === username.toLowerCase(),
+        );
+
+        // Online: Minecraft has an entity, use the console command.
+        if (online) {
+          const ok = await executor.teleportPlayer(serverId, username, { world, x, y, z });
+          if (!ok) return res.status(409).json({ error: SERVER_NOT_RUNNING });
+          return res.json({
+            success: true,
+            method: "command",
+            message: `Teleported ${username} to ${x}, ${y}, ${z}`,
+          });
+        }
+
+        // Offline: there is no entity. Write the position into the player data file so
+        // Minecraft applies it on the next join.
+        const datPath = files.findPlayerDataPath(serverId, cleanUuid);
+        if (!datPath) {
+          return res.status(404).json({
+            error: `No player data file found for ${username}. They need to join the server once before this works.`,
+          });
+        }
+
+        try {
+          nbtParser.writePlayerTeleport(datPath, { world, x, y, z });
+        } catch (error) {
+          return res.status(500).json({
+            error:
+              error instanceof Error
+                ? error.message
+                : "Could not write the player data file",
+          });
+        }
+
+        return res.json({
+          success: true,
+          method: "player-data",
+          message: `Saved ${username}'s new position (${x}, ${y}, ${z}). It will apply the next time they join.`,
         });
-        res.json({ success: true, message: `Teleported ${username} to ${body.x}, ${body.y}, ${body.z}` });
       },
     },
 
@@ -264,20 +321,26 @@ export function createPlayersRoutes(
         const username = resolvePlayerName(serverId, uuid);
 
         if (perm === "whitelist" || perm === "whitelisted") {
-          if (value) await executor.addToWhitelist(serverId, username);
-          else await executor.removeFromWhitelist(serverId, username);
+          const ok = value
+            ? await executor.addToWhitelist(serverId, username)
+            : await executor.removeFromWhitelist(serverId, username);
+          if (!ok) return res.status(409).json({ error: ACTION_FAILED });
           return res.json({ success: true, perm, value });
         }
 
         if (perm === "op" || perm === "operator") {
-          if (value) await executor.opPlayer(serverId, username);
-          else await executor.deopPlayer(serverId, username);
+          const ok = value
+            ? await executor.opPlayer(serverId, username)
+            : await executor.deopPlayer(serverId, username);
+          if (!ok) return res.status(409).json({ error: ACTION_FAILED });
           return res.json({ success: true, perm, value });
         }
 
         if (perm === "ban" || perm === "banned") {
-          if (value) await executor.banPlayer(serverId, username);
-          else await executor.unbanPlayer(serverId, username);
+          const ok = value
+            ? await executor.banPlayer(serverId, username)
+            : await executor.unbanPlayer(serverId, username);
+          if (!ok) return res.status(409).json({ error: ACTION_FAILED });
           return res.json({ success: true, perm, value });
         }
 
@@ -294,44 +357,60 @@ export function createPlayersRoutes(
         const { serverId, uuid } = req.params;
         const cleanUuid = uuid.toLowerCase();
         const options = (req.body as PurgeDataOptions) || {};
+        const username = resolvePlayerName(serverId, cleanUuid);
+        const online = Array.from(onlineTracker.get(serverId) || []).some(
+          (name) => name.toLowerCase() === username.toLowerCase(),
+        );
 
-        // 1. Player Data File (.dat)
+        // The running server keeps the player's data in memory and rewrites it on save, so
+        // deleting the files of an online player would either do nothing or corrupt the save.
+        if (online) {
+          return res.status(409).json({
+            error: `Cannot purge data while ${username} is online. Ask them to disconnect first.`,
+          });
+        }
+
+        const targets: string[] = [];
         if (options.playerDataFile) {
-          const datPath = files.findPlayerDataPath(serverId, cleanUuid);
-          if (datPath && fs.existsSync(datPath)) {
-            try {
-              fs.unlinkSync(datPath);
-            } catch {}
-          }
-          const datOldPath = `${datPath}_old`;
-          if (fs.existsSync(datOldPath)) {
-            try {
-              fs.unlinkSync(datOldPath);
-            } catch {}
-          }
+          const p = files.findPlayerDataPath(serverId, cleanUuid);
+          if (p) targets.push(p);
         }
-
-        // 2. Statistics File (.json)
         if (options.statisticsFile) {
-          const statsPath = files.findPlayerStatsPath(serverId, cleanUuid);
-          if (statsPath && fs.existsSync(statsPath)) {
-            try {
-              fs.unlinkSync(statsPath);
-            } catch {}
-          }
+          const p = files.findPlayerStatsPath(serverId, cleanUuid);
+          if (p) targets.push(p);
         }
-
-        // 3. Advancements File (.json)
         if (options.advancementsFile) {
-          const advPath = files.findPlayerAdvancementsPath(serverId, cleanUuid);
-          if (advPath && fs.existsSync(advPath)) {
-            try {
-              fs.unlinkSync(advPath);
-            } catch {}
+          const p = files.findPlayerAdvancementsPath(serverId, cleanUuid);
+          if (p) targets.push(p);
+        }
+
+        if (targets.length === 0) {
+          return res.status(404).json({
+            error: "No matching player data files were found. Nothing was deleted.",
+          });
+        }
+
+        const deleted: string[] = [];
+        for (const target of targets) {
+          try {
+            fs.unlinkSync(target);
+            deleted.push(target);
+          } catch {
+            // keep deleting the other selected files
           }
         }
 
-        res.json({ success: true, message: `Purged selected player data for ${cleanUuid}` });
+        if (deleted.length === 0) {
+          return res.status(500).json({
+            error: "The selected files could not be deleted. Check panel filesystem permissions.",
+          });
+        }
+
+        res.json({
+          success: true,
+          deleted,
+          message: `Purged ${deleted.length} file(s) for ${cleanUuid}`,
+        });
       },
     },
   ];

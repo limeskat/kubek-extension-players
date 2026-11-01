@@ -1,0 +1,152 @@
+import { describe, expect, test, beforeEach, afterEach } from "bun:test";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { MinecraftFilesService } from "./minecraft-files.service";
+
+const UUID = "11111111-1111-4111-8111-111111111111";
+const UUID2 = "22222222-2222-4222-8222-222222222222";
+
+let root: string;
+let serverDir: string;
+let files: MinecraftFilesService;
+
+function write(rel: string, content = "") {
+  const full = path.join(serverDir, rel);
+  fs.mkdirSync(path.dirname(full), { recursive: true });
+  fs.writeFileSync(full, content);
+  return rel;
+}
+
+beforeEach(() => {
+  root = fs.mkdtempSync(path.join(os.tmpdir(), "kubek-files-"));
+  serverDir = path.join(root, "server-1");
+  fs.mkdirSync(serverDir, { recursive: true });
+  files = new MinecraftFilesService(root);
+});
+
+afterEach(() => {
+  fs.rmSync(root, { recursive: true, force: true });
+});
+
+describe("MinecraftFilesService world resolution", () => {
+  test("reads level-name from server.properties", () => {
+    write("server.properties", "motd=hi\nlevel-name=world_2\n");
+    expect(files.getLevelName("server-1")).toBe("world_2");
+  });
+
+  test("unescapes property values", () => {
+    write("server.properties", "level-name=my\\:world\n");
+    expect(files.getLevelName("server-1")).toBe("my:world");
+  });
+
+  test("finds player data in the new players/data layout of the level world", () => {
+    write("server.properties", "level-name=world_2\n");
+    write(`world_2/players/data/${UUID}.dat`, "dat");
+    expect(files.findPlayerDataPath("server-1", UUID)).toBe(
+      path.join(serverDir, "world_2/players/data", `${UUID}.dat`),
+    );
+  });
+
+  test("finds classic playerdata layout", () => {
+    write("server.properties", "level-name=survival\n");
+    write(`survival/playerdata/${UUID}.dat`, "dat");
+    expect(files.findPlayerDataPath("server-1", UUID)).toBe(
+      path.join(serverDir, "survival/playerdata", `${UUID}.dat`),
+    );
+  });
+
+  test("prefers the newest player data across multiworld folders", () => {
+    write("server.properties", "level-name=world_2\n");
+    const levelFile = write(`world_2/players/data/${UUID}.dat`, "level");
+    const otherFile = write(`other/players/data/${UUID}.dat`, "other");
+    const now = Date.now() / 1000;
+    fs.utimesSync(path.join(serverDir, levelFile), now - 600, now - 600);
+    fs.utimesSync(path.join(serverDir, otherFile), now, now);
+    expect(files.findPlayerDataPath("server-1", UUID)).toBe(
+      path.join(serverDir, "other/players/data", `${UUID}.dat`),
+    );
+  });
+
+  test("prefers the level world when player data has the same mtime", () => {
+    write("server.properties", "level-name=world_2\n");
+    const levelFile = write(`world_2/players/data/${UUID}.dat`, "level");
+    const otherFile = write(`other/players/data/${UUID}.dat`, "other");
+    const now = Date.now() / 1000;
+    fs.utimesSync(path.join(serverDir, levelFile), now, now);
+    fs.utimesSync(path.join(serverDir, otherFile), now, now);
+    expect(files.findPlayerDataPath("server-1", UUID)).toBe(
+      path.join(serverDir, "world_2/players/data", `${UUID}.dat`),
+    );
+  });
+
+  test("falls back to another world when the level world has no data for the player", () => {
+    write("server.properties", "level-name=world_2\n");
+    write(`world_2/players/data/${UUID2}.dat`, "someone-else");
+    write(`other/players/data/${UUID}.dat`, "other");
+    expect(files.findPlayerDataPath("server-1", UUID)).toBe(
+      path.join(serverDir, "other/players/data", `${UUID}.dat`),
+    );
+  });
+
+  test("finds stats and advancements in the new layout", () => {
+    write("server.properties", "level-name=world_2\n");
+    write(`world_2/players/stats/${UUID}.json`, "{}");
+    write(`world_2/players/advancements/${UUID}.json`, "{}");
+    expect(files.findPlayerStatsPath("server-1", UUID)).toBe(
+      path.join(serverDir, "world_2/players/stats", `${UUID}.json`),
+    );
+    expect(files.findPlayerAdvancementsPath("server-1", UUID)).toBe(
+      path.join(serverDir, "world_2/players/advancements", `${UUID}.json`),
+    );
+  });
+
+  test("returns null for missing player data", () => {
+    write("server.properties", "level-name=world_2\n");
+    expect(files.findPlayerDataPath("server-1", UUID)).toBeNull();
+    expect(files.findPlayerStatsPath("server-1", UUID)).toBeNull();
+  });
+
+  test("discovers players from every world, not just the level world", () => {
+    write("server.properties", "level-name=world_2\n");
+    write(
+      "usercache.json",
+      JSON.stringify([{ uuid: UUID, name: "Alex", expiresOn: "later" }]),
+    );
+    write(`world_2/players/data/${UUID}.dat`, "dat");
+    write(`other/players/data/${UUID2}.dat`, "dat");
+    const found = files.getAllDiscoveredPlayers("server-1");
+    expect(found.map((p) => p.uuid).sort()).toEqual([UUID, UUID2].sort());
+    expect(found.find((p) => p.uuid === UUID)?.username).toBe("Alex");
+  });
+
+  test("discovers players from the legacy server-root playerdata folder", () => {
+    write("server.properties", "level-name=world\n");
+    write(`playerdata/${UUID}.dat`, "dat");
+    expect(files.getAllDiscoveredPlayers("server-1")).toEqual([{ uuid: UUID }]);
+  });
+});
+
+describe("MinecraftFilesService online players from log", () => {
+  test("replays join and leave lines", () => {
+    write(
+      "logs/latest.log",
+      [
+        "[12:00:00] [Server thread/INFO]: Alex joined the game",
+        "[12:01:00] [Server thread/INFO]: Kai joined the game",
+        "[12:02:00] [Server thread/INFO]: Alex left the game",
+        "[12:03:00] [Server thread/INFO]: \u001b[32mSteve joined the game\u001b[0m",
+        "[12:04:00] [Server thread/INFO]: Kai lost connection: Disconnected",
+      ].join("\n"),
+    );
+    expect([...files.getOnlinePlayersFromLog("server-1")]).toEqual(["Steve"]);
+  });
+
+  test("ignores chat messages that mention joining", () => {
+    write(
+      "logs/latest.log",
+      "[12:00:00] [Server thread/INFO]: <Alex> I joined the game yesterday\n",
+    );
+    expect([...files.getOnlinePlayersFromLog("server-1")]).toEqual([]);
+  });
+});

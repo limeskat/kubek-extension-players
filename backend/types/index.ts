@@ -76,15 +76,15 @@ export interface PlayerDetails {
   vitals: PlayerVitals;
   permissions: PlayerPermissions;
   location: LocationData;
+  lastDeath: LocationData | null;
   inventory: PlayerInventory;
   stats: PlayerStats;
   lastRefreshedText: string;
+  /** When the .dat file was last written by the server (null when no data file exists). */
+  dataUpdatedAt: string | null;
 }
 
 export interface PurgeDataOptions {
-  experiencePoints?: boolean;
-  inventory?: boolean;
-  enderChest?: boolean;
   playerDataFile?: boolean;
   statisticsFile?: boolean;
   advancementsFile?: boolean;

@@ -3,9 +3,6 @@ import React, { useState, useEffect, useMemo, useCallback, useRef } from "react"
 interface PurgeConfirmModalProps {
   username: string;
   options: {
-    experiencePoints: boolean;
-    inventory: boolean;
-    enderChest: boolean;
     playerDataFile: boolean;
     statisticsFile: boolean;
     advancementsFile: boolean;
@@ -30,16 +27,16 @@ export const PurgeConfirmModal: React.FC<PurgeConfirmModalProps> = ({
   const XIcon = icons.X || (() => null);
 
   const selectedItems: string[] = [];
-  if (options.experiencePoints) selectedItems.push("Experience points & Level");
-  if (options.inventory) selectedItems.push("Player inventory & Hotbar items");
-  if (options.enderChest) selectedItems.push("Ender Chest contents");
-  if (options.playerDataFile) selectedItems.push("World playerdata file (.dat)");
+  if (options.playerDataFile) selectedItems.push("Player data (XP, inventory, ender chest, position)");
   if (options.statisticsFile) selectedItems.push("Gameplay statistics file (.json)");
   if (options.advancementsFile) selectedItems.push("Advancements & Progress (.json)");
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-150">
-      <div className="bg-card border border-rose-500/40 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150">
+      <div
+        className="bg-card border border-rose-500/40 w-full rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150"
+        style={{ maxWidth: "480px", maxHeight: "90vh" }}
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-border/50 bg-rose-500/10">
           <div className="flex items-center gap-2.5">

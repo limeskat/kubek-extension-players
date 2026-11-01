@@ -125,3 +125,20 @@ await esbuild.build({
 });
 
 console.log('Frontend bundles successfully compiled to frontend/dist/index.js and frontend/index.ts');
+
+// 3. Bundle the backend into a single ESM file. The panel caches extension modules by
+// import URL, so a single-file entry lets a re-enable load the complete new backend
+// without restarting the panel (relative imports would keep using cached modules).
+await esbuild.build({
+  entryPoints: ['backend/index.ts'],
+  bundle: true,
+  outfile: 'backend/entry.js',
+  format: 'esm',
+  platform: 'node',
+  target: 'es2022',
+  external: ['@kubekpanel/extension-sdk'],
+  minify: false,
+  sourcemap: false,
+});
+
+console.log('Backend bundle successfully compiled to backend/entry.js');

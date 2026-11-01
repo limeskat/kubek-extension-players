@@ -75,27 +75,31 @@ export class CommandExecutorService {
   // --- Access Lists Orchestration ---
 
   async addToWhitelist(serverId: string, username: string): Promise<boolean> {
+    // A running server owns these files; let the command update them so a concurrent
+    // save cannot overwrite our edit.
     if (this.isServerRunning(serverId)) {
-      await this.sendCommand(serverId, `whitelist add ${username}`);
-      await this.sendCommand(serverId, "whitelist reload");
+      return this.sendCommand(serverId, `whitelist add ${username}`);
     }
-    // Update whitelist.json if not present
+
     const list = this.files.getWhitelist(serverId);
-    const existing = list.find(
-      (e) => e.name.toLowerCase() === username.toLowerCase(),
-    );
-    if (!existing) {
-      list.push({ name: username });
-      this.files.setWhitelist(serverId, list);
+    if (
+      list.some((e) => e.name.toLowerCase() === username.toLowerCase())
+    ) {
+      return true;
     }
+    const uuid = this.resolveUuid(serverId, username);
+    if (!uuid) return false;
+
+    list.push({ uuid, name: username });
+    this.files.setWhitelist(serverId, list);
     return true;
   }
 
   async removeFromWhitelist(serverId: string, identifier: string): Promise<boolean> {
     if (this.isServerRunning(serverId)) {
-      await this.sendCommand(serverId, `whitelist remove ${identifier}`);
-      await this.sendCommand(serverId, "whitelist reload");
+      return this.sendCommand(serverId, `whitelist remove ${identifier}`);
     }
+
     const list = this.files.getWhitelist(serverId);
     const filtered = list.filter(
       (e) =>
@@ -108,23 +112,26 @@ export class CommandExecutorService {
 
   async opPlayer(serverId: string, username: string): Promise<boolean> {
     if (this.isServerRunning(serverId)) {
-      await this.sendCommand(serverId, `op ${username}`);
+      return this.sendCommand(serverId, `op ${username}`);
     }
+
     const list = this.files.getOps(serverId);
-    const existing = list.find(
-      (e) => e.name.toLowerCase() === username.toLowerCase(),
-    );
-    if (!existing) {
-      list.push({ name: username, level: 4, bypassesPlayerLimit: false });
-      this.files.setOps(serverId, list);
+    if (list.some((e) => e.name.toLowerCase() === username.toLowerCase())) {
+      return true;
     }
+    const uuid = this.resolveUuid(serverId, username);
+    if (!uuid) return false;
+
+    list.push({ uuid, name: username, level: 4, bypassesPlayerLimit: false });
+    this.files.setOps(serverId, list);
     return true;
   }
 
   async deopPlayer(serverId: string, identifier: string): Promise<boolean> {
     if (this.isServerRunning(serverId)) {
-      await this.sendCommand(serverId, `deop ${identifier}`);
+      return this.sendCommand(serverId, `deop ${identifier}`);
     }
+
     const list = this.files.getOps(serverId);
     const filtered = list.filter(
       (e) =>
@@ -137,29 +144,33 @@ export class CommandExecutorService {
 
   async banPlayer(serverId: string, username: string, reason = "Banned by operator"): Promise<boolean> {
     if (this.isServerRunning(serverId)) {
-      await this.sendCommand(serverId, `ban ${username} ${reason}`);
+      return this.sendCommand(serverId, `ban ${username} ${reason}`);
     }
+
     const list = this.files.getBannedPlayers(serverId);
-    const existing = list.find(
-      (e) => e.name.toLowerCase() === username.toLowerCase(),
-    );
-    if (!existing) {
-      list.push({
-        name: username,
-        created: new Date().toISOString(),
-        source: "Server",
-        expires: "forever",
-        reason,
-      });
-      this.files.setBannedPlayers(serverId, list);
+    if (list.some((e) => e.name.toLowerCase() === username.toLowerCase())) {
+      return true;
     }
+    const uuid = this.resolveUuid(serverId, username);
+    if (!uuid) return false;
+
+    list.push({
+      uuid,
+      name: username,
+      created: new Date().toISOString(),
+      source: "Server",
+      expires: "forever",
+      reason,
+    });
+    this.files.setBannedPlayers(serverId, list);
     return true;
   }
 
   async unbanPlayer(serverId: string, identifier: string): Promise<boolean> {
     if (this.isServerRunning(serverId)) {
-      await this.sendCommand(serverId, `pardon ${identifier}`);
+      return this.sendCommand(serverId, `pardon ${identifier}`);
     }
+
     const list = this.files.getBannedPlayers(serverId);
     const filtered = list.filter(
       (e) =>
@@ -172,30 +183,39 @@ export class CommandExecutorService {
 
   async banIp(serverId: string, ip: string, reason = "Banned IP"): Promise<boolean> {
     if (this.isServerRunning(serverId)) {
-      await this.sendCommand(serverId, `ban-ip ${ip} ${reason}`);
+      return this.sendCommand(serverId, `ban-ip ${ip} ${reason}`);
     }
+
     const list = this.files.getBannedIps(serverId);
-    const existing = list.find((e) => e.ip === ip);
-    if (!existing) {
-      list.push({
-        ip,
-        created: new Date().toISOString(),
-        source: "Server",
-        expires: "forever",
-        reason,
-      });
-      this.files.setBannedIps(serverId, list);
-    }
+    if (list.some((e) => e.ip === ip)) return true;
+
+    list.push({
+      ip,
+      created: new Date().toISOString(),
+      source: "Server",
+      expires: "forever",
+      reason,
+    });
+    this.files.setBannedIps(serverId, list);
     return true;
   }
 
   async unbanIp(serverId: string, ip: string): Promise<boolean> {
     if (this.isServerRunning(serverId)) {
-      await this.sendCommand(serverId, `pardon-ip ${ip}`);
+      return this.sendCommand(serverId, `pardon-ip ${ip}`);
     }
+
     const list = this.files.getBannedIps(serverId);
     const filtered = list.filter((e) => e.ip !== ip);
     this.files.setBannedIps(serverId, filtered);
     return true;
+  }
+
+  /** Resolve a player name to the UUID stored in usercache.json (offline fallback). */
+  private resolveUuid(serverId: string, username: string): string | null {
+    const entry = this.files
+      .getUserCache(serverId)
+      .find((e) => e.name.toLowerCase() === username.toLowerCase());
+    return entry?.uuid ?? null;
   }
 }

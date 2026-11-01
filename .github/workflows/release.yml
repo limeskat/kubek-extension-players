@@ -25,12 +25,33 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Test
+        run: bun test
+
       - name: Package extension
         run: npm run package
+
+      - name: Extract release notes
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          awk -v ver="$VERSION" '
+            $0 ~ "^## \\[" ver "\\]" { printing = 1 }
+            printing && $0 ~ "^## \\[" && $0 !~ "^## \\[" ver "\\]" { exit }
+            printing { print }
+          ' CHANGELOG.md > release-notes.md
+          test -s release-notes.md
+          cat release-notes.md
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          name: Players Management ${{ github.ref_name }}
+          body_path: release-notes.md
           files: com.kubek.players.kubekext
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
