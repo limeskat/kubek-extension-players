@@ -1,261 +1,7 @@
-/* Scoped styles for Kubek Players Management Extension */
-
-.players-pulse-dot {
-  width: 8px;
-  height: 8px;
-  background-color: #10b981;
-  border-radius: 9999px;
-  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
-  animation: playersPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-@keyframes playersPulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
-  }
-  70% {
-    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
-  }
-}
-
-/* 60 / 40 Split Layout */
-.mc-split-container {
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 16px !important;
-  width: 100% !important;
-}
-
-.mc-split-left {
-  width: 100% !important;
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 16px !important;
-}
-
-.mc-split-right {
-  width: 100% !important;
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 16px !important;
-}
-
-@media (min-width: 1024px) {
-  .mc-split-container {
-    flex-direction: row !important;
-    align-items: flex-start !important;
-  }
-
-  .mc-split-left {
-    flex: 0 0 70% !important;
-    width: 70% !important;
-    max-width: 70% !important;
-  }
-
-  .mc-split-right {
-    flex: 0 0 calc(30% - 24px) !important;
-    width: calc(30% - 24px) !important;
-    max-width: calc(30% - 24px) !important;
-  }
-}
-
-/* Vitals & HUD Styles */
-.mc-hud-row {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  gap: 8px !important;
-  background: rgba(24, 24, 27, 0.5) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  border-radius: 12px !important;
-  padding: 8px 10px !important;
-  transition: all 0.2s ease !important;
-}
-
-.mc-hud-row:hover {
-  background: rgba(24, 24, 27, 0.75) !important;
-  border-color: rgba(255, 255, 255, 0.12) !important;
-}
-
-.mc-icons-grid {
-  display: grid !important;
-  grid-template-columns: repeat(10, 20px) !important;
-  gap: 3px !important;
-  align-items: center !important;
-  justify-items: center !important;
-}
-
-/* Authentic Minecraft Inventory Container & Slots - High Fidelity Unified Grid */
-.mc-inv-container {
-  --mc-slot-size: 44px;
-  display: inline-flex !important;
-  flex-direction: column !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 4px !important;
-  background: #c6c6c6 !important;
-  padding: 10px 12px !important;
-  border-top: 3px solid #ffffff !important;
-  border-left: 3px solid #ffffff !important;
-  border-bottom: 3px solid #555555 !important;
-  border-right: 3px solid #555555 !important;
-  border-radius: 0px !important;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35) !important;
-  box-sizing: border-box !important;
-}
-
-.mc-slot {
-  width: var(--mc-slot-size) !important;
-  height: var(--mc-slot-size) !important;
-  min-width: var(--mc-slot-size) !important;
-  min-height: var(--mc-slot-size) !important;
-  background: #8b8b8b !important;
-  border-top: 2px solid #373737 !important;
-  border-left: 2px solid #373737 !important;
-  border-bottom: 2px solid #ffffff !important;
-  border-right: 2px solid #ffffff !important;
-  border-radius: 0px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  position: relative !important;
-  box-sizing: border-box !important;
-  image-rendering: pixelated !important;
-  transition: background 0.1s ease !important;
-}
-
-.mc-slot:hover {
-  background: #a0a0a0 !important;
-  outline: 2px solid #ffffff !important;
-  z-index: 10 !important;
-}
-
-.mc-slot-filled {
-  background: #8b8b8b !important;
-}
-
-.mc-slot-item-img {
-  width: calc(var(--mc-slot-size) - 12px) !important;
-  height: calc(var(--mc-slot-size) - 12px) !important;
-  object-fit: contain !important;
-  image-rendering: pixelated !important;
-}
-
-.image-pixelated {
-  image-rendering: pixelated !important;
-  image-rendering: -moz-crisp-edges !important;
-  image-rendering: crisp-edges !important;
-}
-
-.mc-slot-item-text {
-  font-size: 9px !important;
-  font-weight: 800 !important;
-  text-align: center !important;
-  line-height: 1 !important;
-  color: #ffffff !important;
-  text-shadow: 1px 1px 0 #000 !important;
-  word-break: break-all !important;
-  padding: 1px !important;
-}
-
-.mc-slot-count {
-  position: absolute !important;
-  bottom: 1px !important;
-  right: 2px !important;
-  font-family: monospace !important;
-  font-size: 12px !important;
-  font-weight: 900 !important;
-  color: #ffffff !important;
-  text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000 !important;
-  pointer-events: none !important;
-}
-
-.mc-ender-grid {
-  display: grid !important;
-  grid-template-columns: repeat(9, var(--mc-slot-size)) !important;
-  grid-template-rows: repeat(3, var(--mc-slot-size)) !important;
-  gap: 4px !important;
-}
-
-/* XP Bar */
-.mc-bar-bg {
-  width: 100% !important;
-  height: 8px !important;
-  background: #18181b !important;
-  border: 1px solid #27272a !important;
-  border-radius: 9999px !important;
-  overflow: hidden !important;
-  position: relative !important;
-}
-
-.mc-bar-xp {
-  height: 100% !important;
-  background: linear-gradient(90deg, #10b981, #34d399, #6ee7b7) !important;
-  border-radius: 9999px !important;
-  box-shadow: 0 0 10px rgba(16, 185, 129, 0.6) !important;
-  transition: width 0.4s ease !important;
-}
-
-/* Position Axis Boxes */
-.coord-box {
-  background: rgba(24, 24, 27, 0.6) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  border-radius: 12px !important;
-  padding: 8px 6px !important;
-  text-align: center !important;
-  transition: border-color 0.2s ease !important;
-}
-
-.coord-box:hover {
-  border-color: rgba(255, 255, 255, 0.2) !important;
-}
-
-/* Stats Grids */
-.mc-stats-grid-4 {
-  display: grid !important;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)) !important;
-  gap: 10px !important;
-}
-
-.mc-stats-grid-3 {
-  display: grid !important;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
-  gap: 10px !important;
-}
-
-.mc-purge-grid {
-  display: grid !important;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)) !important;
-  gap: 10px !important;
-}
-
-/* Keep the inventory readable on narrower screens without forcing the modal wider */
-@media (max-width: 900px) {
-  .mc-inv-container {
-    --mc-slot-size: 36px;
-  }
-  .mc-slot-count {
-    font-size: 10px !important;
-  }
-}
-
-@media (max-width: 520px) {
-  .mc-inv-container {
-    --mc-slot-size: 30px;
-    padding: 8px !important;
-  }
-  .mc-slot-count {
-    font-size: 9px !important;
-  }
-}
-
 /* =====================================================================
    Native Kubek surface layer.
-   Everything below reads the panel's design tokens from :root / .dark.
-   Legacy .mc-* rules above are removed once the old modal is replaced.
+   Every rule below reads the panel's design tokens from :root / .dark.
+   Only the classic inventory skin uses literal colors, on purpose.
    ===================================================================== */
 
 .k-page {
@@ -1208,4 +954,139 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   color: var(--foreground);
+}
+
+/* Inventory ---------------------------------------------------------- */
+
+.k-section-switches { margin-left: auto; }
+
+.k-inv { display: grid; gap: 12px; min-width: 0; }
+
+.k-inv-canvas { min-width: 0; }
+
+.k-inv-scroll {
+  --k-slot-size: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.k-inv-armor {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.k-inv-sep {
+  align-self: stretch;
+  width: 1px;
+  margin: 0 4px;
+  background: var(--border);
+}
+
+.k-inv-grid {
+  display: grid;
+  grid-template-columns: repeat(9, var(--k-slot-size));
+  gap: 4px;
+}
+
+.k-slot {
+  position: relative;
+  display: grid;
+  width: var(--k-slot-size);
+  height: var(--k-slot-size);
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--field);
+  image-rendering: pixelated;
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+.k-slot-filled:hover {
+  border-color: color-mix(in oklch, var(--primary) 50%, var(--border));
+  background: var(--hover);
+}
+
+.k-slot-img {
+  width: calc(var(--k-slot-size) - 10px);
+  height: calc(var(--k-slot-size) - 10px);
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.k-slot-icon {
+  width: calc(var(--k-slot-size) - 16px);
+  height: calc(var(--k-slot-size) - 16px);
+  color: var(--muted-foreground);
+  opacity: 0.55;
+}
+
+.k-slot-placeholder { display: grid; place-items: center; }
+
+.k-slot-text {
+  padding: 1px;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+  text-align: center;
+  word-break: break-all;
+  color: var(--foreground);
+}
+
+.k-slot-count {
+  position: absolute;
+  right: 2px;
+  bottom: 1px;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--foreground);
+  text-shadow: 0 1px 2px var(--background);
+  pointer-events: none;
+}
+
+@media (max-width: 900px) {
+  .k-inv-scroll { --k-slot-size: 34px; }
+}
+
+@media (max-width: 520px) {
+  .k-inv-scroll { --k-slot-size: 28px; }
+}
+
+/* Classic skin: the only place with literal colors, on purpose */
+
+.k-inv--classic .k-inv-scroll {
+  padding: 10px 12px;
+  border-top: 3px solid #ffffff;
+  border-left: 3px solid #ffffff;
+  border-bottom: 3px solid #555555;
+  border-right: 3px solid #555555;
+  background: #c6c6c6;
+}
+
+.k-inv--classic .k-slot {
+  border: 0;
+  border-top: 2px solid #373737;
+  border-left: 2px solid #373737;
+  border-bottom: 2px solid #ffffff;
+  border-right: 2px solid #ffffff;
+  border-radius: 0;
+  background: #8b8b8b;
+}
+
+.k-inv--classic .k-inv-sep { background: #8b8b8b; }
+
+.k-inv--classic .k-slot-text {
+  color: #ffffff;
+  text-shadow: 1px 1px 0 #000;
+}
+
+.k-inv--classic .k-slot-count {
+  color: #ffffff;
+  text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
 }
