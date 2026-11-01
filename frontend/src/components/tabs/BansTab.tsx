@@ -33,6 +33,7 @@ export const BansTab: React.FC<{ serverId: string; onChanged: () => void }> = ({
     <ListTab
       head={
         <TabBar
+          compact
           items={[
             { id: "players", label: "Players" },
             { id: "ips", label: "IPs" },

@@ -13,9 +13,11 @@ export const TabBar: React.FC<{
   value: string;
   onChange: (id: string) => void;
   label: string;
+  /** Smaller control for panel headers and toolbars. */
+  compact?: boolean;
   className?: string;
-}> = ({ items, value, onChange, label, className }) => (
-  <div role="tablist" aria-label={label} className={cx("k-tabs", className)}>
+}> = ({ items, value, onChange, label, compact, className }) => (
+  <div role="tablist" aria-label={label} className={cx("k-tabs", compact && "k-tabs-sm", className)}>
     {items.map((item) => {
       const active = item.id === value;
       return (

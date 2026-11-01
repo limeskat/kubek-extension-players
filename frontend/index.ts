@@ -95,7 +95,7 @@ var Stat = ({ label, value, unit, icon, tone = "primary", onClick, className }) 
 };
 
 // frontend/src/ui/tabs.tsx
-var TabBar = ({ items, value, onChange, label, className }) => /* @__PURE__ */ react_default.createElement("div", { role: "tablist", "aria-label": label, className: cx("k-tabs", className) }, items.map((item) => {
+var TabBar = ({ items, value, onChange, label, compact, className }) => /* @__PURE__ */ react_default.createElement("div", { role: "tablist", "aria-label": label, className: cx("k-tabs", compact && "k-tabs-sm", className) }, items.map((item) => {
   const active = item.id === value;
   return /* @__PURE__ */ react_default.createElement(
     "button",
@@ -499,7 +499,7 @@ var TeleportModal = ({ serverId, uuid, username, isOnline = true, currentLocatio
   return /* @__PURE__ */ react_default.createElement(Dialog, { open: true, onClose, label: t("ext.players.teleport") || "Teleport", width: 480 }, /* @__PURE__ */ react_default.createElement("form", { className: "k-dialog-form", onSubmit: submit }, /* @__PURE__ */ react_default.createElement(
     DialogHeader,
     {
-      title: `${isOnline ? "Teleport" : "Save position"} \xB7 ${username}`,
+      title: `${isOnline ? "Teleport" : "Change position"} \xB7 ${username}`,
       description: "Pick the target world and coordinates.",
       actions: /* @__PURE__ */ react_default.createElement(ui.Button, { variant: "ghost", size: "icon-sm", type: "button", onClick: onClose, "aria-label": "Close" }, /* @__PURE__ */ react_default.createElement(XIcon, null))
     }
@@ -520,7 +520,7 @@ var TeleportModal = ({ serverId, uuid, username, isOnline = true, currentLocatio
       value: entry.value,
       onChange: (event) => entry.set(Number.parseFloat(event.target.value) || 0)
     }
-  ))))), /* @__PURE__ */ react_default.createElement(DialogFooter, null, /* @__PURE__ */ react_default.createElement(ui.Button, { variant: "outline", type: "button", onClick: onClose }, t("ext.players.cancel") || "Cancel"), /* @__PURE__ */ react_default.createElement(ui.Button, { type: "submit", disabled: teleport.isPending }, /* @__PURE__ */ react_default.createElement(Sparkles, null), isOnline ? t("ext.players.teleport") || "Teleport" : t("ext.players.save_position") || "Save position"))));
+  ))))), /* @__PURE__ */ react_default.createElement(DialogFooter, null, /* @__PURE__ */ react_default.createElement(ui.Button, { variant: "outline", type: "button", onClick: onClose }, t("ext.players.cancel") || "Cancel"), /* @__PURE__ */ react_default.createElement(ui.Button, { type: "submit", disabled: teleport.isPending }, /* @__PURE__ */ react_default.createElement(Sparkles, null), isOnline ? t("ext.players.teleport") || "Teleport" : t("ext.players.change_position") || "Change position"))));
 };
 
 // frontend/src/ui/switch.tsx
@@ -899,6 +899,7 @@ var Inventory = ({ player }) => {
   return /* @__PURE__ */ react_default.createElement(Panel, { className: cx(view === "classic" && "k-inv--classic") }, /* @__PURE__ */ react_default.createElement(PanelHead, null, /* @__PURE__ */ react_default.createElement(Plate, { tone: "blue", size: "sm" }, /* @__PURE__ */ react_default.createElement(Box, null)), /* @__PURE__ */ react_default.createElement("span", { className: "k-section-title" }, t("ext.players.inventory") || "Inventory"), /* @__PURE__ */ react_default.createElement("div", { className: "k-section-switches" }, /* @__PURE__ */ react_default.createElement(
     TabBar,
     {
+      compact: true,
       items: [
         { id: "native", label: t("ext.players.inventory_native") || "Native" },
         { id: "classic", label: t("ext.players.inventory_classic") || "Classic" }
@@ -910,6 +911,7 @@ var Inventory = ({ player }) => {
   ))), /* @__PURE__ */ react_default.createElement(PanelBody, null, !inventory ? /* @__PURE__ */ react_default.createElement(Empty, null, /* @__PURE__ */ react_default.createElement(EmptyHeader, null, /* @__PURE__ */ react_default.createElement(EmptyTitle, null, "No inventory data"), /* @__PURE__ */ react_default.createElement(EmptyDescription, null, "Inventory appears once the player has a data file on disk."))) : /* @__PURE__ */ react_default.createElement("div", { className: "k-inv" }, inventory.enderChest ? /* @__PURE__ */ react_default.createElement(
     TabBar,
     {
+      compact: true,
       items: [
         { id: "main", label: t("ext.players.inventory") || "Inventory" },
         { id: "ender", label: t("ext.players.ender_chest") || "Ender chest" }
@@ -918,7 +920,7 @@ var Inventory = ({ player }) => {
       onChange: (id) => setTab(id),
       label: "Inventory page"
     }
-  ) : null, /* @__PURE__ */ react_default.createElement("div", { className: "k-inv-canvas" }, /* @__PURE__ */ react_default.createElement("div", { className: "k-inv-scroll" }, tab === "main" ? /* @__PURE__ */ react_default.createElement(react_default.Fragment, null, /* @__PURE__ */ react_default.createElement("div", { className: "k-inv-armor" }, /* @__PURE__ */ react_default.createElement(ItemSlot, { item: armor?.helmet, placeholder: /* @__PURE__ */ react_default.createElement(SlotHelmetIcon, { className: "k-slot-icon" }) }), /* @__PURE__ */ react_default.createElement(ItemSlot, { item: armor?.chestplate, placeholder: /* @__PURE__ */ react_default.createElement(SlotChestplateIcon, { className: "k-slot-icon" }) }), /* @__PURE__ */ react_default.createElement(ItemSlot, { item: armor?.leggings, placeholder: /* @__PURE__ */ react_default.createElement(SlotLeggingsIcon, { className: "k-slot-icon" }) }), /* @__PURE__ */ react_default.createElement(ItemSlot, { item: armor?.boots, placeholder: /* @__PURE__ */ react_default.createElement(SlotBootsIcon, { className: "k-slot-icon" }) }), /* @__PURE__ */ react_default.createElement("span", { className: "k-inv-sep" }), /* @__PURE__ */ react_default.createElement(ItemSlot, { item: inventory.offhand, placeholder: /* @__PURE__ */ react_default.createElement(SlotShieldIcon, { className: "k-slot-icon" }) })), /* @__PURE__ */ react_default.createElement("div", { className: "k-inv-grid" }, Array.from({ length: 9 }, (_, index) => /* @__PURE__ */ react_default.createElement(ItemSlot, { key: itemKey(inventory.hotbar, index), item: inventory.hotbar?.[index] ?? null }))), /* @__PURE__ */ react_default.createElement("div", { className: "k-inv-grid" }, slots(inventory.main).map((item, index) => /* @__PURE__ */ react_default.createElement(ItemSlot, { key: itemKey(inventory.main, index), item })))) : /* @__PURE__ */ react_default.createElement("div", { className: "k-inv-grid" }, slots(inventory.enderChest).map((item, index) => /* @__PURE__ */ react_default.createElement(ItemSlot, { key: itemKey(inventory.enderChest, index), item }))))))));
+  ) : null, /* @__PURE__ */ react_default.createElement("div", { className: "k-inv-canvas" }, /* @__PURE__ */ react_default.createElement("div", { className: "k-inv-scroll" }, tab === "main" ? /* @__PURE__ */ react_default.createElement(react_default.Fragment, null, /* @__PURE__ */ react_default.createElement("div", { className: "k-inv-layout" }, /* @__PURE__ */ react_default.createElement("div", { className: "k-inv-armor-col" }, /* @__PURE__ */ react_default.createElement(ItemSlot, { item: armor?.helmet, placeholder: /* @__PURE__ */ react_default.createElement(SlotHelmetIcon, { className: "k-slot-icon" }) }), /* @__PURE__ */ react_default.createElement(ItemSlot, { item: armor?.chestplate, placeholder: /* @__PURE__ */ react_default.createElement(SlotChestplateIcon, { className: "k-slot-icon" }) }), /* @__PURE__ */ react_default.createElement(ItemSlot, { item: armor?.leggings, placeholder: /* @__PURE__ */ react_default.createElement(SlotLeggingsIcon, { className: "k-slot-icon" }) }), /* @__PURE__ */ react_default.createElement(ItemSlot, { item: armor?.boots, placeholder: /* @__PURE__ */ react_default.createElement(SlotBootsIcon, { className: "k-slot-icon" }) })), /* @__PURE__ */ react_default.createElement("div", { className: "k-inv-grid" }, slots(inventory.main).map((item, index) => /* @__PURE__ */ react_default.createElement(ItemSlot, { key: itemKey(inventory.main, index), item })))), /* @__PURE__ */ react_default.createElement("div", { className: "k-inv-bar" }, /* @__PURE__ */ react_default.createElement(ItemSlot, { item: inventory.offhand, placeholder: /* @__PURE__ */ react_default.createElement(SlotShieldIcon, { className: "k-slot-icon" }) }), /* @__PURE__ */ react_default.createElement("div", { className: "k-inv-grid" }, Array.from({ length: 9 }, (_, index) => /* @__PURE__ */ react_default.createElement(ItemSlot, { key: itemKey(inventory.hotbar, index), item: inventory.hotbar?.[index] ?? null }))))) : /* @__PURE__ */ react_default.createElement("div", { className: "k-inv-grid" }, slots(inventory.enderChest).map((item, index) => /* @__PURE__ */ react_default.createElement(ItemSlot, { key: itemKey(inventory.enderChest, index), item }))))))));
 };
 
 // frontend/src/components/player/sections/LastDeath.tsx
@@ -944,7 +946,7 @@ var Position = ({
   const Sparkles = icons.Sparkles || (() => null);
   const location = player.location;
   const online = player.summary.isOnline;
-  return /* @__PURE__ */ react_default.createElement(Panel, null, /* @__PURE__ */ react_default.createElement(PanelHead, null, /* @__PURE__ */ react_default.createElement(Plate, { tone: "cyan", size: "sm" }, /* @__PURE__ */ react_default.createElement(MapPin, null)), /* @__PURE__ */ react_default.createElement("span", { className: "k-section-title" }, online ? t("ext.players.position") || "Current position" : t("ext.players.last_position") || "Last known position"), location ? /* @__PURE__ */ react_default.createElement(PanelMeta, null, location.world) : null), /* @__PURE__ */ react_default.createElement(PanelBody, null, !location ? /* @__PURE__ */ react_default.createElement(Empty, null, /* @__PURE__ */ react_default.createElement(EmptyHeader, null, /* @__PURE__ */ react_default.createElement(EmptyTitle, null, "No position recorded"))) : /* @__PURE__ */ react_default.createElement("div", { className: "k-section-stack" }, /* @__PURE__ */ react_default.createElement("div", { className: "k-coords", style: { gridTemplateColumns: "repeat(3, minmax(0,1fr))" } }, /* @__PURE__ */ react_default.createElement(Coord, { axis: "X", value: location.x }), /* @__PURE__ */ react_default.createElement(Coord, { axis: "Y", value: location.y }), /* @__PURE__ */ react_default.createElement(Coord, { axis: "Z", value: location.z })), /* @__PURE__ */ react_default.createElement(ui.Button, { variant: "outline", size: "sm", disabled: !onTeleport, onClick: onTeleport }, /* @__PURE__ */ react_default.createElement(Sparkles, null), online ? t("ext.players.teleport") || "Teleport" : t("ext.players.save_position") || "Save position"))));
+  return /* @__PURE__ */ react_default.createElement(Panel, null, /* @__PURE__ */ react_default.createElement(PanelHead, null, /* @__PURE__ */ react_default.createElement(Plate, { tone: "cyan", size: "sm" }, /* @__PURE__ */ react_default.createElement(MapPin, null)), /* @__PURE__ */ react_default.createElement("span", { className: "k-section-title" }, online ? t("ext.players.position") || "Current position" : t("ext.players.last_position") || "Last known position"), location ? /* @__PURE__ */ react_default.createElement(PanelMeta, null, location.world) : null), /* @__PURE__ */ react_default.createElement(PanelBody, null, !location ? /* @__PURE__ */ react_default.createElement(Empty, null, /* @__PURE__ */ react_default.createElement(EmptyHeader, null, /* @__PURE__ */ react_default.createElement(EmptyTitle, null, "No position recorded"))) : /* @__PURE__ */ react_default.createElement("div", { className: "k-section-stack" }, /* @__PURE__ */ react_default.createElement("div", { className: "k-coords", style: { gridTemplateColumns: "repeat(3, minmax(0,1fr))" } }, /* @__PURE__ */ react_default.createElement(Coord, { axis: "X", value: location.x }), /* @__PURE__ */ react_default.createElement(Coord, { axis: "Y", value: location.y }), /* @__PURE__ */ react_default.createElement(Coord, { axis: "Z", value: location.z })), /* @__PURE__ */ react_default.createElement(ui.Button, { variant: "outline", size: "sm", disabled: !onTeleport, onClick: onTeleport }, /* @__PURE__ */ react_default.createElement(Sparkles, null), online ? t("ext.players.teleport") || "Teleport" : t("ext.players.change_position") || "Change position"))));
 };
 
 // frontend/src/ui/key-value.tsx
@@ -1297,6 +1299,7 @@ var BansTab = ({
       head: /* @__PURE__ */ react_default.createElement(
         TabBar,
         {
+          compact: true,
           items: [
             { id: "players", label: "Players" },
             { id: "ips", label: "IPs" }
@@ -2885,6 +2888,56 @@ if (typeof document !== "undefined") {
   .k-tab {
     flex: 1 1 auto;
   }
+}
+
+/* Compact tab bar for panel headers */
+.k-tabs-sm {
+  padding: 3px;
+  gap: 2px;
+  border-radius: 10px;
+}
+
+.k-tabs-sm .k-tab {
+  height: 26px;
+  padding: 0 10px;
+  gap: 6px;
+  border-radius: 7px;
+  font-size: 12.5px;
+}
+
+.k-tabs-sm .k-tab-count {
+  min-width: 14px;
+  height: 14px;
+  font-size: 10px;
+}
+
+/* Inventory layout: armor column on the left, hotbar under a divider */
+.k-inv-layout {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.k-inv-armor-col {
+  display: grid;
+  gap: 4px;
+}
+
+.k-inv-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border);
+}
+
+.k-inv--classic .k-inv-bar { border-top-color: #8b8b8b; }
+
+/* Native option list follows the theme, so it stays readable when open */
+.k-select option {
+  background-color: var(--popover);
+  color: var(--popover-foreground);
 }
 `;
     document.head.appendChild(style);

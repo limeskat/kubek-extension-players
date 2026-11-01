@@ -69,3 +69,10 @@ test("useKubek reads the window global without throwing", () => {
     g.window = previous;
   }
 });
+
+test("compact tab bar adds the small variant class", () => {
+  const html = renderToStaticMarkup(
+    <TabBar items={items} value="online" onChange={() => {}} label="Style" compact />,
+  );
+  expect(html).toContain("k-tabs-sm");
+});

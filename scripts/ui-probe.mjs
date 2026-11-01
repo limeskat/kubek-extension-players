@@ -192,6 +192,23 @@ try {
             const scroll = document.querySelector(".k-inv-scroll");
             return scroll ? scroll.scrollWidth > scroll.clientWidth + 1 : null;
           })(),
+          compactTabHeight: (() => {
+            const el = document.querySelector(".k-tabs-sm .k-tab");
+            return el ? Math.round(el.getBoundingClientRect().height) : null;
+          })(),
+          firstPanelHeadHeight: (() => {
+            const el = document.querySelector(".k-dialog .k-panel-head");
+            return el ? Math.round(el.getBoundingClientRect().height) : null;
+          })(),
+          positionAction: (() => {
+            const buttons = Array.from(document.querySelectorAll(".k-dialog .k-panel button"));
+            const match = buttons.find((b) => /position|teleport/i.test(b.textContent || ""));
+            return match ? match.textContent.trim() : null;
+          })(),
+          optionBackground: (() => {
+            const option = document.querySelector(".k-select option");
+            return option ? getComputedStyle(option).backgroundColor : null;
+          })(),
         };
       });
       await page.screenshot({ path: path.join(outDir, "dialog.png"), fullPage: false });

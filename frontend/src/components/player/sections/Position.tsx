@@ -60,7 +60,7 @@ export const Position: React.FC<SectionProps & { onTeleport?: () => void }> = ({
               <Sparkles />
               {online
                 ? t("ext.players.teleport") || "Teleport"
-                : t("ext.players.save_position") || "Save position"}
+                : t("ext.players.change_position") || "Change position"}
             </ui.Button>
           </div>
         )}
