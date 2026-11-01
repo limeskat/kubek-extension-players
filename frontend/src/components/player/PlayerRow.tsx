@@ -5,11 +5,12 @@ import { PlayerHead } from "../../ui/player-head";
 export const PlayerRow: React.FC<{
   name: string;
   uuid?: string;
+  head?: React.ReactNode;
   badges?: React.ReactNode;
   detail?: React.ReactNode;
   actions?: React.ReactNode;
   onOpen?: () => void;
-}> = ({ name, uuid, badges, detail, actions, onOpen }) => {
+}> = ({ name, uuid, head, badges, detail, actions, onOpen }) => {
   const onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (!onOpen) return;
     if (event.key === "Enter" || event.key === " ") {
@@ -26,7 +27,7 @@ export const PlayerRow: React.FC<{
       onClick={onOpen}
       onKeyDown={onKeyDown}
     >
-      <PlayerHead name={name} size={32} className="k-row-head" />
+      {head ?? <PlayerHead name={name} size={32} className="k-row-head" />}
 
       <div className="k-row-main">
         <div className="k-row-title">
