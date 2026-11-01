@@ -1202,3 +1202,53 @@
     flex: 1 1 auto;
   }
 }
+
+/* Compact tab bar for panel headers */
+.k-tabs-sm {
+  padding: 3px;
+  gap: 2px;
+  border-radius: 10px;
+}
+
+.k-tabs-sm .k-tab {
+  height: 26px;
+  padding: 0 10px;
+  gap: 6px;
+  border-radius: 7px;
+  font-size: 12.5px;
+}
+
+.k-tabs-sm .k-tab-count {
+  min-width: 14px;
+  height: 14px;
+  font-size: 10px;
+}
+
+/* Inventory layout: armor column on the left, hotbar under a divider */
+.k-inv-layout {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.k-inv-armor-col {
+  display: grid;
+  gap: 4px;
+}
+
+.k-inv-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border);
+}
+
+.k-inv--classic .k-inv-bar { border-top-color: #8b8b8b; }
+
+/* Native option list follows the theme, so it stays readable when open */
+.k-select option {
+  background-color: var(--popover);
+  color: var(--popover-foreground);
+}

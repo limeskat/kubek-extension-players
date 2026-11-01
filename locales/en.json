@@ -76,5 +76,6 @@
   "ext.players.tab_bans": "Bans",
   "ext.players.tab_lists": "Player lists",
   "ext.players.tab_online": "Online",
-  "ext.players.teleported": "Player teleported"
+  "ext.players.teleported": "Player teleported",
+  "ext.players.change_position": "Change position"
 }

@@ -61,6 +61,7 @@ export const Inventory: React.FC<SectionProps> = ({ player }) => {
         <span className="k-section-title">{t("ext.players.inventory") || "Inventory"}</span>
         <div className="k-section-switches">
           <TabBar
+            compact
             items={[
               { id: "native", label: t("ext.players.inventory_native") || "Native" },
               { id: "classic", label: t("ext.players.inventory_classic") || "Classic" },
@@ -86,6 +87,7 @@ export const Inventory: React.FC<SectionProps> = ({ player }) => {
           <div className="k-inv">
             {inventory.enderChest ? (
               <TabBar
+                compact
                 items={[
                   { id: "main", label: t("ext.players.inventory") || "Inventory" },
                   { id: "ender", label: t("ext.players.ender_chest") || "Ender chest" },
@@ -100,25 +102,28 @@ export const Inventory: React.FC<SectionProps> = ({ player }) => {
               <div className="k-inv-scroll">
                 {tab === "main" ? (
                   <>
-                    <div className="k-inv-armor">
-                      <ItemSlot item={armor?.helmet} placeholder={<SlotHelmetIcon className="k-slot-icon" />} />
-                      <ItemSlot item={armor?.chestplate} placeholder={<SlotChestplateIcon className="k-slot-icon" />} />
-                      <ItemSlot item={armor?.leggings} placeholder={<SlotLeggingsIcon className="k-slot-icon" />} />
-                      <ItemSlot item={armor?.boots} placeholder={<SlotBootsIcon className="k-slot-icon" />} />
-                      <span className="k-inv-sep" />
+                    <div className="k-inv-layout">
+                      <div className="k-inv-armor-col">
+                        <ItemSlot item={armor?.helmet} placeholder={<SlotHelmetIcon className="k-slot-icon" />} />
+                        <ItemSlot item={armor?.chestplate} placeholder={<SlotChestplateIcon className="k-slot-icon" />} />
+                        <ItemSlot item={armor?.leggings} placeholder={<SlotLeggingsIcon className="k-slot-icon" />} />
+                        <ItemSlot item={armor?.boots} placeholder={<SlotBootsIcon className="k-slot-icon" />} />
+                      </div>
+
+                      <div className="k-inv-grid">
+                        {slots(inventory.main).map((item, index) => (
+                          <ItemSlot key={itemKey(inventory.main, index)} item={item} />
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="k-inv-bar">
                       <ItemSlot item={inventory.offhand} placeholder={<SlotShieldIcon className="k-slot-icon" />} />
-                    </div>
-
-                    <div className="k-inv-grid">
-                      {Array.from({ length: 9 }, (_, index) => (
-                        <ItemSlot key={itemKey(inventory.hotbar, index)} item={inventory.hotbar?.[index] ?? null} />
-                      ))}
-                    </div>
-
-                    <div className="k-inv-grid">
-                      {slots(inventory.main).map((item, index) => (
-                        <ItemSlot key={itemKey(inventory.main, index)} item={item} />
-                      ))}
+                      <div className="k-inv-grid">
+                        {Array.from({ length: 9 }, (_, index) => (
+                          <ItemSlot key={itemKey(inventory.hotbar, index)} item={inventory.hotbar?.[index] ?? null} />
+                        ))}
+                      </div>
                     </div>
                   </>
                 ) : (

@@ -69,7 +69,7 @@ export const TeleportModal: React.FC<{
     <Dialog open onClose={onClose} label={t("ext.players.teleport") || "Teleport"} width={480}>
       <form className="k-dialog-form" onSubmit={submit}>
         <DialogHeader
-          title={`${isOnline ? "Teleport" : "Save position"} · ${username}`}
+          title={`${isOnline ? "Teleport" : "Change position"} · ${username}`}
           description="Pick the target world and coordinates."
           actions={
             <ui.Button variant="ghost" size="icon-sm" type="button" onClick={onClose} aria-label="Close">
@@ -127,7 +127,7 @@ export const TeleportModal: React.FC<{
             <Sparkles />
             {isOnline
               ? t("ext.players.teleport") || "Teleport"
-              : t("ext.players.save_position") || "Save position"}
+              : t("ext.players.change_position") || "Change position"}
           </ui.Button>
         </DialogFooter>
       </form>
