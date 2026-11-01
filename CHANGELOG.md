@@ -4,6 +4,34 @@ All notable changes to the Kubek Players Management extension are documented her
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project uses [Semantic Versioning](https://semver.org/).
 
+## [1.1.0] - 2026-11-01
+
+### Changed
+
+- The page now uses Kubek's own layout grammar: page header, stat strip, segmented tabs and
+  bordered list panels instead of the custom cards, tables and popups.
+- Whitelist, operators, banned players and banned IPs are managed inline in their tab; the
+  four list modals are gone.
+- Player details is a sectioned dialog built from the panel's dialog anatomy (header, scrolling
+  body, footer) with separate panels for vitals, inventory, position, last death, statistics,
+  access and the danger zone.
+- Buttons, inputs and badges come from `window.Kubek.ui`; every colour reads a panel CSS
+  variable, so light and dark themes both render correctly.
+- Player heads are loaded from the panel's public `/api/heads/{name}` endpoint, with a locally
+  generated face when a name has no skin.
+- Success and error feedback is a non-blocking toast; `alert()` was removed.
+
+### Added
+
+- Inventory view switch: native slots (default) or the classic Minecraft bevel, remembered per
+  browser in `localStorage`.
+- Game mode selector in the access section.
+
+### Removed
+
+- `CategoryCards`, `CategoryListModal`, `OnlinePlayersList`, `OfflinePlayersList`,
+  `PlayerDetailsModal`, `PurgeConfirmModal` and the legacy `.mc-*` stylesheet.
+
 ## [1.0.2] - 2026-11-01
 
 ### Added
