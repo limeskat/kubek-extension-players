@@ -20,3 +20,6 @@ Thumbs.db
 *.swp
 *.swo
 
+
+# Local design notes and plans
+docs/
