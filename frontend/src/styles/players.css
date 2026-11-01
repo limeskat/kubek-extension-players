@@ -1021,3 +1021,27 @@
 @keyframes k-shimmer {
   to { background-position: -200% 0; }
 }
+
+/* List add form ----------------------------------------------------- */
+
+.k-add-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--subtle);
+}
+
+.k-input {
+  flex: 1 1 180px;
+  min-width: 0;
+}
+
+.k-add-reason { flex: 1 1 140px; }
+
+.k-icon-danger:hover {
+  color: var(--destructive);
+  background: color-mix(in oklch, var(--destructive) 12%, transparent);
+}

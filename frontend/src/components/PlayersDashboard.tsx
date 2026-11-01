@@ -2,12 +2,15 @@ import React from "react";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "../ui/empty";
 import { useKubek } from "../ui/kubek";
 import { PageHeader } from "../ui/page-header";
-import { Panel, PanelBody } from "../ui/panel";
+import { Panel } from "../ui/panel";
 import { Stat, StatStrip } from "../ui/stat-strip";
 import { TabBar, type TabItem } from "../ui/tabs";
 import { ToastProvider } from "../ui/toast";
 import { AllPlayersTab } from "./tabs/AllPlayersTab";
+import { BansTab } from "./tabs/BansTab";
 import { OnlineTab } from "./tabs/OnlineTab";
+import { OpsTab } from "./tabs/OpsTab";
+import { WhitelistTab } from "./tabs/WhitelistTab";
 
 type TabId = "online" | "all" | "whitelist" | "ops" | "bans";
 
@@ -68,6 +71,11 @@ const PlayersPageInner: React.FC<{ kubek: any }> = ({ kubek }) => {
 
   const onlinePlayers: any[] = onlineQuery.data?.online || [];
   const allPlayers: any[] = directoryQuery.data?.players || [];
+
+  const refreshLists = React.useCallback(() => {
+    void summaryQuery.refetch();
+    void directoryQuery.refetch();
+  }, [summaryQuery, directoryQuery]);
 
   const refreshAll = React.useCallback(() => {
     void serversQuery.refetch();
@@ -202,16 +210,12 @@ const PlayersPageInner: React.FC<{ kubek: any }> = ({ kubek }) => {
               isLoading={directoryQuery.isLoading}
               emptyIcon={<UsersIcon />}
             />
+          ) : activeTab === "whitelist" ? (
+            <WhitelistTab serverId={selectedServerId} onChanged={refreshLists} />
+          ) : activeTab === "ops" ? (
+            <OpsTab serverId={selectedServerId} onChanged={refreshLists} />
           ) : (
-            <Panel>
-              <PanelBody>
-                <Empty>
-                  <EmptyHeader>
-                    <EmptyTitle>{t(`ext.players.tab_${activeTab}`)}</EmptyTitle>
-                  </EmptyHeader>
-                </Empty>
-              </PanelBody>
-            </Panel>
+            <BansTab serverId={selectedServerId} onChanged={refreshLists} />
           )}
         </>
       )}
