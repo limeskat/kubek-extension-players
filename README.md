@@ -6,14 +6,17 @@
 [![Node.js](https://img.shields.io/badge/Node.js-%E2%89%A5%2018-339933.svg?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-An Aternos-style player management dashboard extension for the [Kubek Minecraft Server Panel](https://github.com/KubekPanel).
+A player management extension for the [Kubek Minecraft Server Panel](https://github.com/KubekPanel) that follows the panel's own interface: same page header, stat strip, segmented tabs, list panels and dialog anatomy, in both light and dark themes. It adds what the native Players page does not cover — offline players, vitals, inventory, teleport and data purge.
 
 ## Features
 
-- **Access Control**: Manage Whitelist, Operators (OPs), Banned Players, and Banned IPs with instant search and avatar previews.
-- **Live Telemetry**: Real-time tracking of online players, vitals (Health, Hunger, XP, Gamemode), coordinates, dimension, last-death location, and full inventory (including armor, offhand, and ender chest).
-- **Player Actions**: In-game player controls (Heal, Feed, Kill, Starve, Kick, Gamemode switcher, Teleport modal). Teleporting works for online players via the console and for offline players by safely rewriting their saved player data, applied on their next join.
+- **Access Control**: Whitelist, Operators (OPs), Banned Players, and Banned IPs live in their own tabs with search, avatars and inline add/remove — no popups.
+- **Live Telemetry**: Real-time tracking of online players, vitals (Health, Hunger, XP, Gamemode), coordinates, dimension, last-death location, and full inventory (armor column, offhand, hotbar, main slots and ender chest).
+- **Player Dialog**: Vitals, inventory, position, last death, statistics, access switches and a danger zone as separate panels in one sectioned dialog.
+- **Player Actions**: Heal, Feed, Kill, Starve, Kick, Gamemode switcher and Teleport. Online players are teleported through the console; offline players get their saved position rewritten and it applies on their next join.
 - **Player Data Management**: Inspect offline player records (`usercache.json`, NBT `.dat` files) and safely purge or reset player data.
+- **Native UI**: Panel tokens only, `window.Kubek.ui` controls, player heads from the panel's `/api/heads/{name}`, non-blocking toasts instead of `alert()`.
+- **Inventory Views**: Native slots by default, with an optional classic Minecraft bevel; the choice is remembered per browser.
 
 ## Compatibility & Requirements
 
@@ -55,6 +58,26 @@ An Aternos-style player management dashboard extension for the [Kubek Minecraft 
    This generates `com.kubek.players.kubekext` in the root directory.
 
 5. Install `com.kubek.players.kubekext` into your Kubek panel via the web UI or by copying it to the `extensions/` directory.
+
+## Development
+
+```bash
+npm test          # Bun: backend parsers, pure helpers, UI kit and tab logic
+npm run typecheck
+npm run build     # frontend/dist/index.js, frontend/index.ts, backend/entry.js
+npm run package   # com.kubek.players.kubekext
+```
+
+### Visual check
+
+`scripts/ui-probe.mjs` drives a live panel with Chromium and reports console errors, failed requests, page overflow and dialog metrics (size, scrolling, slot size, focus trap):
+
+```bash
+node scripts/ui-probe.mjs --token "$KUBEK_TOKEN" --out /tmp/ui \
+  --tab "All players" --dialog --width 1440 --height 900 --theme dark
+```
+
+Add `--bundle frontend/dist/index.js --locales locales` to exercise a local build before deploying; without them the probe uses what the panel is serving. The URL and theme are configurable with `--base`, `--theme light`, and `--classic` for the classic inventory view.
 
 ## Permissions
 
