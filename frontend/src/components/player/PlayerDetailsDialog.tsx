@@ -4,6 +4,8 @@ import { Dialog, DialogBody, DialogFooter, DialogHeader } from "../../ui/dialog"
 import { useKubek } from "../../ui/kubek";
 import { PlayerHead } from "../../ui/player-head";
 import { useToast } from "../../ui/toast";
+import { Access } from "./sections/Access";
+import { DangerZone } from "./sections/DangerZone";
 import { Inventory } from "./sections/Inventory";
 import { LastDeath } from "./sections/LastDeath";
 import { Position } from "./sections/Position";
@@ -122,6 +124,13 @@ export const PlayerDetailsDialog: React.FC<{
                 onChanged={onChanged}
                 onRefetch={() => detailsQuery.refetch()}
               />
+              <DangerZone
+                serverId={serverId}
+                uuid={uuid}
+                player={player}
+                onChanged={onChanged}
+                onRefetch={() => detailsQuery.refetch()}
+              />
             </div>
             <div className="k-player-side">
               <Position
@@ -139,6 +148,13 @@ export const PlayerDetailsDialog: React.FC<{
                 onRefetch={() => detailsQuery.refetch()}
               />
               <Stats
+                serverId={serverId}
+                uuid={uuid}
+                player={player}
+                onChanged={onChanged}
+                onRefetch={() => detailsQuery.refetch()}
+              />
+              <Access
                 serverId={serverId}
                 uuid={uuid}
                 player={player}
