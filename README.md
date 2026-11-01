@@ -17,7 +17,7 @@ A player management extension for the [Kubek Minecraft Server Panel](https://git
 - **Player Data Management**: Inspect offline player records (`usercache.json`, NBT `.dat` files) and safely purge or reset player data.
 - **Native UI**: Panel tokens only, `window.Kubek.ui` controls, player heads from the panel's `/api/heads/{name}`, non-blocking toasts instead of `alert()`.
 - **Delete Player**: removes every data file and the usercache entry so the player disappears from the panel and rejoins as new; whitelist/OP/ban entries stay. Blocked while the player is online.
-- **Inventory Views**: Native slots by default, with an optional classic Minecraft bevel; the choice is remembered per browser. Icons are resolved from the game's item models for the server's exact version: blocks and stairs are rendered isometrically on a canvas, flat items use their model layers, and modded items get a neutral glyph.
+- **Inventory Views**: Native slots by default, with an optional classic Minecraft bevel; the choice is remembered per browser. Icons come from a hosted vanilla renderer (blocks, stairs, tools, shield) with a local canvas renderer, flat-texture path and generic glyph as fallbacks for older versions, modded items and offline panels.
 
 ## Compatibility & Requirements
 

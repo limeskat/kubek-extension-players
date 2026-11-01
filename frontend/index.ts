@@ -1252,12 +1252,46 @@ async function renderModel(model, version, size = 64) {
 }
 
 // frontend/src/utils/item-icons.ts
+var REMOTE_API = "https://api.minecraftitems.xyz/api/item";
+var USE_REMOTE_ICONS = true;
 var iconCache = /* @__PURE__ */ new Map();
+function apiItemUrl(id) {
+  if (!id.startsWith("minecraft:")) return null;
+  const name = id.slice("minecraft:".length);
+  if (!/^[a-z0-9_]+$/.test(name)) return null;
+  return `${REMOTE_API}/${name}`;
+}
+function versionAtLeast(version, minimum) {
+  const parse = (value) => value.replace(/^v/i, "").split(/[.\-+]/).map((part) => Number.parseInt(part, 10)).filter((part) => !Number.isNaN(part));
+  const left = parse(version);
+  const right = parse(minimum);
+  if (!left.length) return false;
+  for (let index = 0; index < Math.max(left.length, right.length); index += 1) {
+    const a = left[index] ?? 0;
+    const b = right[index] ?? 0;
+    if (a !== b) return a > b;
+  }
+  return true;
+}
+function preloads(url) {
+  if (typeof Image === "undefined") return Promise.resolve(false);
+  return new Promise((resolve) => {
+    const image = new Image();
+    image.onload = () => resolve(true);
+    image.onerror = () => resolve(false);
+    image.src = url;
+  });
+}
 async function resolveItemIcon(id, version, options = {}) {
   const cleanVersion = (version || FALLBACK_VERSION).trim() || FALLBACK_VERSION;
   const cache2 = options.cache ?? iconCache;
   const key = `${cleanVersion}:${id}`;
   if (cache2.has(key)) return cache2.get(key) ?? null;
+  const remote = apiItemUrl(id);
+  if (USE_REMOTE_ICONS && remote && versionAtLeast(cleanVersion, "1.21.4") && await preloads(remote)) {
+    cache2.set(key, remote);
+    return remote;
+  }
   const fetchJson = options.fetchJson ?? fetchJsonAsset;
   if (id === "minecraft:shield") {
     const shield = await renderShield(cleanVersion);
