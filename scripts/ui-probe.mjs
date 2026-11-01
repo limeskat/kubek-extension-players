@@ -24,6 +24,12 @@ const width = Number(arg("width", "1440"));
 const height = Number(arg("height", "900"));
 const theme = arg("theme", "dark");
 const base = arg("base", "http://137.23.58.84:25564");
+const bundle = arg("bundle", "");
+const localesDir = arg("locales", "");
+const openDialog = args.includes("--dialog");
+const tabName = arg("tab", "");
+const classic = args.includes("--classic");
+const teleport = args.includes("--teleport");
 
 if (!token) {
   console.error("Missing --token (or KUBEK_TOKEN).");
@@ -74,14 +80,58 @@ const context = await browser.newContext({ viewport: { width, height } });
 const page = await context.newPage();
 
 const consoleErrors = [];
+const networkErrors = [];
 page.on("console", (message) => {
-  if (message.type() === "error") consoleErrors.push(message.text());
+  // Asset 404s are reported by the network listener below with their URL.
+  if (message.type() === "error" && !message.text().startsWith("Failed to load resource")) {
+    consoleErrors.push(message.text());
+  }
 });
 page.on("pageerror", (error) => consoleErrors.push(String(error)));
+page.on("response", (response) => {
+  const url = response.url();
+  // The panel's head endpoint 404s for names without a skin; the UI draws a face instead.
+  if (response.status() >= 400 && !url.includes("/api/heads/")) {
+    networkErrors.push(`${response.status()} ${url}`);
+  }
+});
 
 await page.addInitScript((state) => {
   localStorage.setItem("auth-storage", JSON.stringify(state));
 }, authState);
+
+// Serve the local locale dictionaries so new keys resolve before deploy.
+if (localesDir) {
+  const readLocale = (name) => {
+    try {
+      return JSON.parse(fs.readFileSync(path.join(path.resolve(localesDir), name), "utf8"));
+    } catch {
+      return undefined;
+    }
+  };
+  const dictionaries = {
+    en: readLocale("en.json"),
+    ru: readLocale("ru.json"),
+    us: readLocale("us.json"),
+  };
+  await page.route("**/api/extensions/registry*", async (route) => {
+    const response = await route.fetch();
+    const body = await response.json();
+    const list = Array.isArray(body) ? body : body.extensions || [];
+    for (const item of list) {
+      if (item.id === "com.kubek.players") item.locales = dictionaries;
+    }
+    await route.fulfill({ response, json: body });
+  });
+}
+
+// Serve a local build for this extension instead of the deployed one.
+if (bundle) {
+  const absolute = path.resolve(bundle);
+  await page.route("**/api/extensions/*/assets/frontend/dist/index.js*", (route) =>
+    route.fulfill({ path: absolute, contentType: "text/javascript" }),
+  );
+}
 
 const result = {
   url: `${base}/ext?view=com.kubek.players/PlayersDashboard`,
@@ -89,6 +139,7 @@ const result = {
   width,
   height,
   consoleErrors,
+  networkErrors,
   overflow: null,
   metrics: {},
   screenshot: path.join(outDir, "page.png"),
@@ -100,11 +151,92 @@ try {
   await page.evaluate((value) => {
     document.documentElement.classList.toggle("dark", value === "dark");
   }, theme);
+  if (tabName) {
+    const tab = page.getByRole("tab", { name: new RegExp(tabName, "i") }).first();
+    if (await tab.count()) {
+      await tab.click();
+      await page.waitForTimeout(600);
+    }
+  }
+
   await page.waitForTimeout(600);
 
   result.overflow = await page.evaluate(
     () => document.documentElement.scrollWidth > window.innerWidth + 1,
   );
+  if (openDialog) {
+    const row = page.locator(".k-row").first();
+    if (await row.count()) {
+      await row.click();
+      await page.waitForSelector(".k-dialog", { timeout: 10000 });
+      await page.waitForTimeout(700);
+      result.dialog = await page.evaluate(() => {
+        const dialog = document.querySelector(".k-dialog");
+        const body = document.querySelector(".k-dialog-body");
+        const box = dialog?.getBoundingClientRect();
+        return {
+          box: box && { width: Math.round(box.width), height: Math.round(box.height), top: Math.round(box.top) },
+          viewport: { width: window.innerWidth, height: window.innerHeight },
+          bodyScrolls: body ? body.scrollHeight > body.clientHeight + 1 : null,
+          bodyWidth: body ? Math.round(body.clientWidth) : null,
+          sections: document.querySelectorAll(".k-dialog-body .k-panel").length,
+          slotWidth: (() => {
+            const slot = document.querySelector(".k-slot");
+            return slot ? Math.round(slot.getBoundingClientRect().width) : null;
+          })(),
+          slotVar: (() => {
+            const scroll = document.querySelector(".k-inv-scroll");
+            return scroll ? getComputedStyle(scroll).getPropertyValue("--k-slot-size").trim() : null;
+          })(),
+          invOverflow: (() => {
+            const scroll = document.querySelector(".k-inv-scroll");
+            return scroll ? scroll.scrollWidth > scroll.clientWidth + 1 : null;
+          })(),
+        };
+      });
+      await page.screenshot({ path: path.join(outDir, "dialog.png"), fullPage: false });
+
+      if (teleport) {
+        const button = page.getByRole("button", { name: /Teleport|Save position/i }).first();
+        if (await button.count()) {
+          await button.click();
+          await page.waitForTimeout(600);
+          const dialogs = page.locator(".k-dialog");
+          const count = await dialogs.count();
+          if (count > 1) {
+            result.teleportBox = await dialogs.last().evaluate((el) => {
+              const box = el.getBoundingClientRect();
+              return { width: Math.round(box.width), height: Math.round(box.height) };
+            });
+            await page.screenshot({ path: path.join(outDir, "teleport.png"), fullPage: false });
+          }
+        }
+      }
+
+      if (classic) {
+        const mode = page.getByRole("tab", { name: /^Classic$/ }).first();
+        if (await mode.count()) {
+          await mode.click();
+          await page.waitForTimeout(500);
+          await page.screenshot({ path: path.join(outDir, "dialog-classic.png"), fullPage: false });
+          result.classic = await page.evaluate(() => {
+            const scroll = document.querySelector(".k-inv-scroll");
+            const slot = document.querySelector(".k-slot");
+            const count = document.querySelector(".k-slot-count");
+            return {
+              hasClass: Boolean(document.querySelector(".k-inv--classic")),
+              canvas: scroll ? getComputedStyle(scroll).backgroundColor : null,
+              slot: slot ? getComputedStyle(slot).backgroundColor : null,
+              countColor: count ? getComputedStyle(count).color : null,
+            };
+          });
+        }
+      }
+    } else {
+      result.dialog = { error: "no rows on the page" };
+    }
+  }
+
   result.metrics = await page.evaluate(() => {
     const rect = (selector) => {
       const element = document.querySelector(selector);
@@ -135,4 +267,4 @@ try {
 
 console.log(JSON.stringify(result, null, 2));
 
-if (result.consoleErrors.length > 0 || result.overflow) process.exit(1);
+if (result.consoleErrors.length > 0 || result.networkErrors.length > 0 || result.overflow) process.exit(1);
