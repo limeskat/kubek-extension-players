@@ -1,12 +1,13 @@
 {
   "name": "com.kubek.players",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Aternos-style player management extension for Kubek Minecraft Dashboard",
   "private": true,
   "type": "module",
   "scripts": {
     "build": "node build.mjs",
     "package": "node package.mjs",
+    "test": "bun test",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {

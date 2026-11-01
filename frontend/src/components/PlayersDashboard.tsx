@@ -126,7 +126,10 @@ export const PlayersDashboard: React.FC = () => {
   const RefreshIcon = icons.RefreshCw || (() => null);
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in duration-300">
+    <div
+      className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in duration-300"
+      style={{ maxWidth: "1280px", marginLeft: "auto", marginRight: "auto" }}
+    >
       {/* Top Header & Server Switcher */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border/60">
         <div>

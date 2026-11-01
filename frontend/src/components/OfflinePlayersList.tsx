@@ -92,11 +92,11 @@ export const OfflinePlayersList: React.FC<OfflinePlayersListProps> = ({
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <img
-                          src={player.skinAvatarUrl || `https://crafatar.com/avatars/${player.uuid}?size=32`}
+                          src={player.skinAvatarUrl || `https://mc-heads.net/avatar/${player.uuid}/32`}
                           alt={player.username}
                           className="w-8 h-8 rounded-lg bg-background shadow-inner object-cover border border-border/40"
                           onError={(e: any) => {
-                            e.target.src = "https://crafatar.com/avatars/steve?size=32";
+                            e.target.src = "https://mc-heads.net/avatar/MHF_Steve/32";
                           }}
                         />
                         <span className="font-bold text-foreground group-hover:text-primary transition">

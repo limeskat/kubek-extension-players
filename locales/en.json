@@ -50,5 +50,9 @@
   "ext.players.distance_walked": "Distance Walked",
   "ext.players.blocks_broken": "Blocks broken",
   "ext.players.items_used": "Items used",
-  "ext.players.entities_killed": "Entities killed"
+  "ext.players.entities_killed": "Entities killed",
+  "ext.players.last_death": "Last death",
+  "ext.players.last_position": "Last known position",
+  "ext.players.save_position": "Save position",
+  "ext.players.player_data_saved": "Player data saved"
 }

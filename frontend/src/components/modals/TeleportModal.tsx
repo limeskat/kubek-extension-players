@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { alertMutationError } from "../../utils/errors";
 
 interface TeleportModalProps {
   serverId: string;
   uuid: string;
   username: string;
+  isOnline?: boolean;
   currentLocation?: {
     world: string;
     x: number;
@@ -18,6 +20,7 @@ export const TeleportModal: React.FC<TeleportModalProps> = ({
   serverId,
   uuid,
   username,
+  isOnline = true,
   currentLocation,
   onClose,
   onSuccess,
@@ -39,9 +42,15 @@ export const TeleportModal: React.FC<TeleportModalProps> = ({
     mutationFn: (body: any) =>
       http.post(`ext/com.kubek.players/servers/${serverId}/players/${uuid}/teleport`, body),
     onSuccess: () => {
+      if (!isOnline) {
+        alert(
+          `${username}'s new position was saved. It will apply the next time they join.`,
+        );
+      }
       onSuccess();
       onClose();
     },
+    onError: alertMutationError,
   });
 
   const handleTeleport = (e: React.FormEvent) => {
@@ -66,7 +75,10 @@ export const TeleportModal: React.FC<TeleportModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div className="bg-card border border-border/80 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+      <div
+        className="bg-card border border-border/80 w-full rounded-2xl shadow-2xl overflow-hidden flex flex-col"
+        style={{ maxWidth: "480px", maxHeight: "90vh" }}
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-border/50 bg-blue-600/10">
           <div className="flex items-center gap-2.5">
@@ -91,6 +103,13 @@ export const TeleportModal: React.FC<TeleportModalProps> = ({
 
         {/* Form */}
         <form onSubmit={handleTeleport} className="p-6 space-y-4">
+          {!isOnline && (
+            <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-300 text-xs leading-relaxed">
+              {username} is offline. The position is written to their player data and
+              applied when they next join.
+            </div>
+          )}
+
           {/* Dimension */}
           <div>
             <label className="block text-xs font-bold text-muted-foreground mb-1.5 uppercase tracking-wider">
@@ -110,7 +129,10 @@ export const TeleportModal: React.FC<TeleportModalProps> = ({
           </div>
 
           {/* Coordinate Steppers */}
-          <div className="grid grid-cols-3 gap-3">
+          <div
+            className="grid gap-3"
+            style={{ gridTemplateColumns: "repeat(3, minmax(0, 1fr))" }}
+          >
             {/* X */}
             <div>
               <label className="block text-xs font-bold text-muted-foreground mb-1 text-center">
@@ -217,7 +239,9 @@ export const TeleportModal: React.FC<TeleportModalProps> = ({
               className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm shadow-md transition flex items-center gap-1.5 disabled:opacity-50"
             >
               <SparklesIcon className="w-4 h-4" />
-              {t("ext.players.teleport") || "Teleport"}
+              {isOnline
+                ? t("ext.players.teleport") || "Teleport"
+                : t("ext.players.save_position") || "Save position"}
             </button>
           </div>
         </form>

@@ -32,6 +32,9 @@ function collectFiles(basePaths) {
           if (entry.isDirectory()) {
             walk(full);
           } else if (entry.isFile()) {
+            if (entry.name.endsWith(".test.ts") || entry.name.endsWith(".map")) {
+              continue;
+            }
             result.push(full);
           }
         }

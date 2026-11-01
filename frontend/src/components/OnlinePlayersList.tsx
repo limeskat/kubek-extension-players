@@ -58,11 +58,11 @@ export const OnlinePlayersList: React.FC<OnlinePlayersListProps> = ({
               <div className="flex items-center gap-3">
                 <div className="relative">
                   <img
-                    src={player.skinAvatarUrl || `https://crafatar.com/avatars/${player.username}?size=40`}
+                    src={player.skinAvatarUrl || `https://mc-heads.net/avatar/${player.username}/40`}
                     alt={player.username}
                     className="w-10 h-10 rounded-xl bg-background shadow-inner object-cover border border-border/40"
                     onError={(e: any) => {
-                      e.target.src = "https://crafatar.com/avatars/steve?size=40";
+                      e.target.src = "https://mc-heads.net/avatar/MHF_Steve/40";
                     }}
                   />
                   <div className="absolute -bottom-1 -right-1 players-pulse-dot border-2 border-card" />

@@ -11,8 +11,8 @@ An Aternos-style player management dashboard extension for the [Kubek Minecraft 
 ## Features
 
 - **Access Control**: Manage Whitelist, Operators (OPs), Banned Players, and Banned IPs with instant search and avatar previews.
-- **Live Telemetry**: Real-time tracking of online players, vitals (Health, Hunger, XP, Gamemode), coordinates, and dimension.
-- **Player Actions**: In-game player controls (Heal, Feed, Kill, Starve, Kick, Gamemode switcher, Teleport modal).
+- **Live Telemetry**: Real-time tracking of online players, vitals (Health, Hunger, XP, Gamemode), coordinates, dimension, last-death location, and full inventory (including armor, offhand, and ender chest).
+- **Player Actions**: In-game player controls (Heal, Feed, Kill, Starve, Kick, Gamemode switcher, Teleport modal). Teleporting works for online players via the console and for offline players by safely rewriting their saved player data, applied on their next join.
 - **Player Data Management**: Inspect offline player records (`usercache.json`, NBT `.dat` files) and safely purge or reset player data.
 
 ## Compatibility & Requirements
@@ -64,6 +64,10 @@ An Aternos-style player management dashboard extension for the [Kubek Minecraft 
 | `ext.players.control` | Execute player actions (kick, heal, feed, teleport, etc.) |
 | `ext.players.manage_access` | Modify Whitelist, OPs, Bans, and IP Bans |
 | `ext.players.purge` | Purge and reset player data files |
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for the full release notes.
 
 ## License
 

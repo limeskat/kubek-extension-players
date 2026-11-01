@@ -2,7 +2,7 @@
   "manifestVersion": 1,
   "id": "com.kubek.players",
   "name": "Players Management",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Comprehensive Aternos-style player management: Access lists, live telemetry, vitals, inventory inspector, teleportation, stats, and NBT data purge.",
   "author": {
     "name": "Kubek Community",
@@ -49,7 +49,7 @@
     ]
   },
   "backend": {
-    "entry": "backend/index.ts",
+    "entry": "backend/entry.js",
     "isolation": "in-process",
     "events": [
       "server.started",
@@ -80,7 +80,7 @@
       "type": "select",
       "label": "Player Avatar Provider",
       "options": ["crafatar", "minotar", "mc-heads", "visage"],
-      "default": "crafatar"
+      "default": "mc-heads"
     },
     {
       "key": "refreshIntervalSec",

@@ -50,5 +50,9 @@
   "ext.players.distance_walked": "Шагом",
   "ext.players.blocks_broken": "Сломано блоков",
   "ext.players.items_used": "Использовано предметов",
-  "ext.players.entities_killed": "Убито существ"
+  "ext.players.entities_killed": "Убито существ",
+  "ext.players.last_death": "Последняя смерть",
+  "ext.players.last_position": "Последняя известная позиция",
+  "ext.players.save_position": "Сохранить позицию",
+  "ext.players.player_data_saved": "Данные игрока сохранены"
 }

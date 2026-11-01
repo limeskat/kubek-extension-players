@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { alertMutationError } from "../utils/errors";
 
 interface CategoryListModalProps {
   serverId: string;
@@ -56,6 +57,7 @@ export const CategoryListModal: React.FC<CategoryListModalProps> = ({
       listQuery.refetch();
       onChanged();
     },
+    onError: alertMutationError,
   });
 
   // Delete Mutation
@@ -68,6 +70,7 @@ export const CategoryListModal: React.FC<CategoryListModalProps> = ({
       listQuery.refetch();
       onChanged();
     },
+    onError: alertMutationError,
   });
 
   const handleAdd = (e: React.FormEvent) => {
@@ -92,7 +95,10 @@ export const CategoryListModal: React.FC<CategoryListModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div className="bg-card border border-border/80 w-full max-w-xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+      <div
+        className="bg-card border border-border/80 w-full max-w-xl rounded-2xl shadow-2xl overflow-hidden flex flex-col"
+        style={{ maxHeight: "85vh", maxWidth: "640px" }}
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-border/50 bg-muted/30">
           <div className="flex items-center gap-2.5">
@@ -116,7 +122,10 @@ export const CategoryListModal: React.FC<CategoryListModalProps> = ({
         </div>
 
         {/* Entries List */}
-        <div className="p-6 overflow-y-auto flex-1 space-y-2.5">
+        <div
+          className="p-6 flex-1 space-y-2.5"
+          style={{ minHeight: 0, overflowY: "auto", overscrollBehavior: "contain" }}
+        >
           {listQuery.isLoading ? (
             <div className="flex items-center justify-center py-12 text-muted-foreground">
               <RefreshIcon className="w-6 h-6 animate-spin" />
@@ -143,11 +152,11 @@ export const CategoryListModal: React.FC<CategoryListModalProps> = ({
                       </div>
                     ) : (
                       <img
-                        src={avatarUrl || `https://crafatar.com/avatars/${nameOrIp}?size=36`}
+                        src={avatarUrl || `https://mc-heads.net/avatar/${nameOrIp}/36`}
                         alt={nameOrIp}
                         className="w-9 h-9 rounded-lg shadow-inner bg-background object-cover"
                         onError={(e: any) => {
-                          e.target.src = "https://crafatar.com/avatars/steve?size=36";
+                          e.target.src = "https://mc-heads.net/avatar/MHF_Steve/36";
                         }}
                       />
                     )}
