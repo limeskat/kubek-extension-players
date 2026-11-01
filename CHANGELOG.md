@@ -4,6 +4,20 @@ All notable changes to the Kubek Players Management extension are documented her
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project uses [Semantic Versioning](https://semver.org/).
 
+## [1.3.0] - 2026-11-02
+
+### Changed
+
+- Inventory icons are resolved from the game's own item definitions instead of guessing
+  `item/` and `block/` paths: `assets/minecraft/items/<id>.json` → model → `textures.layer0`,
+  following parent chains, `select` models (trimmed armour) and `condition` models. This fixes
+  items whose texture lives in the other folder (e.g. `oak_sapling`) and armour in modern
+  versions.
+- Assets are fetched per game version (`@26.2` from the server's `GAME_VERSION`) through
+  jsDelivr, and resolved URLs are cached per version and item id.
+- Slots show a shimmer while resolving and a neutral item glyph when no vanilla texture exists
+  (modded namespaces, special-rendered items such as the shield).
+
 ## [1.2.1] - 2026-11-01
 
 ### Fixed

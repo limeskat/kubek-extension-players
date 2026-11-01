@@ -1,4 +1,5 @@
 import React from "react";
+import { AssetVersionProvider } from "../ui/assets";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "../ui/empty";
 import { useKubek } from "../ui/kubek";
 import { PageHeader } from "../ui/page-header";
@@ -30,7 +31,7 @@ const PlayersPageInner: React.FC<{ kubek: any }> = ({ kubek }) => {
   });
 
   const rawServers = serversQuery.data;
-  const servers: Array<{ id: string; name: string; status: string }> = Array.isArray(rawServers)
+  const servers: Array<{ id: string; name: string; status: string; variables?: Record<string, unknown> }> = Array.isArray(rawServers)
     ? rawServers
     : rawServers?.servers || [];
 
@@ -71,6 +72,9 @@ const PlayersPageInner: React.FC<{ kubek: any }> = ({ kubek }) => {
     bannedIpsCount: 0,
   };
 
+  const selectedServer = servers.find((server) => server.id === selectedServerId);
+  const gameVersion = String(selectedServer?.variables?.GAME_VERSION ?? "").replace(/^v/, "");
+
   const onlinePlayers: any[] = onlineQuery.data?.online || [];
   const allPlayers: any[] = directoryQuery.data?.players || [];
 
@@ -109,7 +113,8 @@ const PlayersPageInner: React.FC<{ kubek: any }> = ({ kubek }) => {
   };
 
   return (
-    <div className="k-page">
+    <AssetVersionProvider version={gameVersion}>
+      <div className="k-page">
       <PageHeader
         title={t("ext.players.title") || "Players"}
         description={t("ext.players.subtitle")}
@@ -224,18 +229,19 @@ const PlayersPageInner: React.FC<{ kubek: any }> = ({ kubek }) => {
         </>
       )}
 
-      {selectedPlayerUuid && selectedServerId ? (
-        <PlayerDetailsDialog
-          serverId={selectedServerId}
-          uuid={selectedPlayerUuid}
-          onClose={() => setSelectedPlayerUuid(null)}
-          onChanged={() => {
-            refreshLists();
-            void onlineQuery.refetch();
-          }}
-        />
-      ) : null}
-    </div>
+        {selectedPlayerUuid && selectedServerId ? (
+          <PlayerDetailsDialog
+            serverId={selectedServerId}
+            uuid={selectedPlayerUuid}
+            onClose={() => setSelectedPlayerUuid(null)}
+            onChanged={() => {
+              refreshLists();
+              void onlineQuery.refetch();
+            }}
+          />
+        ) : null}
+      </div>
+    </AssetVersionProvider>
   );
 };
 

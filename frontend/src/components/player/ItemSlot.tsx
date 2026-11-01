@@ -1,18 +1,44 @@
 import React from "react";
 import type { InventoryItem } from "../../types/player";
+import { useAssetVersion } from "../../ui/assets";
 import { cx } from "../../ui/cx";
-import { itemTextureUrls } from "../../utils/format";
+import { resolveItemTexture } from "../../utils/item-textures";
 
-/** One inventory cell. Falls back from the item texture to the block texture, then to text. */
+const MissingGlyph: React.FC<{ className?: string }> = ({ className }) => (
+  <svg
+    className={className}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.6"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M12 3 21 7.5v9L12 21 3 16.5v-9L12 3Z" />
+    <path d="M3 7.5 12 12l9-4.5" />
+    <path d="M12 12v9" />
+  </svg>
+);
+
+/** One inventory cell. Resolves its texture through the item model for the server version. */
 export const ItemSlot: React.FC<{
   item?: InventoryItem | null;
   placeholder?: React.ReactNode;
 }> = ({ item, placeholder }) => {
-  const [stage, setStage] = React.useState<0 | 1 | 2>(0);
+  const version = useAssetVersion();
+  const [texture, setTexture] = React.useState<string | null | undefined>(undefined);
 
   React.useEffect(() => {
-    setStage(0);
-  }, [item?.id]);
+    if (!item) return;
+    let alive = true;
+    setTexture(undefined);
+    void resolveItemTexture(item.id || "", version).then((url) => {
+      if (alive) setTexture(url);
+    });
+    return () => {
+      alive = false;
+    };
+  }, [item?.id, version]);
 
   if (!item) {
     return (
@@ -23,26 +49,24 @@ export const ItemSlot: React.FC<{
   }
 
   const cleanId = (item.id || "").replace(/^[a-z0-9_]+:/i, "");
-  const urls = itemTextureUrls(item.id || "");
   const label = item.displayName || cleanId;
   const count = item.count || 1;
 
   return (
-    <div
-      className={cx("k-slot", "k-slot-filled")}
-      title={`${label} (${item.id}) x${count}`}
-    >
-      {stage < 2 ? (
+    <div className={cx("k-slot", "k-slot-filled")} title={`${label} (${item.id}) x${count}`}>
+      {texture === undefined ? (
+        <span className="k-slot-loading" aria-hidden="true" />
+      ) : texture ? (
         <img
           className="k-slot-img"
-          src={stage === 0 ? urls.item : urls.block}
+          src={texture}
           alt={label}
           loading="lazy"
           decoding="async"
-          onError={() => setStage((current) => (current === 0 ? 1 : 2))}
+          onError={() => setTexture(null)}
         />
       ) : (
-        <span className="k-slot-text">{label.slice(0, 3)}</span>
+        <MissingGlyph className="k-slot-missing" />
       )}
       {count > 1 ? <span className="k-slot-count">{count}</span> : null}
     </div>
