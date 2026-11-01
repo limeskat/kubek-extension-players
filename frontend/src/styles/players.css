@@ -1148,3 +1148,64 @@
   flex-wrap: wrap;
   gap: 6px;
 }
+
+/* Player dialog layout ---------------------------------------------- */
+
+.k-player-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+@media (min-width: 1024px) {
+  .k-player-grid { grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); }
+}
+
+.k-player-main,
+.k-player-side {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+
+.k-section-stack {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.k-coords {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.k-coord {
+  min-width: 0;
+  padding: 8px 6px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--subtle);
+  text-align: center;
+}
+
+.k-coord-axis {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+
+.k-coord-value {
+  margin-top: 2px;
+  overflow: hidden;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 15px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--foreground);
+}

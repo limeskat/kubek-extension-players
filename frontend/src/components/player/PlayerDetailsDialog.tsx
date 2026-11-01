@@ -4,6 +4,9 @@ import { Dialog, DialogBody, DialogFooter, DialogHeader } from "../../ui/dialog"
 import { useKubek } from "../../ui/kubek";
 import { PlayerHead } from "../../ui/player-head";
 import { useToast } from "../../ui/toast";
+import { LastDeath } from "./sections/LastDeath";
+import { Position } from "./sections/Position";
+import { Stats } from "./sections/Stats";
 import { Vitals } from "./sections/Vitals";
 
 export const PlayerDetailsDialog: React.FC<{
@@ -102,13 +105,40 @@ export const PlayerDetailsDialog: React.FC<{
             <div className="k-skeleton-row" />
           </div>
         ) : (
-          <Vitals
-            serverId={serverId}
-            uuid={uuid}
-            player={player}
-            onChanged={onChanged}
-            onRefetch={() => detailsQuery.refetch()}
-          />
+          <div className="k-player-grid">
+            <div className="k-player-main">
+              <Vitals
+                serverId={serverId}
+                uuid={uuid}
+                player={player}
+                onChanged={onChanged}
+                onRefetch={() => detailsQuery.refetch()}
+              />
+            </div>
+            <div className="k-player-side">
+              <Position
+                serverId={serverId}
+                uuid={uuid}
+                player={player}
+                onChanged={onChanged}
+                onRefetch={() => detailsQuery.refetch()}
+              />
+              <LastDeath
+                serverId={serverId}
+                uuid={uuid}
+                player={player}
+                onChanged={onChanged}
+                onRefetch={() => detailsQuery.refetch()}
+              />
+              <Stats
+                serverId={serverId}
+                uuid={uuid}
+                player={player}
+                onChanged={onChanged}
+                onRefetch={() => detailsQuery.refetch()}
+              />
+            </div>
+          </div>
         )}
       </DialogBody>
 
