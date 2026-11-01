@@ -811,3 +811,54 @@
   line-height: 1.4;
   color: var(--muted-foreground);
 }
+
+/* Inputs ------------------------------------------------------------ */
+
+.k-select-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.k-select-icon {
+  position: absolute;
+  left: 10px;
+  width: 14px;
+  height: 14px;
+  color: var(--muted-foreground);
+  pointer-events: none;
+}
+
+.k-select {
+  height: 32px;
+  margin: 0;
+  padding: 0 30px 0 30px;
+  border: 1px solid var(--input);
+  border-radius: 8px;
+  background-color: var(--field);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 14px;
+  color: var(--foreground);
+  font: inherit;
+  font-size: 13px;
+  appearance: none;
+  cursor: pointer;
+}
+
+.k-select:focus {
+  outline: none;
+  border-color: color-mix(in oklch, var(--primary) 70%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in oklch, var(--primary) 22%, transparent);
+}
+
+@media (max-width: 900px) {
+  .k-select { height: 40px; }
+}
+
+.k-spin { animation: k-spin 1s linear infinite; }
+
+@keyframes k-spin {
+  to { transform: rotate(360deg); }
+}
