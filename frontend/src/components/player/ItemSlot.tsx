@@ -2,7 +2,7 @@ import React from "react";
 import type { InventoryItem } from "../../types/player";
 import { useAssetVersion } from "../../ui/assets";
 import { cx } from "../../ui/cx";
-import { resolveItemTexture } from "../../utils/item-textures";
+import { resolveItemIcon } from "../../utils/item-icons";
 
 const MissingGlyph: React.FC<{ className?: string }> = ({ className }) => (
   <svg
@@ -32,7 +32,7 @@ export const ItemSlot: React.FC<{
     if (!item) return;
     let alive = true;
     setTexture(undefined);
-    void resolveItemTexture(item.id || "", version).then((url) => {
+    void resolveItemIcon(item.id || "", version).then((url) => {
       if (alive) setTexture(url);
     });
     return () => {

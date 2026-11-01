@@ -73,7 +73,7 @@ export function firstModelName(node: any, depth = 0): string | null {
   return null;
 }
 
-async function fetchJsonDefault(url: string): Promise<any | null> {
+export async function fetchJsonAsset(url: string): Promise<any | null> {
   try {
     const response = await fetch(url, { cache: "force-cache" });
     if (!response.ok) return null;
@@ -81,6 +81,30 @@ async function fetchJsonDefault(url: string): Promise<any | null> {
   } catch {
     return null;
   }
+}
+
+/**
+ * Model path for an item: the versioned item definition first, then the legacy model file.
+ */
+export async function resolveItemModelPath(
+  id: string,
+  version: string,
+  fetchJson: JsonFetcher = fetchJsonAsset,
+): Promise<string | null> {
+  const cleanVersion = (version || FALLBACK_VERSION).trim() || FALLBACK_VERSION;
+  const parts = splitRef(id);
+  if (!parts || parts.namespace !== "minecraft") return null;
+
+  const assets = `${ASSET_CDN}@${cleanVersion}/assets/minecraft`;
+  const definition = await fetchJson(`${assets}/items/${parts.path}.json`);
+  if (definition) {
+    const model = firstModelName(definition.model);
+    if (model) return model;
+  }
+
+  // No usable definition (older versions, special models): the plain model file still works.
+  const legacy = await fetchJson(`${assets}/models/item/${parts.path}.json`);
+  return legacy ? `minecraft:item/${parts.path}` : null;
 }
 
 /**
@@ -103,20 +127,10 @@ export async function resolveItemTexture(
     return null;
   }
 
-  const fetchJson = options.fetchJson ?? fetchJsonDefault;
+  const fetchJson = options.fetchJson ?? fetchJsonAsset;
   const assets = `${ASSET_CDN}@${cleanVersion}/assets/minecraft`;
 
-  // 1.21.4+ declares items in items/<id>.json; older versions only have the model.
-  let model: string | null = null;
-  const definition = await fetchJson(`${assets}/items/${parts.path}.json`);
-  if (definition) model = firstModelName(definition.model);
-
-  // Items without an item definition (older versions) or with a model type we cannot
-  // read (special models) still usually have a plain models/item file.
-  if (!model) {
-    const legacy = await fetchJson(`${assets}/models/item/${parts.path}.json`);
-    if (legacy) model = `minecraft:item/${parts.path}`;
-  }
+  const model = await resolveItemModelPath(id, cleanVersion, fetchJson);
 
   if (!model) {
     cache.set(key, null);
