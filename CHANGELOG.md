@@ -27,6 +27,18 @@ project uses [Semantic Versioning](https://semver.org/).
   browser in `localStorage`.
 - Game mode selector in the access section.
 
+### Fixed
+
+- The player dialog now traps keyboard focus, and Escape closes only the topmost dialog.
+- Filtering an access list to zero rows reports "No matches" instead of claiming the list is
+  empty.
+- Custom selects render their option lists with the panel's popover colours, so the open list
+  is readable in both themes.
+- Inventory slots scale 40 → 34 → 24px and the classic frame shrinks with them, so nothing is
+  clipped or scrolled on phones.
+- Panel-header switches (Native/Classic, Inventory/Ender chest, Players/IPs) use a compact
+  26px variant that fits inside the 44px header.
+
 ### Removed
 
 - `CategoryCards`, `CategoryListModal`, `OnlinePlayersList`, `OfflinePlayersList`,
