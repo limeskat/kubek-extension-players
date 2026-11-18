@@ -91,14 +91,14 @@ describe("addToWhitelist on an offline-mode server", () => {
     fs.writeFileSync(path.join(serverDir, "server.properties"), "online-mode=true\n");
     globalThis.fetch = (async () =>
       new Response(
-        JSON.stringify({ id: "77777777777747778777777777777777", name: "Notch" }),
+        JSON.stringify({ id: "77777777777747778777777777777777", name: "PlayerOne" }),
         { status: 200, headers: { "content-type": "application/json" } },
       )) as any;
 
-    expect(await executor.addToWhitelist("srv", "notch")).toBe(true);
+    expect(await executor.addToWhitelist("srv", "playerone")).toBe(true);
     expect(whitelist()[0]).toEqual({
       uuid: "77777777-7777-4777-8777-777777777777",
-      name: "Notch",
+      name: "PlayerOne",
     });
   });
 
