@@ -17,6 +17,10 @@ export const SearchInput: React.FC<{
       value={value}
       placeholder={placeholder}
       aria-label={label}
+      autoComplete="off"
+      autoCapitalize="none"
+      autoCorrect="off"
+      spellCheck={false}
       onChange={(event) => onChange(event.target.value)}
     />
   </label>

@@ -4,6 +4,27 @@ All notable changes to the Kubek Players Management extension are documented her
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project uses [Semantic Versioning](https://semver.org/).
 
+## [1.5.4] - 2026-11-19
+
+### Fixed
+
+- Offline-mode servers no longer consult Mojang when adding a name. Canonical casing changes
+  the offline UUID, so typing a lowercase name could register an unrelated Mojang account's
+  spelling instead of the identity the player logs in with. The typed spelling is kept and its
+  offline UUID derived; Mojang resolution now only runs on online-mode servers.
+
+## [1.5.3] - 2026-11-19
+
+### Fixed
+
+- Adding a name that never joined the server no longer fails on an offline-mode server. The
+  backend derives the offline UUID (`md5("OfflinePlayer:<name>")`, version 3) and writes the
+  whitelist/ops/ban entry itself.
+- Online-mode servers resolve names through Mojang; offline-mode servers derive the UUID from
+  the name that was typed, because that is the identity the player logs in with.
+- Username and search inputs disable autocapitalise/autocorrect/spellcheck, so mobile
+  keyboards no longer capitalise the first letter as you type.
+
 ## [1.5.2] - 2026-11-02
 
 ### Changed

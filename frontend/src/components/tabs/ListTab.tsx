@@ -91,6 +91,10 @@ export const ListAddForm: React.FC<{
         className="k-input"
         value={value}
         placeholder={placeholder}
+        autoComplete="off"
+        autoCapitalize="none"
+        autoCorrect="off"
+        spellCheck={false}
         onChange={(event: React.ChangeEvent<HTMLInputElement>) => onChange(event.target.value)}
       />
       {onReason ? (
@@ -98,6 +102,8 @@ export const ListAddForm: React.FC<{
           className="k-input k-add-reason"
           value={reason ?? ""}
           placeholder={reasonPlaceholder ?? "Reason (optional)"}
+          autoComplete="off"
+          autoCapitalize="sentences"
           onChange={(event: React.ChangeEvent<HTMLInputElement>) => onReason(event.target.value)}
         />
       ) : null}

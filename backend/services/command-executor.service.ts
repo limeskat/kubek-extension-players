@@ -1,5 +1,60 @@
 import type { KubekExtensionContext } from "@kubekpanel/extension-sdk";
+import { createHash } from "node:crypto";
 import type { MinecraftFilesService } from "./minecraft-files.service";
+
+/** Java's UUID.nameUUIDFromBytes("OfflinePlayer:<name>"): md5, version 3, RFC 4122 variant. */
+export function offlineUuid(name: string): string {
+  const bytes = createHash("md5").update(`OfflinePlayer:${name}`, "utf8").digest();
+  bytes[6] = (bytes[6] & 0x0f) | 0x30;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  const hex = bytes.toString("hex");
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
+
+function formatMojangId(id: string): string {
+  return `${id.slice(0, 8)}-${id.slice(8, 12)}-${id.slice(12, 16)}-${id.slice(16, 20)}-${id.slice(20)}`;
+}
+
+type MojangProfile = { id: string; name: string };
+
+const mojangCache = new Map<string, MojangProfile | null>();
+
+/** Test helper: a cached miss would otherwise stick for the whole process. */
+export function clearMojangCache(): void {
+  mojangCache.clear();
+}
+
+/** Look a name up once per process; null is cached too so a dead API is not re-hammered. */
+export async function lookupMojangProfile(username: string): Promise<MojangProfile | null> {
+  const key = username.toLowerCase();
+  if (mojangCache.has(key)) return mojangCache.get(key) ?? null;
+
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 3000);
+    const response = await fetch(
+      `https://api.mojang.com/users/profiles/minecraft/${encodeURIComponent(username)}`,
+      { signal: controller.signal },
+    );
+    clearTimeout(timer);
+
+    if (!response.ok) {
+      mojangCache.set(key, null);
+      return null;
+    }
+    const body = (await response.json()) as { id?: string; name?: string };
+    if (!body?.id || !body?.name) {
+      mojangCache.set(key, null);
+      return null;
+    }
+    const profile = { id: body.id, name: body.name };
+    mojangCache.set(key, profile);
+    return profile;
+  } catch {
+    mojangCache.set(key, null);
+    return null;
+  }
+}
 
 export class CommandExecutorService {
   constructor(
@@ -87,10 +142,10 @@ export class CommandExecutorService {
     ) {
       return true;
     }
-    const uuid = this.resolveUuid(serverId, username);
-    if (!uuid) return false;
+    const profile = await this.resolveProfile(serverId, username);
+    if (!profile) return false;
 
-    list.push({ uuid, name: username });
+    list.push(profile);
     this.files.setWhitelist(serverId, list);
     return true;
   }
@@ -119,10 +174,10 @@ export class CommandExecutorService {
     if (list.some((e) => e.name.toLowerCase() === username.toLowerCase())) {
       return true;
     }
-    const uuid = this.resolveUuid(serverId, username);
-    if (!uuid) return false;
+    const profile = await this.resolveProfile(serverId, username);
+    if (!profile) return false;
 
-    list.push({ uuid, name: username, level: 4, bypassesPlayerLimit: false });
+    list.push({ ...profile, level: 4, bypassesPlayerLimit: false });
     this.files.setOps(serverId, list);
     return true;
   }
@@ -151,12 +206,12 @@ export class CommandExecutorService {
     if (list.some((e) => e.name.toLowerCase() === username.toLowerCase())) {
       return true;
     }
-    const uuid = this.resolveUuid(serverId, username);
-    if (!uuid) return false;
+    const profile = await this.resolveProfile(serverId, username);
+    if (!profile) return false;
 
     list.push({
-      uuid,
-      name: username,
+      uuid: profile.uuid,
+      name: profile.name,
       created: new Date().toISOString(),
       source: "Server",
       expires: "forever",
@@ -212,10 +267,28 @@ export class CommandExecutorService {
   }
 
   /** Resolve a player name to the UUID stored in usercache.json (offline fallback). */
-  private resolveUuid(serverId: string, username: string): string | null {
+  /**
+   * UUID + canonical name for a player. Usercache first, then Mojang (which fixes casing),
+   * then the offline-mode UUID derived from the name. Online-mode servers never fall back
+   * to an offline UUID, because it would not match the account at login.
+   */
+  private async resolveProfile(
+    serverId: string,
+    username: string,
+  ): Promise<{ uuid: string; name: string } | null> {
     const entry = this.files
       .getUserCache(serverId)
       .find((e) => e.name.toLowerCase() === username.toLowerCase());
-    return entry?.uuid ?? null;
+    if (entry) return { uuid: entry.uuid, name: entry.name };
+
+    const online = this.files.getServerProperties(serverId)["online-mode"] !== "false";
+
+    // Offline-mode identity is md5("OfflinePlayer:<exact name>"): the spelling IS the uuid,
+    // so Mojang's canonical casing would whitelist a different player than the one logging in.
+    if (!online) return { uuid: offlineUuid(username), name: username };
+
+    const profile = await lookupMojangProfile(username);
+    if (!profile) return null;
+    return { uuid: formatMojangId(profile.id), name: profile.name };
   }
 }

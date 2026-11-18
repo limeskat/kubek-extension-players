@@ -289,6 +289,10 @@ var SearchInput = ({ value, onChange, placeholder, label }) => /* @__PURE__ */ r
     value,
     placeholder,
     "aria-label": label,
+    autoComplete: "off",
+    autoCapitalize: "none",
+    autoCorrect: "off",
+    spellCheck: false,
     onChange: (event) => onChange(event.target.value)
   }
 ));
@@ -1682,6 +1686,10 @@ var ListAddForm = ({ value, onChange, onSubmit, placeholder, submitLabel, pendin
         className: "k-input",
         value,
         placeholder,
+        autoComplete: "off",
+        autoCapitalize: "none",
+        autoCorrect: "off",
+        spellCheck: false,
         onChange: (event) => onChange(event.target.value)
       }
     ),
@@ -1691,6 +1699,8 @@ var ListAddForm = ({ value, onChange, onSubmit, placeholder, submitLabel, pendin
         className: "k-input k-add-reason",
         value: reason ?? "",
         placeholder: reasonPlaceholder ?? "Reason (optional)",
+        autoComplete: "off",
+        autoCapitalize: "sentences",
         onChange: (event) => onReason(event.target.value)
       }
     ) : null,
