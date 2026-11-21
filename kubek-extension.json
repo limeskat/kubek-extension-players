@@ -1,16 +1,27 @@
 {
   "manifestVersion": 1,
-  "id": "com.kubek.players",
+  "id": "io.github.limeskat.players",
   "name": "Players Management",
-  "version": "1.5.4",
+  "version": "1.6.0",
   "description": "Player management for Kubek with a native panel UI: access tabs, live vitals, inventory inspector, teleport, statistics and data purge.",
   "author": {
-    "name": "Kubek Community",
-    "url": "https://github.com/KubekPanel"
+    "name": "limeskat",
+    "url": "https://github.com/limeskat"
   },
   "license": "MIT",
   "icon": "icon.png",
-  "keywords": ["minecraft", "players", "whitelist", "operators", "bans", "inventory", "nbt", "teleport", "statistics", "purge"],
+  "keywords": [
+    "minecraft",
+    "players",
+    "whitelist",
+    "operators",
+    "bans",
+    "inventory",
+    "nbt",
+    "teleport",
+    "statistics",
+    "purge"
+  ],
   "engines": {
     "kubek": ">=4.0.0"
   },
@@ -41,7 +52,7 @@
       "servers:read",
       "servers:control",
       "http:routes",
-      "storage",
+      "http:outbound",
       "settings",
       "events:server",
       "events:players",
@@ -49,25 +60,26 @@
     ]
   },
   "backend": {
-    "entry": "backend/entry.js",
+    "entry": "backend/index.ts",
     "isolation": "in-process",
     "events": [
       "server.started",
       "server.stopped",
+      "server.crashed",
       "player.joined",
       "player.left",
       "server.log"
     ]
   },
   "frontend": {
-    "entry": "frontend/index.ts",
+    "entry": "frontend/src/index.ts",
     "contributes": {
       "sidebar": [
         {
           "id": "players-tab",
           "label": "Players",
           "icon": "Users",
-          "route": "com.kubek.players/PlayersDashboard",
+          "route": "io.github.limeskat.players/PlayersDashboard",
           "permission": "ext.players.view",
           "section": "server"
         }
@@ -79,21 +91,14 @@
       "key": "avatarProvider",
       "type": "select",
       "label": "Player Avatar Provider",
-      "options": ["crafatar", "minotar", "mc-heads", "visage"],
+      "options": [
+        "crafatar",
+        "minotar",
+        "mc-heads",
+        "visage"
+      ],
       "default": "mc-heads"
-    },
-    {
-      "key": "refreshIntervalSec",
-      "type": "number",
-      "label": "Live Telemetry Refresh Interval (seconds)",
-      "default": 5,
-      "rules": "required|min:1|max:60"
-    },
-    {
-      "key": "enableOfflineDirectory",
-      "type": "boolean",
-      "label": "Enable Offline Player Directory (usercache & disk scanning)",
-      "default": true
     }
-  ]
+  ],
+  "homepage": "https://github.com/limeskat/kubek-extension-players"
 }

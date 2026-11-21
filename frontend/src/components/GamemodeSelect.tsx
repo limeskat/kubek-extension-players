@@ -1,4 +1,4 @@
-import React from "react";
+import React from "../ui/react";
 
 const MODES = ["Survival", "Creative", "Adventure", "Spectator"];
 

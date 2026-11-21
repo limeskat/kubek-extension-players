@@ -1,51 +1,17 @@
 import type { KubekFrontendModule } from '@kubekpanel/extension-sdk';
 import { PlayersDashboard } from './components/PlayersDashboard';
-import './styles/players.css';
+import styles from './styles/players.css' with { type: 'text' };
 
-// Automatically patches the sidebar item icon to ensure the Lucide Users SVG is always displayed
-function patchSidebarIcon() {
-  if (typeof document === 'undefined') return;
+const STYLE_ID = 'kubek-ext-players-styles';
 
-  const replaceIcon = () => {
-    const elements = document.querySelectorAll('a, button, [role="button"], div, li');
-    elements.forEach((el) => {
-      const href = el.getAttribute('href') || '';
-      const text = (el.textContent || '').trim();
-      if (
-        href.includes('com.kubek.players') ||
-        href.includes('PlayersDashboard') ||
-        (text.startsWith('Players') && text.length <= 15)
-      ) {
-        const svg = el.querySelector('svg');
-        if (svg && svg.getAttribute('data-kubek-icon') !== 'users') {
-          svg.setAttribute('data-kubek-icon', 'users');
-          svg.setAttribute('viewBox', '0 0 24 24');
-          svg.setAttribute('fill', 'none');
-          svg.setAttribute('stroke', 'currentColor');
-          svg.setAttribute('stroke-width', '2');
-          svg.setAttribute('stroke-linecap', 'round');
-          svg.setAttribute('stroke-linejoin', 'round');
-          svg.innerHTML = '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.128a4 4 0 0 1 0 7.744"></path>';
-        }
-      }
-    });
-  };
-
-  replaceIcon();
-  if (typeof MutationObserver !== 'undefined' && document.body) {
-    const observer = new MutationObserver(() => {
-      replaceIcon();
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
-  }
-}
-
-if (typeof window !== 'undefined') {
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', patchSidebarIcon);
-  } else {
-    patchSidebarIcon();
-  }
+// The panel serves one ESM bundle per extension, so styles ride along as text and are
+// mounted once when the module is imported.
+if (typeof document !== 'undefined' && !document.getElementById(STYLE_ID)) {
+  const style = document.createElement('style');
+  style.id = STYLE_ID;
+  style.setAttribute('data-extension', 'io.github.limeskat.players');
+  style.textContent = styles;
+  document.head.appendChild(style);
 }
 
 const frontendModule: KubekFrontendModule = {

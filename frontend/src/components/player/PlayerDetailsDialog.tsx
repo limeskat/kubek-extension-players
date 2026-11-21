@@ -1,4 +1,4 @@
-import React from "react";
+import React from "../../ui/react";
 import type { PlayerDetails } from "../../types/player";
 import { Dialog, DialogBody, DialogFooter, DialogHeader } from "../../ui/dialog";
 import { TeleportModal } from "../modals/TeleportModal";
@@ -28,7 +28,7 @@ export const PlayerDetailsDialog: React.FC<{
 
   const detailsQuery = query.useQuery({
     queryKey: ["ext", "players", serverId, "player", uuid],
-    queryFn: () => http.get(`ext/com.kubek.players/servers/${serverId}/players/${uuid}`),
+    queryFn: () => http.get(`ext/io.github.limeskat.players/servers/${serverId}/players/${uuid}`),
     refetchInterval: 6000,
   });
 

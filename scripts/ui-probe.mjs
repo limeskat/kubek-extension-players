@@ -119,7 +119,7 @@ if (localesDir) {
     const body = await response.json();
     const list = Array.isArray(body) ? body : body.extensions || [];
     for (const item of list) {
-      if (item.id === "com.kubek.players") item.locales = dictionaries;
+      if (item.id === "io.github.limeskat.players") item.locales = dictionaries;
     }
     await route.fulfill({ response, json: body });
   });
@@ -134,7 +134,7 @@ if (bundle) {
 }
 
 const result = {
-  url: `${base}/ext?view=com.kubek.players/PlayersDashboard`,
+  url: `${base}/ext?view=io.github.limeskat.players/PlayersDashboard`,
   theme,
   width,
   height,

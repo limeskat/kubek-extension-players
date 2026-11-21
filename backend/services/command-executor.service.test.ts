@@ -20,6 +20,9 @@ function ctx() {
       get: () => ({ status: "stopped" }),
       sendCommand: async () => true,
     },
+    http: {
+      fetch: (url: string, init?: RequestInit) => globalThis.fetch(url, init),
+    },
   } as any;
 }
 

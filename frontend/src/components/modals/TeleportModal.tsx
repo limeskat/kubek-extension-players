@@ -1,4 +1,4 @@
-import React from "react";
+import React from "../../ui/react";
 import { getMutationErrorMessage } from "../../utils/errors";
 import { Dialog, DialogBody, DialogFooter, DialogHeader } from "../../ui/dialog";
 import { useKubek } from "../../ui/kubek";
@@ -28,7 +28,7 @@ export const TeleportModal: React.FC<{
 
   const teleport = query.useMutation({
     mutationFn: (body: unknown) =>
-      http.post(`ext/com.kubek.players/servers/${serverId}/players/${uuid}/teleport`, body),
+      http.post(`ext/io.github.limeskat.players/servers/${serverId}/players/${uuid}/teleport`, body),
     onSuccess: (data: any) => {
       notify({
         type: "success",

@@ -1,4 +1,4 @@
-import React from "react";
+import React from "./react";
 import { cx } from "./cx";
 
 export type ToastType = "success" | "error" | "info";

@@ -1,4 +1,4 @@
-import React from "react";
+import React from "../../ui/react";
 import { matchesQuery } from "../../utils/format";
 import { useKubek } from "../../ui/kubek";
 import { Plate } from "../../ui/plate";

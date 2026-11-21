@@ -1,4 +1,4 @@
-import React from "react";
+import React from "../../../ui/react";
 import { getMutationErrorMessage } from "../../../utils/errors";
 import { Dialog, DialogBody, DialogFooter, DialogHeader } from "../../../ui/dialog";
 import { useKubek } from "../../../ui/kubek";
@@ -44,7 +44,7 @@ export const DangerZone: React.FC<SectionProps & { onDeleted?: () => void }> = (
 
   const purgeMutation = query.useMutation({
     mutationFn: (body: PurgeOptions) =>
-      http.post(`ext/com.kubek.players/servers/${serverId}/players/${uuid}/purge`, body),
+      http.post(`ext/io.github.limeskat.players/servers/${serverId}/players/${uuid}/purge`, body),
     onSuccess: () => {
       setConfirming(false);
       setOptions(EMPTY);
@@ -63,7 +63,7 @@ export const DangerZone: React.FC<SectionProps & { onDeleted?: () => void }> = (
   });
 
   const deletePlayerMutation = query.useMutation({
-    mutationFn: () => http.delete(`ext/com.kubek.players/servers/${serverId}/players/${uuid}`),
+    mutationFn: () => http.delete(`ext/io.github.limeskat.players/servers/${serverId}/players/${uuid}`),
     onSuccess: (data: any) => {
       setDeleting(false);
       onChanged();
@@ -83,7 +83,7 @@ export const DangerZone: React.FC<SectionProps & { onDeleted?: () => void }> = (
 
   const kickMutation = query.useMutation({
     mutationFn: () =>
-      http.post(`ext/com.kubek.players/servers/${serverId}/players/${uuid}/kick`),
+      http.post(`ext/io.github.limeskat.players/servers/${serverId}/players/${uuid}/kick`),
     onSuccess: () => {
       onRefetch();
       onChanged();

@@ -1,22 +1,15 @@
 import fs from "node:fs";
 import path from "node:path";
 import zlib from "node:zlib";
-import { execSync } from "node:child_process";
 
-console.log("Packaging extension com.kubek.players...");
+console.log("Packaging extension io.github.limeskat.players...");
 
-// Ensure frontend bundle is built
-execSync("node build.mjs", { stdio: "inherit" });
-
-const archiveName = "com.kubek.players.kubekext";
+const archiveName = "io.github.limeskat.players.kubekext";
 if (fs.existsSync(archiveName)) {
   fs.unlinkSync(archiveName);
 }
 
-const targets = ['kubek-extension.json', 'package.json', 'backend', 'frontend', 'locales'];
-if (fs.existsSync('icon.png')) {
-  targets.push('icon.png');
-}
+const targets = ['kubek-extension.json', 'package.json', 'backend', 'frontend', 'locales', 'icon.png'];
 
 // Collect all files recursively
 function collectFiles(basePaths) {
@@ -32,7 +25,11 @@ function collectFiles(basePaths) {
           if (entry.isDirectory()) {
             walk(full);
           } else if (entry.isFile()) {
-            if (entry.name.endsWith(".test.ts") || entry.name.endsWith(".map")) {
+            if (
+              entry.name.includes(".test.") ||
+              entry.name.endsWith(".map") ||
+              full === path.join("backend", "entry.js")
+            ) {
               continue;
             }
             result.push(full);

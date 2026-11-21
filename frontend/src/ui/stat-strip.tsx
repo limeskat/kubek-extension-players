@@ -1,4 +1,4 @@
-import React from "react";
+import React from "./react";
 import { cx } from "./cx";
 import { Plate } from "./plate";
 import { type Tone } from "./tone";

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import React from "../ui/react";
 
 // --- OFFICIAL MINECRAFT VANILLA PIXELATED ARMOR & SHIELD TEXTURES (BASE64) ---
 export const SLOT_HELMET_B64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAANUlEQVQ4y2NgGJ4gNDT0PzZMtGZy5IhTQEjN4DEAPdCQ+bR1AcWxQBUDcCkkWjOu1Dh48w0AYJ4/wa1cA24AAAAASUVORK5CYII=";

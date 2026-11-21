@@ -1,4 +1,4 @@
-import React from "react";
+import React from "./react";
 import { cx } from "./cx";
 
 export const Empty: React.FC<{ className?: string; children?: React.ReactNode }> = ({

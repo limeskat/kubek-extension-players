@@ -1,4 +1,4 @@
-import React from "react";
+import React from "./react";
 import { cx } from "./cx";
 
 export const Panel: React.FC<React.HTMLAttributes<HTMLElement>> = ({ className, children, ...rest }) => (

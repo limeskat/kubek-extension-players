@@ -1,4 +1,4 @@
-import React from "react";
+import React from "../../../ui/react";
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "../../../ui/empty";
 import { KeyValue, KeyValueItem } from "../../../ui/key-value";
 import { useKubek } from "../../../ui/kubek";

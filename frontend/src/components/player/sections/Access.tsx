@@ -1,4 +1,4 @@
-import React from "react";
+import React from "../../../ui/react";
 import { getMutationErrorMessage } from "../../../utils/errors";
 import { useKubek } from "../../../ui/kubek";
 import { Panel, PanelBody, PanelHead } from "../../../ui/panel";
@@ -17,7 +17,7 @@ export const Access: React.FC<SectionProps> = ({ serverId, uuid, player, onChang
 
   const permissionMutation = query.useMutation({
     mutationFn: (body: { perm: string; value: boolean }) =>
-      http.post(`ext/com.kubek.players/servers/${serverId}/players/${uuid}/permissions`, body),
+      http.post(`ext/io.github.limeskat.players/servers/${serverId}/players/${uuid}/permissions`, body),
     onSuccess: () => {
       onRefetch();
       onChanged();
@@ -31,7 +31,7 @@ export const Access: React.FC<SectionProps> = ({ serverId, uuid, player, onChang
 
   const gamemodeMutation = query.useMutation({
     mutationFn: (gamemode: string) =>
-      http.post(`ext/com.kubek.players/servers/${serverId}/players/${uuid}/gamemode`, { gamemode }),
+      http.post(`ext/io.github.limeskat.players/servers/${serverId}/players/${uuid}/gamemode`, { gamemode }),
     onSuccess: () => {
       onRefetch();
       onChanged();

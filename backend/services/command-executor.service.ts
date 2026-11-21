@@ -24,15 +24,20 @@ export function clearMojangCache(): void {
   mojangCache.clear();
 }
 
+type Fetcher = (url: string, init?: RequestInit) => Promise<Response>;
+
 /** Look a name up once per process; null is cached too so a dead API is not re-hammered. */
-export async function lookupMojangProfile(username: string): Promise<MojangProfile | null> {
+export async function lookupMojangProfile(
+  username: string,
+  fetcher: Fetcher = globalThis.fetch,
+): Promise<MojangProfile | null> {
   const key = username.toLowerCase();
   if (mojangCache.has(key)) return mojangCache.get(key) ?? null;
 
   try {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 3000);
-    const response = await fetch(
+    const response = await fetcher(
       `https://api.mojang.com/users/profiles/minecraft/${encodeURIComponent(username)}`,
       { signal: controller.signal },
     );
@@ -287,7 +292,9 @@ export class CommandExecutorService {
     // so Mojang's canonical casing would whitelist a different player than the one logging in.
     if (!online) return { uuid: offlineUuid(username), name: username };
 
-    const profile = await lookupMojangProfile(username);
+    const profile = await lookupMojangProfile(username, (url, init) =>
+      this.ctx.http.fetch(url, init),
+    );
     if (!profile) return null;
     return { uuid: formatMojangId(profile.id), name: profile.name };
   }

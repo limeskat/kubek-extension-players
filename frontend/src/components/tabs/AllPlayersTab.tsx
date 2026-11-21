@@ -1,4 +1,4 @@
-import React from "react";
+import React from "../../ui/react";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "../../ui/empty";
 import { useKubek } from "../../ui/kubek";
 import { matchesQuery } from "../../utils/format";

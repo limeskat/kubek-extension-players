@@ -1,4 +1,4 @@
-import React from "react";
+import React from "./react";
 import { FALLBACK_VERSION } from "../utils/item-textures";
 
 const AssetVersionContext = React.createContext<string>(FALLBACK_VERSION);

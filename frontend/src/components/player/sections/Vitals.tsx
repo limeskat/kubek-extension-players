@@ -1,4 +1,4 @@
-import React from "react";
+import React from "../../../ui/react";
 import { MinecraftFood, MinecraftHeart } from "../../MinecraftIcons";
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "../../../ui/empty";
 import { getMutationErrorMessage } from "../../../utils/errors";
@@ -42,7 +42,7 @@ export const Vitals: React.FC<SectionProps> = ({ serverId, uuid, player, onChang
 
   const vitalsMutation = query.useMutation({
     mutationFn: (action: string) =>
-      http.post(`ext/com.kubek.players/servers/${serverId}/players/${uuid}/vitals`, { action }),
+      http.post(`ext/io.github.limeskat.players/servers/${serverId}/players/${uuid}/vitals`, { action }),
     onSuccess: () => {
       onRefetch();
       onChanged();

@@ -1,4 +1,4 @@
-import React from "react";
+import React from "../../ui/react";
 import { getMutationErrorMessage } from "../../utils/errors";
 import { useKubek } from "../../ui/kubek";
 import { useToast } from "../../ui/toast";
@@ -18,7 +18,7 @@ export function usePlayerList(serverId: string, type: ListType, onChanged: () =>
 
   const listQuery = query.useQuery({
     queryKey: ["ext", "players", serverId, "list", type],
-    queryFn: () => http.get(`ext/com.kubek.players/servers/${serverId}/lists/${type}`),
+    queryFn: () => http.get(`ext/io.github.limeskat.players/servers/${serverId}/lists/${type}`),
   });
 
   const showError = React.useCallback(
@@ -32,7 +32,7 @@ export function usePlayerList(serverId: string, type: ListType, onChanged: () =>
 
   const addMutation = query.useMutation({
     mutationFn: (body: unknown) =>
-      http.post(`ext/com.kubek.players/servers/${serverId}/lists/${type}`, body),
+      http.post(`ext/io.github.limeskat.players/servers/${serverId}/lists/${type}`, body),
     onSuccess: () => {
       setInput("");
       setReason("");
@@ -45,7 +45,7 @@ export function usePlayerList(serverId: string, type: ListType, onChanged: () =>
   const deleteMutation = query.useMutation({
     mutationFn: (identifier: string) =>
       http.delete(
-        `ext/com.kubek.players/servers/${serverId}/lists/${type}/${encodeURIComponent(identifier)}`,
+        `ext/io.github.limeskat.players/servers/${serverId}/lists/${type}/${encodeURIComponent(identifier)}`,
       ),
     onSuccess: () => {
       void listQuery.refetch();

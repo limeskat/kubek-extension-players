@@ -1,4 +1,4 @@
-import React from "react";
+import React from "../../../ui/react";
 import type { InventoryItem } from "../../../types/player";
 import {
   SlotBootsIcon,

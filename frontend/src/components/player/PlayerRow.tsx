@@ -1,4 +1,4 @@
-import React from "react";
+import React from "../../ui/react";
 import { cx } from "../../ui/cx";
 import { PlayerHead } from "../../ui/player-head";
 

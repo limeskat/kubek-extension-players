@@ -1,4 +1,4 @@
-import React from "react";
+import React from "../ui/react";
 import { AssetVersionProvider } from "../ui/assets";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "../ui/empty";
 import { useKubek } from "../ui/kubek";
@@ -47,21 +47,21 @@ const PlayersPageInner: React.FC<{ kubek: any }> = ({ kubek }) => {
 
   const summaryQuery = query.useQuery({
     queryKey: ["ext", "players", selectedServerId, "summary"],
-    queryFn: () => http.get(`ext/com.kubek.players/servers/${selectedServerId}/summary`),
+    queryFn: () => http.get(`ext/io.github.limeskat.players/servers/${selectedServerId}/summary`),
     enabled: Boolean(selectedServerId),
     refetchInterval: 8000,
   });
 
   const onlineQuery = query.useQuery({
     queryKey: ["ext", "players", selectedServerId, "online"],
-    queryFn: () => http.get(`ext/com.kubek.players/servers/${selectedServerId}/online`),
+    queryFn: () => http.get(`ext/io.github.limeskat.players/servers/${selectedServerId}/online`),
     enabled: Boolean(selectedServerId),
     refetchInterval: 5000,
   });
 
   const directoryQuery = query.useQuery({
     queryKey: ["ext", "players", selectedServerId, "directory"],
-    queryFn: () => http.get(`ext/com.kubek.players/servers/${selectedServerId}/directory`),
+    queryFn: () => http.get(`ext/io.github.limeskat.players/servers/${selectedServerId}/directory`),
     enabled: Boolean(selectedServerId),
   });
 

@@ -1,4 +1,4 @@
-import React from "react";
+import React from "../../ui/react";
 import { NameListTab } from "./NameListTab";
 
 export const WhitelistTab: React.FC<{ serverId: string; onChanged: () => void }> = ({

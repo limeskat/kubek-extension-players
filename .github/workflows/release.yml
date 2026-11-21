@@ -52,7 +52,7 @@ jobs:
         with:
           name: Players Management ${{ github.ref_name }}
           body_path: release-notes.md
-          files: com.kubek.players.kubekext
+          files: io.github.limeskat.players.kubekext
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
