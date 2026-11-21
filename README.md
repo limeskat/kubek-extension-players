@@ -3,7 +3,7 @@
 [![GitHub Release](https://img.shields.io/github/v/release/limeskat/kubek-extension-players?logo=github)](https://github.com/limeskat/kubek-extension-players/releases)
 [![Kubek Panel](https://img.shields.io/badge/Kubek%20Panel-%E2%89%A5%20v4.0.0-F16436.svg)](https://github.com/KubekPanel)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178c6.svg?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Node.js](https://img.shields.io/badge/Node.js-%E2%89%A5%2018-339933.svg?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![Bun](https://img.shields.io/badge/Bun-%E2%89%A5%201.2-000000.svg?logo=bun)](https://bun.sh/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 A player management extension for the [Kubek Minecraft Server Panel](https://github.com/KubekPanel) that follows the panel's own interface: same page header, stat strip, segmented tabs, list panels and dialog anatomy, in both light and dark themes. It adds what the native Players page does not cover — offline players, vitals, inventory, teleport and data purge.
@@ -22,17 +22,24 @@ A player management extension for the [Kubek Minecraft Server Panel](https://git
 ## Compatibility & Requirements
 
 - **Kubek Panel**: `v4.0.0` or higher
-- **Node.js**: `v18+` or `v22+` (for building from source)
+- **Bun**: `v1.2+` (tests, local build and the panel's install-time frontend build)
+- **Node.js**: `v18+` (only the packaging script runs on Node)
 
 ## Installation
 
-### Option 1: Install Pre-built Extension (Recommended)
-1. Download the latest `com.kubek.players.kubekext` file from [Releases](releases).
-2. Open your Kubek Panel dashboard.
-3. Navigate to **Extensions** → **Install Extension** and upload the `.kubekext` file (or place it in your Kubek `extensions/` directory).
-4. Restart or reload the panel.
+### Option 1: Install from the catalog
 
-### Option 2: Build from Source
+1. Open your Kubek Panel dashboard.
+2. Go to **Extensions** → **Catalog**, find **Players Management** and install it.
+3. Confirm the requested capabilities, then enable the extension.
+
+### Option 2: Install a package
+
+1. Download the latest `io.github.limeskat.players.kubekext` file from [Releases](releases).
+2. Go to **Extensions** → **Install Extension** and upload the file.
+3. Confirm the requested capabilities, then enable the extension.
+
+### Option 3: Build from source
 
 1. **Clone the repository**:
    ```bash
@@ -42,32 +49,44 @@ A player management extension for the [Kubek Minecraft Server Panel](https://git
 
 2. **Install dependencies**:
    ```bash
-   npm install
+   bun install
    ```
 
-3. **Typecheck & Build**:
+3. **Typecheck, test and build**:
    ```bash
-   npm run typecheck
-   npm run build
+   bun run typecheck
+   bun test
+   bun run build
    ```
 
-4. **Package extension**:
+4. **Package the extension**:
    ```bash
-   npm run package
+   bun run package
    ```
 
-   This generates `com.kubek.players.kubekext` in the root directory.
+   This generates `io.github.limeskat.players.kubekext` in the root directory.
 
-5. Install `com.kubek.players.kubekext` into your Kubek panel via the web UI or by copying it to the `extensions/` directory.
+5. Install the package into your Kubek panel via the web UI or by copying it to the `extensions/` directory.
+
+### Upgrading from 1.5.x
+
+The extension moved from the reserved `com.kubek.players` id to `io.github.limeskat.players` so it can
+be listed in the community catalog. The panel treats it as a new extension: remove the old one first.
+Its settings and stored state are not migrated.
 
 ## Development
 
 ```bash
-npm test          # Bun: backend parsers, pure helpers, UI kit and tab logic
-npm run typecheck
-npm run build     # frontend/dist/index.js, frontend/index.ts, backend/entry.js
-npm run package   # com.kubek.players.kubekext
+bun install
+bun test          # backend parsers, pure helpers, UI kit and tab logic
+bun run typecheck
+bun run build     # frontend/dist/index.js for the UI probe; the panel also builds this on install
+bun run package   # io.github.limeskat.players.kubekext
 ```
+
+The backend entry (`backend/index.ts`) runs directly on Bun, and the frontend entry
+(`frontend/src/index.ts`) is built by the panel at install time. Sources are always in the package;
+nothing is minified-only.
 
 ### Visual check
 
@@ -82,12 +101,47 @@ Add `--bundle frontend/dist/index.js --locales locales` to exercise a local buil
 
 ## Permissions
 
+The extension declares four panel permissions:
+
 | Key | Description |
 | --- | --- |
 | `ext.players.view` | View players, access lists, and statistics |
 | `ext.players.control` | Execute player actions (kick, heal, feed, teleport, etc.) |
 | `ext.players.manage_access` | Modify Whitelist, OPs, Bans, and IP Bans |
 | `ext.players.purge` | Purge and reset player data files |
+
+It requests these panel capabilities:
+
+| Capability | Why |
+| --- | --- |
+| `servers:read` | Read server status and the server list |
+| `servers:control` | Run player actions (kick, gamemode, teleport, heal, lists) through the console |
+| `http:routes` | Serve the extension's REST endpoints under `/api/ext/io.github.limeskat.players` |
+| `http:outbound` | Resolve player names through the Mojang API on online-mode servers |
+| `settings` | Read the configured avatar provider |
+| `events:server` | Track server start/stop/crash to keep the online list accurate |
+| `events:players` | Track joins and leaves |
+| `events:logs` | Recover the online list from `logs/latest.log` |
+
+## Network access
+
+- **Panel → Mojang** (`api.mojang.com`): only for online-mode servers, to resolve a typed name to its
+  canonical spelling and UUID. Offline-mode servers never call it.
+- **Browser → avatar providers**: player heads come from the provider selected in the extension
+  settings (`mc-heads` by default); the player name or UUID is part of the image URL.
+- **Browser → item asset hosts**: vanilla item icons from `api.minecraftitems.xyz` and versioned
+  textures from jsDelivr. Modded items and offline panels fall back to a local renderer.
+- **Browser → panel**: heads and the REST API stay on the panel's own `/api` routes.
+
+No telemetry, logs, settings or user data are sent anywhere else.
+
+## Known limits
+
+- Teleporting an offline player rewrites their saved NBT; it applies on their next join.
+- Servers that store dimensions as numeric ids cannot teleport a player into a custom dimension.
+- The online list is rebuilt from panel events and the log tail; a server writing an unusual join
+  message may lag behind until the next event.
+- Inventory rendering covers vanilla layouts; modded items keep a text/glyph fallback.
 
 ## Changelog
 

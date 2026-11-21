@@ -4,6 +4,27 @@ All notable changes to the Kubek Players Management extension are documented her
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project uses [Semantic Versioning](https://semver.org/).
 
+## [1.6.0] - 2026-11-21
+
+### Changed
+
+- The extension id is now `io.github.limeskat.players` instead of the reserved
+  `com.kubek.players`, so it can be submitted to the community extension catalog. The panel treats
+  it as a new extension; settings and stored state are not migrated.
+- The backend entry is now the TypeScript source `backend/index.ts`; Bun loads it directly instead of
+  a pre-bundled `backend/entry.js`.
+- The frontend entry is now `frontend/src/index.ts`. The panel builds
+  `frontend/dist/index.js` at install time, so the repository no longer ships a generated bundle.
+- Frontend code reads React from `window.Kubek.React` instead of importing a private copy. The
+  build-time React shim and the DOM sidebar-icon patch are gone.
+- Styles are imported as text and mounted once by the extension bundle.
+- Mojang name resolution goes through `ctx.http.fetch` and declares the `http:outbound` capability.
+  The unused `storage` capability and the unused `refreshIntervalSec` / `enableOfflineDirectory`
+  settings were removed.
+- Building and testing use Bun (`bun run build`, `bun test`); `esbuild` and `lucide-react` were
+  removed from the dev dependencies.
+- Added `icon.png`, `homepage`, and the catalog metadata the extension directory requires.
+
 ## [1.5.4] - 2026-11-19
 
 ### Fixed
