@@ -1,3 +1,5 @@
+/** @jsxRuntime classic */
+/** @jsx React.createElement */
 import React from "../../ui/react";
 import type { InventoryItem } from "../../types/player";
 import { useAssetVersion } from "../../ui/assets";

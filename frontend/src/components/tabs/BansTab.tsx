@@ -1,3 +1,5 @@
+/** @jsxRuntime classic */
+/** @jsx React.createElement */
 import React from "../../ui/react";
 import { matchesQuery } from "../../utils/format";
 import { useKubek } from "../../ui/kubek";

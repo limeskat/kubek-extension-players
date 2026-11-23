@@ -1,3 +1,5 @@
+/** @jsxRuntime classic */
+/** @jsx React.createElement */
 import React from "../../ui/react";
 import type { PlayerDetails } from "../../types/player";
 import { Dialog, DialogBody, DialogFooter, DialogHeader } from "../../ui/dialog";

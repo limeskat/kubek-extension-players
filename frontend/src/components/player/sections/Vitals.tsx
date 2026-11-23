@@ -1,3 +1,5 @@
+/** @jsxRuntime classic */
+/** @jsx React.createElement */
 import React from "../../../ui/react";
 import { MinecraftFood, MinecraftHeart } from "../../MinecraftIcons";
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "../../../ui/empty";

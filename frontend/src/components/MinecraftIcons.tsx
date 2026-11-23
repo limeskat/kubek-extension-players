@@ -1,3 +1,5 @@
+/** @jsxRuntime classic */
+/** @jsx React.createElement */
 import React from "../ui/react";
 
 // --- OFFICIAL MINECRAFT VANILLA PIXELATED ARMOR & SHIELD TEXTURES (BASE64) ---

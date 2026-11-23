@@ -8,6 +8,10 @@ project uses [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- The panel builds the frontend from its own working directory, so the extension's `jsx: "react"`
+  tsconfig was ignored and Bun emitted `react/jsx-dev-runtime`. Every `.tsx` file now opts into the
+  classic runtime with `@jsxRuntime classic` / `@jsx React.createElement`, and a test guards the
+  pragmas. This fixes `Failed to resolve module specifier "react/jsx-dev-runtime"` after install.
 - Online players are detected on servers that print joins as `System chat: <name> joined the game`
   (EasyAuth-style setups) or customise the join message. The tracker now reads the stable
   `logged in with entity id` and `lost connection` lines, follows the log tail incrementally on

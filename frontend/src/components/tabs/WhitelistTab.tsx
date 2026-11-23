@@ -1,3 +1,5 @@
+/** @jsxRuntime classic */
+/** @jsx React.createElement */
 import React from "../../ui/react";
 import { NameListTab } from "./NameListTab";
 

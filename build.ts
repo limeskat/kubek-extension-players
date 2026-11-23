@@ -18,9 +18,13 @@ if (!result.success) {
 }
 
 const output = await Bun.file("frontend/dist/index.js").text();
-const bareReact = /(?:^|\n)\s*import[^;\n]*from\s*["']react(?:-dom)?["']/.test(output);
+const bareReact = /(?:^|\n)\s*import[^;\n]*from\s*["'](?:react|react-dom)(?:\/[^"']*)?["']/.test(
+  output,
+);
 if (bareReact) {
-  console.error("frontend/dist/index.js still imports React; the panel would fail to load it");
+  console.error(
+    "frontend/dist/index.js still imports React; the panel would fail to load it",
+  );
   process.exit(1);
 }
 

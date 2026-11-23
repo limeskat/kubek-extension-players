@@ -1,3 +1,5 @@
+/** @jsxRuntime classic */
+/** @jsx React.createElement */
 import React from "../ui/react";
 
 const MODES = ["Survival", "Creative", "Adventure", "Spectator"];

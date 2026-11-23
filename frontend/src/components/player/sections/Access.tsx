@@ -1,3 +1,5 @@
+/** @jsxRuntime classic */
+/** @jsx React.createElement */
 import React from "../../../ui/react";
 import { getMutationErrorMessage } from "../../../utils/errors";
 import { useKubek } from "../../../ui/kubek";
