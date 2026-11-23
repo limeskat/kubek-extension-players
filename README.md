@@ -139,8 +139,8 @@ No telemetry, logs, settings or user data are sent anywhere else.
 
 - Teleporting an offline player rewrites their saved NBT; it applies on their next join.
 - Servers that store dimensions as numeric ids cannot teleport a player into a custom dimension.
-- The online list is rebuilt from panel events and the log tail; a server writing an unusual join
-  message may lag behind until the next event.
+- The online list follows the server log tail (join/leave messages, `logged in with entity id`,
+  `lost connection`). A server that hides all of those lines may lag until the next event.
 - Inventory rendering covers vanilla layouts; modded items keep a text/glyph fallback.
 
 ## Changelog

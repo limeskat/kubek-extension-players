@@ -3,6 +3,7 @@ import type { ExtRoute } from "@kubekpanel/extension-sdk";
 import type { CommandExecutorService } from "../services/command-executor.service";
 import type { MinecraftFilesService } from "../services/minecraft-files.service";
 import type { NbtParserService } from "../services/nbt-parser.service";
+import type { OnlineTracker } from "../services/online-tracker.service";
 import type { SkinAvatarService } from "../services/skin-avatar.service";
 import type { StatsParserService } from "../services/stats-parser.service";
 import type {
@@ -21,8 +22,20 @@ export function createPlayersRoutes(
   statsParser: StatsParserService,
   executor: CommandExecutorService,
   avatar: SkinAvatarService,
-  onlineTracker: Map<string, Set<string>>, // serverId -> Set of online usernames
+  onlineTracker: OnlineTracker,
 ): ExtRoute[] {
+  /**
+   * The log is the only player source on cores without panel player events. Catch up the
+   * incremental tail before serving an endpoint so a missed bus line cannot hide a player.
+   */
+  const onlineFor = (serverId: string): Set<string> => {
+    if (executor.isServerRunning(serverId)) onlineTracker.sync(serverId);
+    return onlineTracker.get(serverId);
+  };
+
+  const isOnlineName = (online: Set<string>, name: string): boolean =>
+    Array.from(online).some((candidate) => candidate.toLowerCase() === name.toLowerCase());
+
   /**
    * Helper: Resolve username from UUID or fallback to usercache
    */
@@ -51,7 +64,7 @@ export function createPlayersRoutes(
       permission: "ext.players.view",
       handler: (req, res) => {
         const { serverId } = req.params;
-        const onlineSet = onlineTracker.get(serverId) || new Set<string>();
+        const onlineSet = onlineFor(serverId);
         const cache = files.getUserCache(serverId);
 
         const list: PlayerSummary[] = Array.from(onlineSet).map((name) => {
@@ -78,7 +91,7 @@ export function createPlayersRoutes(
       permission: "ext.players.view",
       handler: (req, res) => {
         const { serverId } = req.params;
-        const onlineSet = onlineTracker.get(serverId) || new Set<string>();
+        const onlineSet = onlineFor(serverId);
         const discovered = files.getAllDiscoveredPlayers(serverId);
         const cache = files.getUserCache(serverId);
 
@@ -87,7 +100,7 @@ export function createPlayersRoutes(
             (c) => c.uuid.toLowerCase() === p.uuid.toLowerCase(),
           );
           const username = p.username || cached?.name || p.uuid.slice(0, 8);
-          const isOnline = onlineSet.has(username);
+          const isOnline = isOnlineName(onlineSet, username);
 
           return {
             uuid: p.uuid,
@@ -111,8 +124,8 @@ export function createPlayersRoutes(
         const { serverId, uuid } = req.params;
         const cleanUuid = uuid.toLowerCase();
         const username = resolvePlayerName(serverId, cleanUuid);
-        const onlineSet = onlineTracker.get(serverId) || new Set<string>();
-        const isOnline = onlineSet.has(username);
+        const onlineSet = onlineFor(serverId);
+        const isOnline = isOnlineName(onlineSet, username);
 
         // Read NBT Data
         const datPath = files.findPlayerDataPath(serverId, cleanUuid);
@@ -266,7 +279,7 @@ export function createPlayersRoutes(
 
         const cleanUuid = uuid.toLowerCase();
         const username = resolvePlayerName(serverId, cleanUuid);
-        const online = Array.from(onlineTracker.get(serverId) || []).some(
+        const online = Array.from(onlineFor(serverId)).some(
           (name) => name.toLowerCase() === username.toLowerCase(),
         );
 
@@ -358,7 +371,7 @@ export function createPlayersRoutes(
         const cleanUuid = uuid.toLowerCase();
         const options = (req.body as PurgeDataOptions) || {};
         const username = resolvePlayerName(serverId, cleanUuid);
-        const online = Array.from(onlineTracker.get(serverId) || []).some(
+        const online = Array.from(onlineFor(serverId)).some(
           (name) => name.toLowerCase() === username.toLowerCase(),
         );
 
@@ -423,7 +436,7 @@ export function createPlayersRoutes(
         const { serverId, uuid } = req.params;
         const cleanUuid = uuid.toLowerCase();
         const username = resolvePlayerName(serverId, cleanUuid);
-        const online = Array.from(onlineTracker.get(serverId) || []).some(
+        const online = Array.from(onlineFor(serverId)).some(
           (name) => name.toLowerCase() === username.toLowerCase(),
         );
 

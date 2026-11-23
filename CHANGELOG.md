@@ -4,7 +4,18 @@ All notable changes to the Kubek Players Management extension are documented her
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project uses [Semantic Versioning](https://semver.org/).
 
-## [1.6.0] - 2026-11-21
+## [1.6.0] - 2026-11-23
+
+### Fixed
+
+- Online players are detected on servers that print joins as `System chat: <name> joined the game`
+  (EasyAuth-style setups) or customise the join message. The tracker now reads the stable
+  `logged in with entity id` and `lost connection` lines, follows the log tail incrementally on
+  every `/online` request, and matches names case-insensitively. This also fixes teleport for
+  online players, which were treated as offline and had their saved NBT rewritten instead of
+  receiving the console `/tp`.
+- The page refresh button now spins until the server list, summary, online list and directory
+  all settle, and the player dialog's refresh is no longer disabled by a background poll.
 
 ### Changed
 

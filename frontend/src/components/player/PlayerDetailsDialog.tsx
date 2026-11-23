@@ -25,6 +25,7 @@ export const PlayerDetailsDialog: React.FC<{
   const { notify } = useToast();
 
   const [teleportOpen, setTeleportOpen] = React.useState(false);
+  const [refreshing, setRefreshing] = React.useState(false);
 
   const detailsQuery = query.useQuery({
     queryKey: ["ext", "players", serverId, "player", uuid],
@@ -37,6 +38,17 @@ export const PlayerDetailsDialog: React.FC<{
   const name = summary?.username || uuid;
   const online = Boolean(summary?.isOnline);
   const Badge: any = ui?.Badge;
+
+  const refreshDetails = React.useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await detailsQuery.refetch();
+    } catch {
+      // the query renders its own error state
+    } finally {
+      setRefreshing(false);
+    }
+  }, [detailsQuery]);
 
   const Refresh = icons.RefreshCw || (() => null);
   const X = icons.X || (() => null);
@@ -83,12 +95,12 @@ export const PlayerDetailsDialog: React.FC<{
             <ui.Button
               variant="ghost"
               size="icon-sm"
-              onClick={() => detailsQuery.refetch()}
-              disabled={detailsQuery.isFetching}
+              onClick={() => void refreshDetails()}
+              disabled={refreshing}
               title={t("ext.players.refresh") || "Refresh"}
               aria-label={t("ext.players.refresh") || "Refresh"}
             >
-              <Refresh className={detailsQuery.isFetching ? "k-spin" : undefined} />
+              <Refresh className={refreshing ? "k-spin" : undefined} />
             </ui.Button>
             <ui.Button
               variant="ghost"

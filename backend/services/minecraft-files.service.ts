@@ -7,6 +7,7 @@ import type {
   UserCacheEntry,
   WhitelistEntry,
 } from "../types";
+import { parsePlayerLogLine } from "./player-log";
 
 /**
  * Reads Minecraft server files for one panel installation.
@@ -348,16 +349,13 @@ export class MinecraftFilesService {
       }
       text = text.replace(/\u001b\[[0-9;]*m/g, ""); // strip ANSI colours
 
-      // Vanilla/Paper/Fabric log lines end the logger prefix with "]: ".
-      // Requiring it avoids matching chat such as "<alice> I joined the game".
-      const pattern =
-        /\]:\s+([A-Za-z0-9_]{1,16})\s+(joined the game|left the game|lost connection)\b/;
+      // Vanilla/Paper/Fabric log lines end the logger prefix with "]: ". The shared parser
+      // also handles EasyAuth-style "System chat:" join messages and the logged-in line.
       for (const line of text.split(/\r?\n/)) {
-        const match = line.match(pattern);
-        if (!match) continue;
-        const [, name, action] = match;
-        if (action === "joined the game") online.add(name);
-        else online.delete(name);
+        const event = parsePlayerLogLine(line);
+        if (!event) continue;
+        if (event.action === "join") online.add(event.name);
+        else online.delete(event.name);
       }
     } catch {
       // log missing or unreadable, nothing to seed

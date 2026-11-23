@@ -23,6 +23,7 @@ const PlayersPageInner: React.FC<{ kubek: any }> = ({ kubek }) => {
   const [selectedServerId, setSelectedServerId] = React.useState<string>("");
   const [activeTab, setActiveTab] = React.useState<TabId>("online");
   const [selectedPlayerUuid, setSelectedPlayerUuid] = React.useState<string | null>(null);
+  const [refreshing, setRefreshing] = React.useState(false);
 
   // Fetch servers list
   const serversQuery = query.useQuery({
@@ -83,11 +84,20 @@ const PlayersPageInner: React.FC<{ kubek: any }> = ({ kubek }) => {
     void directoryQuery.refetch();
   }, [summaryQuery, directoryQuery]);
 
-  const refreshAll = React.useCallback(() => {
-    void serversQuery.refetch();
-    void summaryQuery.refetch();
-    void onlineQuery.refetch();
-    void directoryQuery.refetch();
+  const refreshAll = React.useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([
+        serversQuery.refetch(),
+        summaryQuery.refetch(),
+        onlineQuery.refetch(),
+        directoryQuery.refetch(),
+      ]);
+    } catch {
+      // each query renders its own error state
+    } finally {
+      setRefreshing(false);
+    }
   }, [serversQuery, summaryQuery, onlineQuery, directoryQuery]);
 
   const icon = (name: string) => icons[name] || (() => null);
@@ -140,11 +150,11 @@ const PlayersPageInner: React.FC<{ kubek: any }> = ({ kubek }) => {
             <ui.Button
               variant="outline"
               size="icon"
-              onClick={refreshAll}
+              onClick={() => void refreshAll()}
               title={t("ext.players.refresh")}
               aria-label={t("ext.players.refresh")}
             >
-              <RefreshIcon className={onlineQuery.isFetching ? "k-spin" : undefined} />
+              <RefreshIcon className={refreshing ? "k-spin" : undefined} />
             </ui.Button>
           </>
         }
